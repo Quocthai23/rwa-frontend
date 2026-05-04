@@ -1,0 +1,648 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        background: #ffffff;
+        overflow: hidden;
+        height: 100%;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+          'Helvetica Neue', Arial, sans-serif;
+      }
+
+      .chart-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      #chart {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="chart-container">
+      <div id="chart"></div>
+    </div>
+
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+
+    <script>
+      // ============================================================
+      // 1) UTILS
+      // ============================================================
+      const pad2 = (n) => String(n).padStart(2, '0');
+
+      function toDateUTC(time) {
+        if (typeof time === 'number') return new Date(time * 1000);
+        return new Date(Date.UTC(time.year, time.month - 1, time.day, 0, 0));
+      }
+
+      function formatMMDD_HHmm_UTC(time) {
+        const d =
+          typeof time === 'number'
+            ? new Date(time * 1000)
+            : new Date(Date.UTC(time.year, time.month - 1, time.day));
+
+        const day = d.getUTCDate();
+        const month = d.toLocaleString('en-US', {
+          month: 'short',
+          timeZone: 'UTC',
+        });
+        const HH = String(d.getUTCHours()).padStart(2, '0');
+        const mm = String(d.getUTCMinutes()).padStart(2, '0');
+
+        return `${day} ${month} ${HH}:${mm}`;
+      }
+      function formatPrice(price) {
+        const absPrice = Math.abs(price);
+        let decimals;
+
+        if (absPrice >= 1000) {
+          decimals = 2; // 1234.56 = 6 digits
+        } else if (absPrice >= 100) {
+          decimals = 3; // 123.456 = 6 digits
+        } else if (absPrice >= 10) {
+          decimals = 4; // 12.3456 = 6 digits
+        } else if (absPrice >= 1) {
+          decimals = 5; // 1.23456 = 6 digits
+        } else {
+          decimals = 5; // 0.12345 = 6 digits (leading 0 not counted)
+        }
+
+        return price.toFixed(decimals);
+      }
+
+      // ============================================================
+      // 2) DOM REFS
+      // ============================================================
+      const container = document.getElementById('chart');
+
+      // ============================================================
+      // 3) CHART INIT
+      // ============================================================
+      const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: {
+          background: { type: 'solid', color: 'transparent' },
+          textColor: '#374151',
+          fontFamily:
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        },
+        grid: {
+          vertLines: { color: 'rgba(0,0,0,0.04)', style: 1 },
+          horzLines: { color: 'rgba(0,0,0,0.04)', style: 1 },
+        },
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: false,
+          borderVisible: true,
+          borderColor: 'rgba(0,0,0,0.06)',
+          rightOffset: 16,
+          tickMarkFormatter: (time) => formatMMDD_HHmm_UTC(time),
+        },
+        rightPriceScale: {
+          borderVisible: true,
+          borderColor: 'rgba(0,0,0,0.06)',
+          mode: 0,
+          autoScale: true,
+          visible: true,
+        },
+        leftPriceScale: { visible: false },
+        localization: {
+          priceFormatter: (price) => formatPrice(Number(price)),
+        },
+      });
+
+      chart.priceScale('right').applyOptions({
+        scaleMargins: { top: 0.05, bottom: 0.05 },
+        ticksVisible: true,
+        borderVisible: true,
+      });
+
+      const candleSeries = chart.addCandlestickSeries({
+        priceLineVisible: true,
+        upColor: '#22c55e',
+        downColor: '#ef4444',
+        borderUpColor: '#22c55e',
+        borderDownColor: '#ef4444',
+        wickUpColor: '#22c55e',
+        wickDownColor: '#ef4444',
+      });
+
+      // Indicators series
+      const ma5Series = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#3b82f6',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+      const ma10Series = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#f59e0b',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+      const ma20Series = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#8b5cf6',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+
+      const ema12Series = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#06b6d4',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+      const ema50Series = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#ec4899',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+
+      const bollUpperSeries = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#6366f1',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+      const bollMiddleSeries = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#8b5cf6',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+      const bollLowerSeries = chart.addLineSeries({
+        lineWidth: 1.5,
+        color: '#6366f1',
+        lastValueVisible: false,
+        priceLineVisible: false,
+        visible: false,
+      });
+
+      // ============================================================
+      // 4) INDICATORS (calc)
+      // ============================================================
+      let currentIndicator = 'none';
+
+      function calcSMA(data, period) {
+        const result = [];
+        for (let i = 0; i < data.length; i++) {
+          if (i < period - 1) {
+            result.push({ time: data[i].time, value: null });
+            continue;
+          }
+          let sum = 0;
+          for (let j = 0; j < period; j++) sum += data[i - j].close;
+          result.push({ time: data[i].time, value: sum / period });
+        }
+        return result;
+      }
+
+      function calcEMA(data, period) {
+        const result = [];
+        const multiplier = 2 / (period + 1);
+        let ema = null;
+
+        for (let i = 0; i < data.length; i++) {
+          if (ema === null) {
+            if (i >= period - 1) {
+              let sum = 0;
+              for (let j = 0; j < period; j++) sum += data[i - j].close;
+              ema = sum / period;
+              result.push({ time: data[i].time, value: ema });
+            } else {
+              result.push({ time: data[i].time, value: null });
+            }
+          } else {
+            ema = (data[i].close - ema) * multiplier + ema;
+            result.push({ time: data[i].time, value: ema });
+          }
+        }
+        return result;
+      }
+
+      function calcBollingerBands(data, period = 20, stdDev = 2) {
+        const upper = [];
+        const middle = [];
+        const lower = [];
+
+        for (let i = 0; i < data.length; i++) {
+          if (i < period - 1) {
+            upper.push({ time: data[i].time, value: null });
+            middle.push({ time: data[i].time, value: null });
+            lower.push({ time: data[i].time, value: null });
+            continue;
+          }
+
+          let sum = 0;
+          for (let j = 0; j < period; j++) sum += data[i - j].close;
+          const sma = sum / period;
+
+          let variance = 0;
+          for (let j = 0; j < period; j++) {
+            variance += Math.pow(data[i - j].close - sma, 2);
+          }
+          const std = Math.sqrt(variance / period);
+
+          upper.push({ time: data[i].time, value: sma + stdDev * std });
+          middle.push({ time: data[i].time, value: sma });
+          lower.push({ time: data[i].time, value: sma - stdDev * std });
+        }
+
+        return { upper, middle, lower };
+      }
+
+      function updateIndicators(candles) {
+        if (currentIndicator === 'MA') {
+          const ma5 = calcSMA(candles, 5).filter((d) => d.value !== null);
+          const ma10 = calcSMA(candles, 10).filter((d) => d.value !== null);
+          const ma20 = calcSMA(candles, 20).filter((d) => d.value !== null);
+          ma5Series.setData(ma5);
+          ma10Series.setData(ma10);
+          ma20Series.setData(ma20);
+        } else if (currentIndicator === 'EMA') {
+          const ema12 = calcEMA(candles, 12).filter((d) => d.value !== null);
+          const ema50 = calcEMA(candles, 50).filter((d) => d.value !== null);
+          ema12Series.setData(ema12);
+          ema50Series.setData(ema50);
+        } else if (currentIndicator === 'BOLL') {
+          const boll = calcBollingerBands(candles, 20, 2);
+          bollUpperSeries.setData(boll.upper.filter((d) => d.value !== null));
+          bollMiddleSeries.setData(boll.middle.filter((d) => d.value !== null));
+          bollLowerSeries.setData(boll.lower.filter((d) => d.value !== null));
+        }
+
+        // send latest indicator values to RN
+        setTimeout(sendIndicatorValues, 80);
+      }
+
+      function sendIndicatorValues() {
+        if (!window.ReactNativeWebView) return;
+
+        const payload = {};
+
+        if (currentIndicator === 'MA') {
+          const a = ma5Series.data();
+          const b = ma10Series.data();
+          const c = ma20Series.data();
+          if (a.length && b.length && c.length) {
+            payload.ma5 = a[a.length - 1]?.value;
+            payload.ma10 = b[b.length - 1]?.value;
+            payload.ma20 = c[c.length - 1]?.value;
+          }
+        } else if (currentIndicator === 'EMA') {
+          const a = ema12Series.data();
+          const b = ema50Series.data();
+          if (a.length && b.length) {
+            payload.ema12 = a[a.length - 1]?.value;
+            payload.ema50 = b[b.length - 1]?.value;
+          }
+        } else if (currentIndicator === 'BOLL') {
+          const u = bollUpperSeries.data();
+          const m = bollMiddleSeries.data();
+          const l = bollLowerSeries.data();
+          if (u.length && m.length && l.length) {
+            payload.bollUpper = u[u.length - 1]?.value;
+            payload.bollMiddle = m[m.length - 1]?.value;
+            payload.bollLower = l[l.length - 1]?.value;
+          }
+        }
+
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: 'indicators', payload }),
+        );
+      }
+
+      function setIndicator(type) {
+        currentIndicator = type;
+
+        // hide all
+        ma5Series.applyOptions({ visible: false });
+        ma10Series.applyOptions({ visible: false });
+        ma20Series.applyOptions({ visible: false });
+        ema12Series.applyOptions({ visible: false });
+        ema50Series.applyOptions({ visible: false });
+        bollUpperSeries.applyOptions({ visible: false });
+        bollMiddleSeries.applyOptions({ visible: false });
+        bollLowerSeries.applyOptions({ visible: false });
+
+        if (type === 'MA') {
+          ma5Series.applyOptions({ visible: true });
+          ma10Series.applyOptions({ visible: true });
+          ma20Series.applyOptions({ visible: true });
+        } else if (type === 'EMA') {
+          ema12Series.applyOptions({ visible: true });
+          ema50Series.applyOptions({ visible: true });
+        } else if (type === 'BOLL') {
+          bollUpperSeries.applyOptions({ visible: true });
+          bollMiddleSeries.applyOptions({ visible: true });
+          bollLowerSeries.applyOptions({ visible: true });
+        }
+
+        const data = candleSeries.data();
+        if (data && data.length) updateIndicators(data);
+      }
+
+      // ============================================================
+      // 5) DATA + LOADMORE
+      // ============================================================
+      let isLoadingMore = false;
+      let oldestTime = null;
+      let currentInterval = '5m';
+
+      function setHistoricalData(candles, interval) {
+        console.log(
+          '🎨 setHistoricalData called with',
+          candles?.length,
+          'candles',
+        );
+        if (!Array.isArray(candles) || candles.length === 0) {
+          console.log('❌ No candles data');
+          return;
+        }
+
+        currentInterval = interval || '5m';
+
+        const candleData = candles.map((c) => ({
+          time: c.time,
+          open: c.open,
+          high: c.high,
+          low: c.low,
+          close: c.close,
+        }));
+
+        console.log(
+          '📊 Setting data on chart...',
+          candleData.length,
+          'candles',
+        );
+        console.log(
+          'First candle time:',
+          candleData[0]?.time,
+          'Last candle time:',
+          candleData[candleData.length - 1]?.time,
+        );
+        console.log('Interval:', interval);
+
+        candleSeries.setData(candleData);
+        console.log('✅ Data set on chart');
+
+        // indicators based on current selection
+        updateIndicators(candleData);
+
+        // oldest for pagination
+        oldestTime = candleData[0]?.time ?? null;
+
+        // send last OHLC
+        const last = candleData[candleData.length - 1];
+        if (last && window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              type: 'ohlc',
+              payload: {
+                open: last.open,
+                high: last.high,
+                low: last.low,
+                close: last.close,
+              },
+            }),
+          );
+        }
+
+        // Scroll to latest
+        chart.timeScale().scrollToRealTime();
+
+        // Wait for rendering then send confirmation
+        setTimeout(() => {
+          console.log('📢 Sending dataRendered message');
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage('dataRendered');
+          }
+        }, 300);
+      }
+
+      function prependHistoricalData(olderCandles) {
+        if (!Array.isArray(olderCandles) || olderCandles.length === 0) {
+          isLoadingMore = false;
+          return;
+        }
+
+        try {
+          const currentData = candleSeries.data();
+          const merged = [...olderCandles, ...currentData].map((c) => ({
+            time: c.time,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+          }));
+
+          // unique by time
+          const unique = merged.filter(
+            (item, idx, self) =>
+              idx === self.findIndex((t) => t.time === item.time),
+          );
+
+          unique.sort((a, b) => a.time - b.time);
+
+          candleSeries.setData(unique);
+          updateIndicators(unique);
+
+          oldestTime = unique[0]?.time ?? oldestTime;
+        } catch (e) {
+          console.error('prependHistoricalData error:', e);
+        } finally {
+          isLoadingMore = false;
+        }
+      }
+
+      function updateCandle(candle) {
+        candleSeries.update({
+          time: candle.time,
+          open: candle.open,
+          high: candle.high,
+          low: candle.low,
+          close: candle.close,
+        });
+
+        // send OHLC update
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              type: 'ohlc',
+              payload: {
+                open: candle.open,
+                high: candle.high,
+                low: candle.low,
+                close: candle.close,
+              },
+            }),
+          );
+        }
+
+        // refresh indicator values
+        if (currentIndicator !== 'none') sendIndicatorValues();
+      }
+
+      // ============================================================
+      // 6) ORDERS (price lines / markers)
+      // ============================================================
+      let orderPriceLines = [];
+
+      function setOrders(orders) {
+        // clear old lines
+        orderPriceLines.forEach((line) => candleSeries.removePriceLine(line));
+        orderPriceLines = [];
+
+        if (!orders || !orders.length) {
+          candleSeries.setMarkers([]);
+          return;
+        }
+
+        const markers = orders.map((o) => ({
+          time: o.entryTime,
+          position: o.type === 'buy' ? 'belowBar' : 'aboveBar',
+          color: o.type === 'buy' ? '#22c55e' : '#ef4444',
+          shape: o.type === 'buy' ? 'arrowUp' : 'arrowDown',
+          text: `${String(o.type).toUpperCase()} @ ${formatPrice(Number(o.entryPrice))}`,
+          size: 1,
+        }));
+        candleSeries.setMarkers(markers);
+
+        orders.forEach((o) => {
+          const entry = candleSeries.createPriceLine({
+            price: o.entryPrice,
+            color: o.type === 'buy' ? '#22c55e' : '#ef4444',
+            lineWidth: 1,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: `Entry ${formatPrice(Number(o.entryPrice))}`,
+          });
+          orderPriceLines.push(entry);
+
+          if (o.stopLoss) {
+            const sl = candleSeries.createPriceLine({
+              price: o.stopLoss,
+              color: '#ef4444',
+              lineWidth: 1,
+              lineStyle: 2,
+              axisLabelVisible: true,
+              title: `SL ${formatPrice(Number(o.stopLoss))}`,
+            });
+            orderPriceLines.push(sl);
+          }
+
+          if (o.takeProfit) {
+            const tp = candleSeries.createPriceLine({
+              price: o.takeProfit,
+              color: '#22c55e',
+              lineWidth: 1,
+              lineStyle: 2,
+              axisLabelVisible: true,
+              title: `TP ${formatPrice(Number(o.takeProfit))}`,
+            });
+            orderPriceLines.push(tp);
+          }
+        });
+      }
+
+      // ============================================================
+      // 7) RN MESSAGES
+      // ============================================================
+      function handleMessage(raw) {
+        try {
+          const msg = JSON.parse(raw);
+          if (msg.type === 'setData') {
+            setHistoricalData(msg.payload.candles, msg.payload.interval);
+          } else if (msg.type === 'update') {
+            updateCandle(msg.payload);
+          } else if (msg.type === 'prependData') {
+            prependHistoricalData(msg.payload);
+          } else if (msg.type === 'setIndicator') {
+            setIndicator(msg.payload);
+          } else if (msg.type === 'setOrders') {
+            setOrders(msg.payload);
+          }
+        } catch (err) {
+          console.error('Message error:', err);
+        }
+      }
+
+      document.addEventListener('message', (e) => handleMessage(e.data));
+      window.addEventListener('message', (e) => handleMessage(e.data));
+
+      // ============================================================
+      // 8) RESIZE + TIMESCALE CHANGE
+      // ============================================================
+      function resize() {
+        chart.applyOptions({
+          width: container.clientWidth,
+          height: container.clientHeight,
+        });
+      }
+
+      window.addEventListener('resize', resize);
+
+      // When time range changes (horizontal scroll/zoom)
+      chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+        const logicalRange = chart.timeScale().getVisibleLogicalRange();
+        if (!logicalRange || isLoadingMore || !oldestTime) return;
+
+        if (logicalRange.from < 20) {
+          isLoadingMore = true;
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({
+                type: 'loadMore',
+                payload: {
+                  oldestTime,
+                  interval: currentInterval,
+                },
+              }),
+            );
+          }
+        }
+      });
+
+      // ============================================================
+      // 9) BOOT
+      // ============================================================
+      resize();
+
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage('ready');
+      }
+    </script>
+  </body>
+</html>

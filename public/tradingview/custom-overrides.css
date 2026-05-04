@@ -1,0 +1,62 @@
+/* TradingView Charting Library custom overrides.
+   Goal: keep large dialogs (Indicators, Settings, etc.) shorter with scroll.
+   Note: this CSS is loaded inside the chart iframe via `custom_css_url`. */
+
+:root {
+  --tv-dialog-max-height: 62vh;
+  --tv-dialog-max-width: min(920px, 96vw);
+}
+
+/* Main dialog container(s) */
+.tv-dialog,
+.tv-dialog__modal,
+.tv-dialog__modal-wrap,
+.tv-dialog__modal-body,
+.tv-floating-dialog,
+.tv-modal-dialog,
+.tv-modal-dialog__container {
+  max-height: var(--tv-dialog-max-height) !important;
+}
+
+/* Ensure the dialog doesn't grow too wide on desktop */
+.tv-dialog,
+.tv-dialog__modal,
+.tv-modal-dialog__container {
+  max-width: var(--tv-dialog-max-width) !important;
+}
+
+/* Content areas: make them scroll rather than stretching the dialog */
+.tv-dialog__content,
+.tv-dialog__content-wrap,
+.tv-dialog__scroll,
+.tv-dialog__body,
+.tv-modal-dialog__content,
+.tv-modal-dialog__body,
+.tv-tabs__content,
+.tv-tabs__content-panel {
+  max-height: calc(var(--tv-dialog-max-height) - 96px) !important;
+  overflow: auto !important;
+}
+
+/* Indicator "Add" dialogs often have big lists */
+.tv-search-row,
+.tv-search-row__results,
+.tv-search-row__results-wrap,
+.tv-search-row__results-container {
+  max-height: calc(var(--tv-dialog-max-height) - 120px) !important;
+  overflow: auto !important;
+}
+
+/* Small tweak: reduce vertical padding to save space */
+.tv-dialog__header,
+.tv-modal-dialog__header {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.tv-dialog__footer,
+.tv-modal-dialog__footer {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+

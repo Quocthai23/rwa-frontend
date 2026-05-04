@@ -1,0 +1,6 @@
+:root[data-experience='app'] {
+  --experience-shell-max-width: 48rem;
+  --experience-shell-padding-inline: 0px;
+  --experience-radius-md: 12px;
+  --experience-space-md: 12px;
+}

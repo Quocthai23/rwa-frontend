@@ -1,0 +1,14 @@
+
+.price-axis,
+[class*="price-axis"] {
+  overflow: visible !important;
+}
+
+[class*="price-axis"] [class*="body"],
+[class*="price-axis"] [class*="marker"] {
+  position: absolute !important;
+  pointer-events: auto;
+  z-index: 10;
+  min-height: 0 !important;
+  margin: 0 !important;
+}

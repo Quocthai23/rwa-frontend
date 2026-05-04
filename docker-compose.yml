@@ -1,0 +1,32 @@
+services:
+  web:
+    image: mtx-web-app:prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV:-production}
+        NEXT_PUBLIC_API_CHART_URL: ${NEXT_PUBLIC_API_CHART_URL}
+        NEXT_PUBLIC_SOCKET_CHART_URL: ${NEXT_PUBLIC_SOCKET_CHART_URL}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_WS_ORDER_URL: ${NEXT_PUBLIC_WS_ORDER_URL}
+      shm_size: '256mb'
+    container_name: mtx-web-app
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV:-production}
+      NEXT_TELEMETRY_DISABLED: '1'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - backend-prod-network
+
+networks:
+  backend-prod-network:
+    external: true

@@ -1,0 +1,1 @@
+export { ToggleFavouriteAsset } from './ToggleFavouriteAsset';

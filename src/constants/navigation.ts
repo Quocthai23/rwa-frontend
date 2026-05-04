@@ -1,0 +1,15 @@
+export const HIDDEN_NAVBAR_ROUTES = [
+  '/login',
+  '/register',
+  '/api',
+  '/chat',
+  '/settings',
+  '/forgot-password',
+  '/opening-order',
+  '/top-up',
+  '/referral',
+  '/personal-info',
+  '/search',
+  '/withdraw',
+  '/rewards',
+];

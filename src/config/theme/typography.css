@@ -1,0 +1,87 @@
+/*  typo display */
+@utility text-display-3xl {
+  @apply leading-3xl text-5xl font-bold;
+}
+
+@utility text-display-2xl {
+  @apply leading-4xl text-4xl font-bold;
+}
+
+@utility text-display-xl {
+  @apply leading-3xl text-3xl font-bold;
+}
+
+@utility text-display-lg {
+  @apply leading-2xl text-2xl font-bold;
+}
+
+@utility text-display-extra-large {
+  @apply leading-5xl text-5xl font-bold;
+}
+
+@utility text-display-large {
+  @apply leading-4xl text-4xl font-bold;
+}
+
+@utility text-display-small {
+  @apply leading-3xl text-3xl font-bold;
+}
+
+/* typo heading */
+@utility text-h1-* {
+  @apply leading-2xl text-2xl;
+  font-weight: --value(--font-weight-*);
+}
+@utility text-h2-* {
+  @apply leading-xl text-xl;
+  font-weight: --value(--font-weight-*);
+}
+@utility text-h3-* {
+  @apply leading-lg text-lg;
+  font-weight: --value(--font-weight-*);
+}
+@utility text-h4-* {
+  @apply text-md leading-md;
+  font-weight: --value(--font-weight-*);
+}
+
+@utility text-body-large-* {
+  @apply leading-md text-base;
+  font-weight: --value(--font-weight-*);
+}
+
+@utility text-body-medium-* {
+  @apply leading-md text-base;
+  font-weight: --value(--font-weight-*);
+}
+
+@utility text-body-small-* {
+  @apply leading-sm text-sm;
+  font-weight: --value(--font-weight-*);
+}
+
+/* typo button */
+@utility text-button-large-* {
+  @apply leading-md text-base;
+  font-weight: --value(--font-weight-*);
+}
+@utility text-button-medium-* {
+  @apply text-md leading-md;
+  font-weight: --value(--font-weight-*);
+}
+@utility text-button-small-* {
+  @apply leading-sm text-sm;
+  font-weight: --value(--font-weight-*);
+}
+
+@utility text-display-lg {
+  @apply leading-4xl text-4xl font-semibold;
+}
+@utility text-display-sm {
+  @apply leading-3xl text-3xl font-semibold;
+}
+
+@utility text-caption-* {
+  @apply leading-xs text-xs;
+  font-weight: --value(--font-weight-*);
+}

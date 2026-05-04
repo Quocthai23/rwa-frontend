@@ -1,0 +1,16 @@
+.git
+.github
+.next
+out
+dist
+node_modules
+coverage
+.turbo
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+.cursor
+tsconfig.tsbuildinfo
+swagger-api.json

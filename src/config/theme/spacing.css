@@ -1,0 +1,44 @@
+@utility spacing-xxs {
+  @apply scale-1;
+}
+
+@utility spacing-xs {
+  @apply scale-2;
+}
+
+@utility spacing-sm {
+  @apply scale-3;
+}
+
+@utility spacing-md {
+  @apply scale-4;
+}
+
+@utility spacing-lg {
+  @apply scale-5;
+}
+
+@utility spacing-xl {
+  @apply scale-6;
+}
+@utility spacing-xxl {
+  @apply scale-8;
+}
+@utility spacing-3xl {
+  @apply scale-10;
+}
+@utility spacing-4xl {
+  @apply scale-12;
+}
+@utility spacing-5xl {
+  @apply scale-16;
+}
+@utility spacing-6xl {
+  @apply scale-20;
+}
+@utility spacing-7xl {
+  @apply scale-24;
+}
+@utility spacing-8xl {
+  @apply scale-32;
+}

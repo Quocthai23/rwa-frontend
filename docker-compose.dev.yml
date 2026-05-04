@@ -1,0 +1,28 @@
+services:
+  web:
+    image: mtx-web-app:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV:-development}
+        NEXT_PUBLIC_API_CHART_URL: ${NEXT_PUBLIC_API_CHART_URL}
+        NEXT_PUBLIC_SOCKET_CHART_URL: ${NEXT_PUBLIC_SOCKET_CHART_URL}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_WS_ORDER_URL: ${NEXT_PUBLIC_WS_ORDER_URL}
+      shm_size: '256mb'
+    container_name: mtx-web-app-dev
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV:-development}
+      NEXT_TELEMETRY_DISABLED: '1'
+    ports:
+      - '${PORT:-3000}:3000'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

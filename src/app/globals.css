@@ -1,0 +1,171 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@import '../config/theme/index.css';
+@import '../config/theme/font-size.css';
+@import '../config/theme/color.css';
+@import '../config/theme/spacing.css';
+@import '../config/theme/typography.css';
+@import '../config/theme/experience-tokens.css';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  /* Semantic sheet surface — used by bg-sheet (see :root / .dark --sheet) */
+  --color-sheet: var(--sheet);
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Semantic tokens */
+  --background: var(--color-neutral-00);
+  --foreground: var(--color-text-neutral-primary);
+  --card: var(--color-neutral-100);
+  --card-foreground: var(--color-text-neutral-primary);
+  --popover: var(--color-neutral-00);
+  --popover-foreground: var(--color-text-neutral-primary);
+  --primary: var(--color-primary-500);
+  --primary-foreground: var(--color-white);
+  --muted: var(--color-neutral-100);
+  --muted-foreground: var(--color-neutral-500);
+  --accent: var(--color-neutral-100);
+  --accent-foreground: var(--color-text-neutral-primary);
+  --border: var(--color-neutral-200);
+  --input: var(--color-neutral-200);
+  --ring: var(--color-primary-300);
+  --sheet: var(--color-neutral-00);
+}
+
+.dark {
+  --sheet: var(--color-neutral-900);
+  --background: var(--color-neutral-1000);
+  --foreground: var(--color-text-neutral-primary);
+  --card: var(--color-neutral-900);
+  --card-foreground: var(--color-text-neutral-primary);
+  --popover: var(--color-surface-default);
+  --popover-foreground: var(--color-text-neutral-primary);
+  --primary: var(--color-primary-500);
+  --primary-foreground: var(--color-white);
+  --muted: var(--color-surface-subtle);
+  --muted-foreground: var(--color-neutral-400);
+  --accent: var(--color-surface-subtle);
+  --accent-foreground: var(--color-text-neutral-primary);
+  --border: var(--color-neutral-800);
+  --input: var(--color-border-subtle);
+  --ring: var(--color-border-focus);
+}
+
+html,
+body {
+  /* background-color: var(--color-surface-default, #0c130f); */
+  color: var(--color-text-neutral-primary, #000000);
+  min-height: 100%;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  /* Force scrollbar to always show to prevent layout shift */
+}
+
+:root[data-experience='web'] .experience-app-only {
+  display: none !important;
+}
+
+/* Smooth dropdown animation */
+@keyframes slideDownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@layer base {
+  body {
+    /* background-color: var(--color-surface-bg, #f9fbfa); */
+    color: var(--color-text-neutral-primary, #2d3036);
+  }
+
+  /* Hide browser-native password reveal controls to keep custom toggle consistent */
+  input[type='password']::-ms-reveal,
+  input[type='password']::-ms-clear {
+    display: none;
+  }
+
+  input[type='password']::-webkit-credentials-auto-fill-button,
+  input[type='password']::-webkit-contacts-auto-fill-button,
+  input[type='password']::-webkit-strong-password-auto-fill-button {
+    display: none !important;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  table thead.sticky th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: inherit;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE/Edge legacy */
+    scrollbar-width: none; /* Firefox */
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  /* Thin neutral scrollbar (Firefox + WebKit); dark via ancestor .dark (matches @custom-variant dark) */
+  .scrollbar-neutral-slim {
+    scrollbar-color: var(--color-neutral-300) transparent;
+  }
+
+  :is(.dark *) .scrollbar-neutral-slim {
+    scrollbar-color: var(--color-neutral-600) transparent;
+  }
+
+  .scrollbar-neutral-slim::-webkit-scrollbar {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  .scrollbar-neutral-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-neutral-slim::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: var(--color-neutral-300);
+  }
+
+  :is(.dark *) .scrollbar-neutral-slim::-webkit-scrollbar-thumb {
+    background-color: var(--color-neutral-600);
+  }
+
+  /* Keep emoji-picker-react typography consistent with app font stack */
+  .emoji-picker-system-font,
+  .emoji-picker-system-font * {
+    font-family: inherit !important;
+    font-size: 14px !important;
+  }
+}

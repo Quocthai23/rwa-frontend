@@ -1,0 +1,6 @@
+:root[data-experience='web'] {
+  --experience-shell-max-width: 96rem;
+  --experience-shell-padding-inline: 16px;
+  --experience-radius-md: 16px;
+  --experience-space-md: 16px;
+}
