@@ -19,6 +19,7 @@ export const IS_APP_PRODUCTION = APP_ENV === 'production';
 export const API_CHART_URL = process.env.NEXT_PUBLIC_API_CHART_URL;
 export const SOCKET_CHART_URL = process.env.NEXT_PUBLIC_SOCKET_CHART_URL;
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+/** @deprecated Prefer {@link SOCKET_CHART_URL}; order/trading realtime uses Socket.IO `/trading` on this origin. */
 export const WS_ORDER_URL = process.env.NEXT_PUBLIC_WS_ORDER_URL;
 
 /**
@@ -45,7 +46,6 @@ const validateEnv = () => {
     'NEXT_PUBLIC_API_BASE_URL',
     'NEXT_PUBLIC_API_CHART_URL',
     'NEXT_PUBLIC_SOCKET_CHART_URL',
-    'NEXT_PUBLIC_WS_ORDER_URL',
   ];
 
   const missingVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);

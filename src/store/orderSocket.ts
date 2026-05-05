@@ -1,17 +1,14 @@
 import { queryClient } from '@/app/provider';
-import { WS_ORDER_URL } from '@/constants/env';
+import { SOCKET_CHART_URL } from '@/constants/env';
 import { OrderItem } from '@/types/orders';
 import { Position } from '@/types/position';
 import { sortArray } from '@/utils/insertSorted';
+import { io, type Socket } from 'socket.io-client';
 
-const WS_URL = WS_ORDER_URL;
 const WS_TICKET_ENDPOINT = '/api/ws-ticket';
 
-const PING_INTERVAL_MS = 10_000; // send ping every 25s
-const PONG_TIMEOUT_MS = 10_000; // expect pong within 10s
 const RECONNECT_BASE_MS = 8_000;
 const RECONNECT_MAX_MS = 30_000;
-const AUTH_RETRY_CLOSE_CODES = new Set([1008, 4401, 4403]);
 
 type Listener = (type: string, data: unknown) => void;
 type SortDirection = 'asc' | 'desc' | null;
@@ -107,10 +104,13 @@ function insertOrderIntoCache(newOrder: OrderItem) {
   updateInfiniteCacheLocally('infinite-orders', newOrder);
 }
 
+function tradingNamespaceUrl(): string | null {
+  const base = SOCKET_CHART_URL?.replace(/\/$/, '').trim();
+  return base ? `${base}/trading` : null;
+}
+
 class OrderSocketService {
-  private ws: WebSocket | null = null;
-  private pingTimer: ReturnType<typeof setInterval> | null = null;
-  private pongTimer: ReturnType<typeof setTimeout> | null = null;
+  private socket: Socket | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempt = 0;
   private intentionalClose = false;
@@ -122,14 +122,14 @@ class OrderSocketService {
   private invalidateStatsDebounced: ((accountId?: string) => void) | null = null;
   private refetchOrdersDebounced: (() => void) | null = null;
   private refetchPositionsDebounced: (() => void) | null = null;
+
   /** Start the socket (call once when user is authenticated) */
   connect(accountId?: string) {
-    // If accountId changed while connected — reconnect
-    if (this.ws && this.currentAccountId !== accountId) {
+    if (this.socket && this.currentAccountId !== accountId) {
       this.intentionalClose = true;
       this.cleanup();
     }
-    if (this.ws) return;
+    if (this.socket) return;
     this.currentAccountId = accountId;
     this.intentionalClose = false;
     this.invalidateStatsDebounced = debounce((accountId?: string) => {
@@ -144,7 +144,7 @@ class OrderSocketService {
       queryClient.refetchQueries({ queryKey: ['infinite-positions'], type: 'all' });
     }, 50);
     this.reconnectAttempt = 0;
-    this.openSocket();
+    void this.openSocket();
     this.startBrowserListeners();
   }
 
@@ -156,7 +156,7 @@ class OrderSocketService {
   }
 
   get isConnected(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN;
+    return this.socket?.connected ?? false;
   }
 
   /** Subscribe to incoming messages. Returns unsubscribe fn. */
@@ -170,138 +170,128 @@ class OrderSocketService {
 
   // ─── Private ──────────────────────────────────────────────
 
+  private dispatchLegacyWsMessage(message: { type?: string; data?: unknown }) {
+    if (message.type?.startsWith('ws:order:') || message.type?.startsWith('ws:position:')) {
+      const data = message.data as Record<string, unknown> | undefined;
+      const accountId = data?.accountId as string | undefined;
+      if (message.type?.startsWith('ws:order:') || message.type?.startsWith('ws:position:')) {
+        this.invalidateStatsDebounced?.(accountId);
+      }
+      if (message.type?.includes('ws:order:created')) {
+        const newOrder = message.data as OrderItem;
+        if (newOrder) {
+          insertOrderIntoCache(newOrder);
+        }
+      }
+      if (message.type?.includes('ws:position:created')) {
+        const inner = message.data as Record<string, unknown> | undefined;
+        if (inner) {
+          insertPositionIntoCache(message.data as Position);
+        }
+      }
+      if (message.type?.startsWith('ws:position:updated')) {
+        this.refetchPositionsDebounced?.();
+      }
+      if (message.type?.startsWith('ws:order:updated')) {
+        this.refetchOrdersDebounced?.();
+      }
+      if (message.type?.startsWith('ws:position:closed')) {
+        queryClient.refetchQueries({ queryKey: ['stats', accountId] });
+        queryClient.refetchQueries({ queryKey: ['accounts'] });
+        this.refetchPositionsDebounced?.();
+      }
+
+      if (message.type?.startsWith('ws:order:canceled')) {
+        this.refetchOrdersDebounced?.();
+
+        queryClient.refetchQueries({ queryKey: ['stats', accountId] });
+      }
+    }
+  }
+
   private async openSocket() {
+    const namespaceUrl = tradingNamespaceUrl();
+    if (!namespaceUrl || typeof window === 'undefined') {
+      console.warn('[OrderSocket] ⚠️ NEXT_PUBLIC_SOCKET_CHART_URL missing or SSR — skip connect');
+      return;
+    }
+
     const ticket = await this.getWsTicket();
     if (!ticket) {
-      console.warn('[OrderSocket] ⚠️ No WS ticket available - scheduling reconnect');
-
-      if (!this.intentionalClose) {
-        this.scheduleReconnect();
-      }
-
-      return;
+      console.warn(
+        '[OrderSocket] ⚠️ No ticket from /api/ws-ticket — connecting with cookies only (if server allows)',
+      );
     }
 
-    if (typeof window === 'undefined') {
-      console.warn('[OrderSocket] ⚠️ Window unavailable – skipping connect');
-      return;
-    }
-    const params = new URLSearchParams({ ticket });
+    const auth: Record<string, string> = {};
+    if (ticket) auth.ticket = ticket;
+    if (this.currentAccountId) auth.accountId = this.currentAccountId;
 
-    if (this.currentAccountId) {
-      params.set('accountId', this.currentAccountId);
-    }
+    const socket = io(namespaceUrl, {
+      auth,
+      reconnection: false,
+      transports: ['polling', 'websocket'],
+      withCredentials: true,
+    });
 
-    const url = `${WS_URL}?${params.toString()}`;
-
-    const ws = new WebSocket(url);
-
-    ws.onopen = () => {
+    socket.on('connect', () => {
       this.reconnectAttempt = 0;
       this.wasConnected = true;
-      this.startPing();
-    };
+    });
 
-    ws.onmessage = (event) => {
-      const raw = typeof event.data === 'string' ? event.data : '';
-
-      // Handle pong
-      if (raw === 'pong' || raw === '{"type":"pong"}') {
-        this.handlePong();
-
-        return;
+    socket.on('connect_error', (err) => {
+      console.error('[OrderSocket] ❌ connect_error:', err?.message ?? err);
+      socket.removeAllListeners();
+      socket.disconnect();
+      if (this.socket === socket) {
+        this.socket = null;
       }
-
-      try {
-        const message = JSON.parse(raw) as {
-          type?: string;
-          event: string;
-          data?: unknown;
-          timestamp?: number;
-        };
-
-        if (message.type === 'pong') {
-          this.handlePong();
-
-          return;
-        }
-
-        // If the type covers both or is unknown, invalidate both
-        if (message.type?.startsWith('ws:order:') || message.type?.startsWith('ws:position:')) {
-          const data = message.data as Record<string, unknown> | undefined;
-          const accountId = data?.accountId as string | undefined;
-          if (message.type?.startsWith('ws:order:') || message.type?.startsWith('ws:position:')) {
-            this.invalidateStatsDebounced?.(accountId);
-          }
-          if (message.type?.includes('ws:order:created')) {
-            const newOrder = message.data as OrderItem;
-            if (newOrder) {
-              insertOrderIntoCache(newOrder);
-            }
-          }
-          if (message.type?.includes('ws:position:created')) {
-            const data = message.data as Record<string, unknown> | undefined;
-            if (data) {
-              insertPositionIntoCache(message.data as Position);
-            }
-          }
-          if (message.type?.startsWith('ws:position:updated')) {
-            this.refetchPositionsDebounced?.();
-          }
-          if (message.type?.startsWith('ws:order:updated')) {
-            this.refetchOrdersDebounced?.();
-          }
-          if (message.type?.startsWith('ws:position:closed')) {
-            queryClient.refetchQueries({ queryKey: ['stats', accountId] });
-            queryClient.refetchQueries({ queryKey: ['accounts'] });
-            this.refetchPositionsDebounced?.();
-          }
-
-          if (message.type?.startsWith('ws:order:canceled')) {
-            this.refetchOrdersDebounced?.();
-
-            queryClient.refetchQueries({ queryKey: ['stats', accountId] });
-          }
-        }
-
-        // Notify listeners
-        for (const listener of this.listeners) {
-          try {
-            listener(message.type ?? 'unknown', message.data);
-          } catch {
-            // swallow listener errors
-          }
-        }
-      } catch {
-        console.warn('[OrderSocket] ⚠️ Non-JSON message:', raw.slice(0, 100));
-      }
-    };
-
-    ws.onerror = (error) => {
-      const err = error as unknown as Error & { _type?: string };
-
-      console.error('[OrderSocket] ❌ Error event:', {
-        message: err?.message,
-        type: err?._type,
-        readyState: ws.readyState,
-      });
-    };
-
-    ws.onclose = (event) => {
-      this.stopPing();
-      this.ws = null;
-
       if (!this.intentionalClose) {
-        if (this.shouldRetryAuthClose(event.code)) {
-          this.scheduleReconnect(1_000);
-          return;
-        }
-
         this.scheduleReconnect();
       }
-    };
+    });
 
-    this.ws = ws;
+    socket.on('disconnect', (reason) => {
+      this.socket = null;
+      if (!this.intentionalClose) {
+        const soon = reason === 'io server disconnect' ? 1_000 : undefined;
+        this.scheduleReconnect(soon);
+      }
+    });
+
+    socket.onAny((eventName, ...args) => {
+      const raw = args[0];
+
+      if (typeof raw === 'string') {
+        try {
+          const parsed = JSON.parse(raw) as { type?: string; data?: unknown };
+          if (parsed?.type?.startsWith('ws:')) {
+            this.dispatchLegacyWsMessage(parsed);
+          }
+        } catch {
+          // not JSON
+        }
+      } else if (raw && typeof raw === 'object') {
+        const obj = raw as Record<string, unknown>;
+        if (typeof obj.type === 'string' && obj.type.startsWith('ws:')) {
+          this.dispatchLegacyWsMessage(obj as { type: string; data?: unknown });
+        }
+      }
+
+      if (eventName === 'my_order_matched') {
+        this.dispatchLegacyWsMessage({ type: 'ws:order:updated', data: raw });
+      }
+
+      for (const listener of this.listeners) {
+        try {
+          listener(eventName, raw);
+        } catch {
+          // swallow listener errors
+        }
+      }
+    });
+
+    this.socket = socket;
   }
 
   // ─── Ticket helpers ───────────────────────────────────────
@@ -327,52 +317,8 @@ class OrderSocketService {
       };
 
       return payload?.data?.ticket;
-    } catch (error) {
+    } catch {
       return undefined;
-    }
-  }
-
-  // ─── Ping / Pong ─────────────────────────────────────────
-
-  private startPing() {
-    this.stopPing();
-
-    this.pingTimer = setInterval(() => {
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send('ping');
-
-        // this.pongTimer = setTimeout(() => {
-        //   console.warn('[OrderSocket] ⏰ Pong timeout – closing')
-        //   this.ws?.close(4000, 'pong timeout')
-        // }, PONG_TIMEOUT_MS)
-
-        if (this.pongTimer) {
-          clearTimeout(this.pongTimer);
-        }
-
-        this.pongTimer = setTimeout(() => {
-          this.pongTimer = null;
-        }, PONG_TIMEOUT_MS);
-      }
-    }, PING_INTERVAL_MS);
-  }
-
-  private handlePong() {
-    if (this.pongTimer) {
-      clearTimeout(this.pongTimer);
-      this.pongTimer = null;
-    }
-  }
-
-  private stopPing() {
-    if (this.pingTimer) {
-      clearInterval(this.pingTimer);
-      this.pingTimer = null;
-    }
-
-    if (this.pongTimer) {
-      clearTimeout(this.pongTimer);
-      this.pongTimer = null;
     }
   }
 
@@ -388,29 +334,23 @@ class OrderSocketService {
 
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      this.openSocket();
+      if (!this.intentionalClose) {
+        this.cleanup();
+        void this.openSocket();
+      }
     }, delay);
   }
 
-  private shouldRetryAuthClose(closeCode: number): boolean {
-    return AUTH_RETRY_CLOSE_CODES.has(closeCode);
-  }
-
   private cleanup() {
-    this.stopPing();
-
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
 
-    if (this.ws) {
-      this.ws.onopen = null;
-      this.ws.onmessage = null;
-      this.ws.onerror = null;
-      this.ws.onclose = null;
-      this.ws.close();
-      this.ws = null;
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+      this.socket = null;
     }
   }
 
@@ -422,16 +362,16 @@ class OrderSocketService {
     if (typeof window === 'undefined') return;
 
     this.handleWindowFocus = () => {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (!this.socket?.connected) {
         this.cleanup();
-        this.openSocket();
+        void this.openSocket();
       }
     };
 
     this.handleWindowOnline = () => {
       if (!this.isConnected && this.wasConnected) {
         this.cleanup();
-        this.openSocket();
+        void this.openSocket();
       }
     };
 

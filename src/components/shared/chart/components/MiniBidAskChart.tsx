@@ -684,6 +684,9 @@ function MiniBidAskChart({
   useEffect(() => {
     if (!currentSymbol) return;
 
+    const asset = contextAssets?.find((a) => String(a?.symbol ?? '') === currentSymbol);
+    const klineTopicId = asset?.id ?? currentSymbol;
+
     let cancelled = false;
 
     const handleKlineUpdate = (candle: any) => {
@@ -731,7 +734,7 @@ function MiniBidAskChart({
         });
 
         if (cancelled) return;
-        subscribe(currentSymbol, timeframe, handleKlineUpdate);
+        subscribe(klineTopicId, timeframe, handleKlineUpdate);
       } catch (error) {
         if (cancelled) return;
         console.error(error);
@@ -742,9 +745,9 @@ function MiniBidAskChart({
 
     return () => {
       cancelled = true;
-      unsubscribe(currentSymbol, timeframe, handleKlineUpdate);
+      unsubscribe(klineTopicId, timeframe, handleKlineUpdate);
     };
-  }, [timeframe, currentSymbol, subscribe, unsubscribe]);
+  }, [timeframe, currentSymbol, subscribe, unsubscribe, contextAssets]);
 
   useEffect(() => {
     if (ohlcCb && ohlc) {

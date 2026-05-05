@@ -35,7 +35,7 @@ Copy `.env.example` to `.env` and replace the placeholders.
 | `NEXT_PUBLIC_API_CHART_URL`                 | Chart API (browser)                              |
 | `NEXT_PUBLIC_SOCKET_CHART_URL`              | Chart socket (browser)                           |
 | `NEXT_PUBLIC_API_BASE_URL`                  | Backend API base URL (browser)                   |
-| `NEXT_PUBLIC_WS_ORDER_URL`                  | Order WebSocket URL (browser)                    |
+| `NEXT_PUBLIC_WS_ORDER_URL`                  | Optional; same Nest HTTP origin as chart socket if set (deprecated—order stream uses Socket.IO `/trading` on `NEXT_PUBLIC_SOCKET_CHART_URL`) |
 
 **Docker / production:** `NEXT_PUBLIC_*` values are **baked into the client bundle at `docker compose build` time**. Changing them in `.env` without rebuilding the image leaves the client on the old values. Server-only variables (`GOOGLE_*`, `NEXTAUTH_*`, `WS_TICKET_SECRET`, etc.) are read **at container runtime** via `env_file: .env`.
 

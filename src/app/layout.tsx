@@ -16,12 +16,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'MTX Trading',
   icons: {
-    icon: [
-      { url: '/logo/logo.png', type: 'image/png' },
-      { url: '/logo/logo.svg', type: 'image/svg+xml' },
-    ],
-    shortcut: '/logo/logo.png',
-    apple: '/logo/logo.png',
+    icon: [{ url: '/logo/logo-web.svg', type: 'image/svg+xml' }],
+    shortcut: '/logo/logo-web.svg',
+    apple: '/logo/logo-web.svg',
   },
 };
 

@@ -127,7 +127,7 @@ export const useMarketSocketStore = create<MarketSocketState>((set, get) => {
         reconnectionDelay: 500,
         reconnectionDelayMax: 5000,
         timeout: 10_000,
-        transports: ['websocket'],
+        transports: ['polling', 'websocket'],
       });
 
       startFlushLoop();

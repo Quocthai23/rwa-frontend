@@ -6,7 +6,7 @@ import { API_CHART_URL } from '@/constants/env';
 import { useGetData } from '@/context/GetdataContext';
 import { useInfiniteOrders } from '@/hook/useOrder';
 import { useInfinitePositions } from '@/hook/usePosition';
-import { useKlineSocketStore } from '@/store/klineSocketStore';
+import { buildKlineStoreKey, useKlineSocketStore } from '@/store/klineSocketStore';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTheme } from '@/theme';
@@ -113,6 +113,9 @@ class HttpDatafeed {
     }
   > = {};
 
+  /** Latest kline per resolution (seconds) when TV has not registered realtime subs yet or lastBar unset */
+  private latestKlineBarByResolution: Record<string, TvBar> = {};
+
   constructor(baseUrl: string, symbol: string | undefined, getAssets?: () => Asset[] | undefined) {
     this.baseUrl = baseUrl;
     this.symbol = symbol ?? '';
@@ -127,6 +130,7 @@ class HttpDatafeed {
     this.firstHistoryBarDeferred = {};
     this.historyPaginationUnlocked = false;
     this.subscribers = {};
+    this.latestKlineBarByResolution = {};
   }
 
   private ensureFirstHistoryDeferred(resolutionKey: string) {
@@ -442,6 +446,13 @@ class HttpDatafeed {
         if (!sub) return;
         sub.lastBar = bar;
         sub.onRealtimeCallback(bar);
+
+        const key = String(timeframeSeconds);
+        const pending = this.latestKlineBarByResolution[key];
+        if (pending && pending.time >= bar.time) {
+          sub.lastBar = pending;
+          sub.onRealtimeCallback(pending);
+        }
       } catch (error) {
         console.error('subscribeBars seed error', error);
       }
@@ -482,6 +493,69 @@ class HttpDatafeed {
 
       sub.lastBar = next;
       sub.onRealtimeCallback(next);
+    }
+  }
+
+  /** Push server kline OHLCV into TradingView realtime stream (matches `timeframe` in seconds). */
+  updateWithKlineBar(
+    resolutionSeconds: number,
+    candle: {
+      open: number;
+      high: number;
+      low: number;
+      close: number;
+      volume?: number;
+      timestamp: number;
+    },
+  ) {
+    if (!Number.isFinite(resolutionSeconds) || resolutionSeconds <= 0) return;
+
+    const { open, high, low, close, volume, timestamp } = candle;
+    if (![open, high, low, close].every((n) => Number.isFinite(n))) return;
+
+    let tsMs = timestamp;
+    if (tsMs < 1e12) tsMs = tsMs * 1000;
+    if (!Number.isFinite(tsMs)) return;
+
+    const bucketMs = resolutionSeconds * 1000;
+    const barTime = Math.floor(tsMs / bucketMs) * bucketMs;
+
+    const next: TvBar = {
+      time: barTime,
+      open,
+      high,
+      low,
+      close,
+      volume: volume ?? 0,
+    };
+    this.latestKlineBarByResolution[String(resolutionSeconds)] = next;
+
+    for (const sub of Object.values(this.subscribers)) {
+      if (sub.resolutionSeconds !== resolutionSeconds) continue;
+
+      const last = sub.lastBar;
+      if (last && barTime < last.time) {
+        continue;
+      }
+
+      if (!last) {
+        continue;
+      }
+
+      const merged: TvBar =
+        barTime > last.time
+          ? next
+          : {
+              time: barTime,
+              open,
+              high,
+              low,
+              close,
+              volume: volume ?? last.volume ?? 0,
+            };
+
+      sub.lastBar = merged;
+      sub.onRealtimeCallback(merged);
     }
   }
 }
@@ -1470,10 +1544,17 @@ function ChartCommon({
     };
   }, [connect, disconnect]);
 
+  // Wait until TradingView has finished init (onChartReady) before seeding OHLC / subscribing
+  // to kline. Otherwise, on client-side navigation the effect can run before the datafeed has
+  // received its first getBars response — waitForFirstHistoryBar never completes, the splash
+  // never clears, and kline subscription never runs until a full remount (reload).
   useEffect(() => {
-    if (!isChartReady) return;
+    if (!isChartReady || !isTvChartReady) return;
     if (!currentSymbol) return;
     const symbol = currentSymbol;
+    const assets = assetsRef.current ?? [];
+    const asset = assets.find((a) => String(a?.symbol ?? '') === symbol);
+    const klineTopicId = asset?.id ?? symbol;
 
     let cancelled = false;
     setIsKlineClosed(false);
@@ -1484,6 +1565,8 @@ function ChartCommon({
       high: number | string;
       low: number | string;
       open: number | string;
+      volume?: number | string;
+      timestamp?: number;
     }
 
     const handleKlineUpdate = (candle: KlineUpdate) => {
@@ -1499,6 +1582,13 @@ function ChartCommon({
       const high = toFiniteNumber(candle.high);
       const low = toFiniteNumber(candle.low);
       const open = toFiniteNumber(candle.open);
+      const vol = toFiniteNumber(candle.volume);
+      let ts = typeof candle.timestamp === 'number' ? candle.timestamp : Number.NaN;
+      if (!Number.isFinite(ts)) {
+        ts = Date.now();
+      } else if (ts > 0 && ts < 1e12) {
+        ts = ts * 1000;
+      }
 
       setOhlc((prev) => ({
         close: close ?? prev.close,
@@ -1510,6 +1600,22 @@ function ChartCommon({
         lastKlineCloseRef.current = close;
       }
       setHasInitialOhlc(true);
+
+      const df = datafeedRef.current;
+      if (!df) return;
+
+      if (open != null && high != null && low != null && close != null) {
+        df.updateWithKlineBar(timeframe, {
+          open,
+          high,
+          low,
+          close,
+          ...(vol != null ? { volume: vol } : {}),
+          timestamp: ts,
+        });
+      } else if (close != null) {
+        df.updateWithPrice(close, ts);
+      }
     };
 
     (async () => {
@@ -1535,7 +1641,7 @@ function ChartCommon({
         setHasInitialOhlc(true);
 
         if (cancelled) return;
-        subscribe(symbol, timeframe, handleKlineUpdate);
+        subscribe(klineTopicId, timeframe, handleKlineUpdate);
       } catch (error) {
         if (cancelled) return;
         console.error(error);
@@ -1544,9 +1650,35 @@ function ChartCommon({
 
     return () => {
       cancelled = true;
-      unsubscribe(symbol, timeframe, handleKlineUpdate);
+      unsubscribe(klineTopicId, timeframe, handleKlineUpdate);
     };
-  }, [timeframe, isChartReady, currentSymbol, subscribe, unsubscribe, tvWidget]);
+  }, [timeframe, isChartReady, isTvChartReady, currentSymbol, subscribe, unsubscribe, tvWidget, contextAssets]);
+
+  // If kline already updated the global store before this chart subscribed, replay once into the datafeed.
+  useEffect(() => {
+    if (!isChartReady || !isTvChartReady) return;
+    if (!currentSymbol) return;
+    const df = datafeedRef.current;
+    if (!df) return;
+    const assets = assetsRef.current ?? [];
+    const asset = assets.find((a) => String(a?.symbol ?? '') === currentSymbol);
+    const klineTopicId = asset?.id ?? currentSymbol;
+    const key = buildKlineStoreKey(klineTopicId, timeframe);
+    const candle = useKlineSocketStore.getState().klineData[key];
+    if (!candle) return;
+    const { open, high, low, close, volume, timestamp } = candle;
+    if (![open, high, low, close].every((n) => Number.isFinite(n))) return;
+    let ts = timestamp;
+    if (ts > 0 && ts < 1e12) ts = ts * 1000;
+    df.updateWithKlineBar(timeframe, {
+      open,
+      high,
+      low,
+      close,
+      volume,
+      timestamp: ts,
+    });
+  }, [isChartReady, isTvChartReady, currentSymbol, timeframe, tvWidget, contextAssets]);
 
   const createOrderLineWithRetry = useMemo(
     () =>

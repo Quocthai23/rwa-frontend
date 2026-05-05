@@ -18,7 +18,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useKlineSocketStore } from '@/store/klineSocketStore';
+import { buildKlineStoreKey, useKlineSocketStore } from '@/store/klineSocketStore';
 
 type CandleData = {
   open: number;
@@ -57,6 +57,9 @@ export const useCandlestickData = (
     autoLoad = true,
     autoConnect = true,
   } = options;
+
+  /** Prefer UUID so keys match server kline payloads that use assetId */
+  const klineTopicId = assetId ?? symbol;
 
   const [candles, setCandles] = useState<CandleData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,8 +174,8 @@ export const useCandlestickData = (
     connect();
 
     // Subscribe to symbol + timeframe
-    const unsubscribe = subscribe(symbol, timeframe, (newCandle) => {
-      console.log(`[useCandlestickData] New kline received for ${symbol}:`, newCandle);
+    const unsubscribe = subscribe(klineTopicId, timeframe, (newCandle) => {
+      console.log(`[useCandlestickData] New kline received for ${klineTopicId}:`, newCandle);
 
       // Update current candle
       setCurrentCandle(newCandle);
@@ -197,7 +200,7 @@ export const useCandlestickData = (
     });
 
     return unsubscribe;
-  }, [symbol, timeframe, autoConnect, connect, subscribe]);
+  }, [klineTopicId, timeframe, autoConnect, connect, subscribe]);
 
   // Load initial data on mount
   useEffect(() => {
@@ -208,7 +211,7 @@ export const useCandlestickData = (
 
   // Listen to real-time updates via klineData from store
   useEffect(() => {
-    const realtimeCandle = klineData[`${symbol}-${timeframe}`];
+    const realtimeCandle = klineData[buildKlineStoreKey(klineTopicId, timeframe)];
 
     if (realtimeCandle) {
       setCurrentCandle(realtimeCandle);
@@ -228,7 +231,7 @@ export const useCandlestickData = (
         return [realtimeCandle];
       });
     }
-  }, [klineData, symbol, timeframe]);
+  }, [klineData, klineTopicId, timeframe]);
 
   return {
     candles,
@@ -261,10 +264,10 @@ export const useCandlestickData = (
         callback(mapped);
       };
 
-      subscribe(symbol, timeframe, wrapper);
+      subscribe(klineTopicId, timeframe, wrapper);
       return () => {
         try {
-          unsubscribe(symbol, timeframe, wrapper);
+          unsubscribe(klineTopicId, timeframe, wrapper);
         } catch {
           // ignore
         }

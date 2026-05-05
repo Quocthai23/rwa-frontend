@@ -13,20 +13,18 @@ type Candle = {
 };
 
 type ClientToServerEvents = {
-  subscribeKline: (payload: { symbol: string; timeframe: number }) => void;
-  unsubscribeKline: (payload: { symbol: string; timeframe: number }) => void;
-};
-
-type KlineData = {
-  candle: Candle;
-  symbol: string;
-  timeframe: number;
-  timeframeDisplay: string;
-};
-
-type KlineMessage = {
-  data: KlineData;
-  event: 'kline';
+  subscribeKline: (payload: {
+    symbol?: string;
+    assetId?: string;
+    timeframe: number;
+    resolution?: string;
+  }) => void;
+  unsubscribeKline: (payload: {
+    symbol?: string;
+    assetId?: string;
+    timeframe: number;
+    resolution?: string;
+  }) => void;
 };
 
 type KlineSocketState = {
@@ -46,22 +44,140 @@ type KlineSocketState = {
   disconnect: () => void;
   listeners: Map<string, Set<(candle: Candle) => void>>;
 
-  subscribe: (symbol: string, timeframe: number, callback: (candle: Candle) => void) => void;
-  unsubscribe: (symbol: string, timeframe: number, callback: (candle: Candle) => void) => void;
+  /** topicId = asset UUID (preferred) or symbol string — must match server kline keys */
+  subscribe: (topicId: string, timeframe: number, callback: (candle: Candle) => void) => void;
+  unsubscribe: (topicId: string, timeframe: number, callback: (candle: Candle) => void) => void;
 };
 
 type KlineSubscription = {
-  symbol: string;
+  topicId: string;
   timeframe: number;
 };
 
 type ServerToClientEvents = {
-  kline: (message: KlineMessage) => void;
+  kline: (message: unknown) => void;
 };
 
 // const SOCKET_URL = 'wss://price-service-integration.tnwteam.dev';
 
-const getKey = (symbol: string, timeframe: number) => `${symbol}-${timeframe}`;
+export const buildKlineStoreKey = (topicId: string, timeframe: number) => `${topicId}-${timeframe}`;
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isAssetIdTopic(topicId: string): boolean {
+  return UUID_RE.test(topicId.trim());
+}
+
+function timeframeSecondsToResolutionLabel(seconds: number): string {
+  if (seconds <= 60) return '1m';
+  if (seconds <= 300) return '5m';
+  if (seconds <= 900) return '15m';
+  if (seconds <= 3600) return '1h';
+  if (seconds <= 14400) return '4h';
+  if (seconds <= 86400) return '1d';
+  return '1h';
+}
+
+function buildSubscribePayload(topicId: string, timeframe: number) {
+  const resolution = timeframeSecondsToResolutionLabel(timeframe);
+  if (isAssetIdTopic(topicId)) {
+    return { assetId: topicId.trim(), timeframe, resolution };
+  }
+  return { symbol: topicId.trim(), timeframe, resolution };
+}
+
+function resolutionLabelToSeconds(res: unknown): number | null {
+  if (typeof res === 'number' && Number.isFinite(res) && res > 0) return res;
+  const s = String(res ?? '').trim().toLowerCase();
+  const map: Record<string, number> = {
+    '1m': 60,
+    '5m': 300,
+    '15m': 900,
+    '1h': 3600,
+    '60m': 3600,
+    '4h': 14400,
+    '240m': 14400,
+    '1d': 86400,
+    d: 86400,
+    '1w': 604800,
+  };
+  if (map[s] != null) return map[s];
+  const m = s.match(/^(\d+)\s*m$/i);
+  if (m) {
+    const n = Number.parseInt(m[1], 10);
+    if (Number.isFinite(n)) return n * 60;
+  }
+  const h = s.match(/^(\d+)\s*h$/i);
+  if (h) {
+    const n = Number.parseInt(h[1], 10);
+    if (Number.isFinite(n)) return n * 3600;
+  }
+  return null;
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return v != null && typeof v === 'object' && !Array.isArray(v);
+}
+
+/**
+ * Supports:
+ * - Nest flat: { assetId, resolution: "1m", time, open, high, low, close, volume, isClosed }
+ * - Wrapped: { data: { symbol, timeframe, candle } }
+ * - Flat symbol: { symbol, timeframe, ... OHLC }
+ */
+function parseKlineSocketPayload(message: unknown): { topicId: string; timeframe: number; candle: Candle } | null {
+  if (!isPlainObject(message)) return null;
+
+  const inner = isPlainObject(message.data) ? message.data : message;
+
+  const assetId = typeof inner.assetId === 'string' ? inner.assetId.trim() : '';
+  const symbol = typeof inner.symbol === 'string' ? inner.symbol.trim() : '';
+  const topicId = assetId || symbol;
+  if (!topicId) return null;
+
+  let timeframe = NaN;
+  const tfRaw = inner.timeframe;
+  if (typeof tfRaw === 'number' && Number.isFinite(tfRaw)) {
+    timeframe = tfRaw;
+  } else if (typeof tfRaw === 'string') {
+    const parsed = Number.parseInt(tfRaw, 10);
+    if (Number.isFinite(parsed)) timeframe = parsed;
+  }
+  if (!Number.isFinite(timeframe)) {
+    timeframe = resolutionLabelToSeconds(inner.resolution) ?? NaN;
+  }
+  if (!Number.isFinite(timeframe)) return null;
+
+  const candleObj = isPlainObject(inner.candle) ? inner.candle : inner;
+
+  const toNum = (v: unknown) => Number(String(v ?? 'NaN'));
+  const time = candleObj.timestamp ?? candleObj.time ?? inner.time;
+  let ts = typeof time === 'number' ? time : toNum(time);
+  if (ts && ts < 1e12) ts = ts * 1000;
+
+  const open = toNum(candleObj.open ?? candleObj.o);
+  const high = toNum(candleObj.high ?? candleObj.h);
+  const low = toNum(candleObj.low ?? candleObj.l);
+  const close = toNum(candleObj.close ?? candleObj.c);
+  const volume = toNum(candleObj.volume ?? candleObj.v ?? 0);
+  const isClosedRaw = candleObj.isClosed ?? inner.isClosed;
+  const isClosed = typeof isClosedRaw === 'boolean' ? isClosedRaw : true;
+
+  if (![open, high, low, close].every((n) => Number.isFinite(n))) return null;
+
+  const candle: Candle = {
+    open,
+    high,
+    low,
+    close,
+    volume: Number.isFinite(volume) ? volume : 0,
+    timestamp: Number.isFinite(ts) ? ts : Date.now(),
+    isClosed,
+  };
+
+  return { topicId, timeframe, candle };
+}
 
 export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
   connect: () => {
@@ -81,7 +197,9 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
       reconnectionDelay: 500,
       reconnectionDelayMax: 5000,
       timeout: 10_000,
-      transports: ['websocket'],
+      // Polling first avoids "connection interrupted while page is loading" in some browsers;
+      // websocket-only fails if the WS handshake races with navigation or strict proxies.
+      transports: ['polling', 'websocket'],
     });
 
     socket.on('connect', () => {
@@ -90,10 +208,7 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
       // Resubscribe all active subscriptions
       const { subscriptions } = get();
       for (const sub of subscriptions.values()) {
-        socket.emit('subscribeKline', {
-          symbol: sub.symbol,
-          timeframe: sub.timeframe,
-        });
+        socket.emit('subscribeKline', buildSubscribePayload(sub.topicId, sub.timeframe));
       }
     });
 
@@ -106,22 +221,23 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
     });
 
     // Listen to kline events
-    socket.on('kline', (message: KlineMessage) => {
-      const { data } = message;
-      const key = getKey(data.symbol, data.timeframe);
+    socket.on('kline', (message: unknown) => {
+      const parsed = parseKlineSocketPayload(message);
+      if (!parsed) return;
 
-      // Update stored data
+      const { topicId, timeframe, candle } = parsed;
+      const key = buildKlineStoreKey(topicId, timeframe);
+
       set((state) => ({
         klineData: {
           ...state.klineData,
-          [key]: data.candle,
+          [key]: candle,
         },
       }));
 
-      // Notify all listeners for this key
       const listeners = get().listeners.get(key);
       if (listeners) {
-        for (const callback of listeners) callback(data.candle);
+        for (const callback of listeners) callback(candle);
       }
     });
 
@@ -176,8 +292,8 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
   //   }
   // },
 
-  subscribe: (symbol, timeframe, callback) => {
-    const key = getKey(symbol, timeframe);
+  subscribe: (topicId, timeframe, callback) => {
+    const key = buildKlineStoreKey(topicId, timeframe);
     let shouldEmit = false;
 
     set((state) => {
@@ -189,7 +305,7 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
       listeners.set(key, setForKey);
 
       if (!subscriptions.has(key)) {
-        subscriptions.set(key, { symbol, timeframe });
+        subscriptions.set(key, { topicId, timeframe });
         shouldEmit = true;
       }
 
@@ -198,14 +314,14 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
 
     const socket = get().socket;
     if (shouldEmit && socket?.connected) {
-      socket.emit('subscribeKline', { symbol, timeframe });
+      socket.emit('subscribeKline', buildSubscribePayload(topicId, timeframe));
     }
   },
 
   subscriptions: new Map(),
 
-  unsubscribe: (symbol: string, timeframe: number, callback: (candle: Candle) => void) => {
-    const key = getKey(symbol, timeframe);
+  unsubscribe: (topicId: string, timeframe: number, callback: (candle: Candle) => void) => {
+    const key = buildKlineStoreKey(topicId, timeframe);
     let shouldEmit = false;
 
     set((state) => {
@@ -234,7 +350,7 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
 
     const socket = get().socket;
     if (shouldEmit && socket?.connected) {
-      socket.emit('unsubscribeKline', { symbol, timeframe });
+      socket.emit('unsubscribeKline', buildSubscribePayload(topicId, timeframe));
     }
   },
 }));
