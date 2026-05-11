@@ -301,8 +301,6 @@ function MiniBidAskChart({
   useEffect(() => {
     setCurrentSymbol((prev) => (prev === symbol ? prev : symbol));
   }, [symbol]);
-  const connect = useKlineSocketStore((s) => s.connect);
-  const disconnect = useKlineSocketStore((s) => s.disconnect);
   const subscribe = useKlineSocketStore((s) => s.subscribe);
   const unsubscribe = useKlineSocketStore((s) => s.unsubscribe);
   const bid = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.bid);
@@ -672,14 +670,6 @@ function MiniBidAskChart({
       isMountedRef.current = false;
     };
   }, []);
-
-  useEffect(() => {
-    connect();
-
-    return () => {
-      disconnect();
-    };
-  }, [connect, disconnect]);
 
   useEffect(() => {
     if (!currentSymbol) return;

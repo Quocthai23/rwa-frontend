@@ -14,6 +14,7 @@ import { formatQuantity } from '@/utils/currency';
 import { useAppStore } from '@/store/useAppStore';
 import { normalizeToSupportedLanguage } from '@/i18n';
 import { ORDER_SIDES, type GetOrdersResponse, type OrderItem } from '@/types/orders';
+import { candlesArrayFromMarketDataFetch } from '@/types/swagger';
 import { Position } from '@/types/position';
 import type {
   Asset,
@@ -272,8 +273,13 @@ class HttpDatafeed {
 
       if (firstReq === true && !this.initialChartHistoryLoadedByResolution[resolutionKey]) {
         try {
-          const fromTs = periodParams?.from || (Math.floor(Date.now() / 1000) - 365 * 86400);
-          const toTs = periodParams?.to || Math.floor(Date.now() / 1000);
+          const nowSec = Math.floor(Date.now() / 1000);
+          // TradingView passes periodParams.from/to for the *visible* slice. On remount that
+          // window can be as tight as the current bar, so the candles API returns one bar and
+          // older candles disappear. Always load a full back-history on the first request; TV
+          // will pan/zoom to the right edge.
+          const fromTs = nowSec - 365 * 86400;
+          const toTs = Math.max(nowSec, Number(periodParams?.to) || 0);
 
           const assets = this.getAssets?.() ?? [];
           const asset = assets.find((a) => String(a?.symbol ?? '') === this.symbol);
@@ -291,7 +297,10 @@ class HttpDatafeed {
           if (!res.ok) throw new Error(String(res.status));
 
           const responseData = await res.json();
-          const candles = (responseData.data ?? []) as Record<string, unknown>[];
+          const candles = candlesArrayFromMarketDataFetch(responseData) as Record<
+            string,
+            unknown
+          >[];
 
           let bars: TvBar[] = candles
             .map((k): TvBar | null => {
@@ -366,7 +375,10 @@ class HttpDatafeed {
       if (!res.ok) throw new Error(String(res.status));
 
       const responseData = await res.json();
-      const candles = (responseData.data ?? []) as Record<string, unknown>[];
+      const candles = candlesArrayFromMarketDataFetch(responseData) as Record<
+        string,
+        unknown
+      >[];
 
       let bars: TvBar[] = candles
         .map((k): TvBar | null => {
@@ -665,8 +677,6 @@ function ChartCommon({
   useEffect(() => {
     setCurrentSymbol((prev) => (prev === symbol ? prev : symbol));
   }, [symbol]);
-  const connect = useKlineSocketStore((s) => s.connect);
-  const disconnect = useKlineSocketStore((s) => s.disconnect);
   const subscribe = useKlineSocketStore((s) => s.subscribe);
   const unsubscribe = useKlineSocketStore((s) => s.unsubscribe);
   const bid = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.bid);
@@ -1535,14 +1545,6 @@ function ChartCommon({
       isMountedRef.current = false;
     };
   }, []);
-
-  useEffect(() => {
-    connect();
-
-    return () => {
-      disconnect();
-    };
-  }, [connect, disconnect]);
 
   // Wait until TradingView has finished init (onChartReady) before seeding OHLC / subscribing
   // to kline. Otherwise, on client-side navigation the effect can run before the datafeed has

@@ -1,4 +1,10 @@
 import { MARKET_DATA_ENDPOINTS } from '@/constants/api';
+import type {
+  SwaggerCandle,
+  SwaggerCandlesResponse,
+  SwaggerReferencePrice,
+  SwaggerValuationHistoryResponse,
+} from '@/types/swagger';
 import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
@@ -13,24 +19,16 @@ export type GetCandlesRequest = {
   to: string;
 };
 
-export type CandleData = {
-  time: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume?: number;
-};
+/** @deprecated Use `SwaggerCandle` — kept for existing imports */
+export type CandleData = SwaggerCandle;
 
-export type GetCandlesResponse = CandleData[];
+export type GetCandlesResponse = SwaggerCandle[];
 
 export type GetReferencePriceRequest = {
   assetId: string;
 };
 
-export type ReferencePriceResponse = {
-  [key: string]: unknown;
-};
+export type ReferencePriceResponse = SwaggerReferencePrice;
 
 export type GetValuationHistoryRequest = {
   assetId: string;
@@ -38,9 +36,17 @@ export type GetValuationHistoryRequest = {
   limit?: number;
 };
 
-export type ValuationHistoryResponse = {
-  [key: string]: unknown;
-};
+export type ValuationHistoryResponse = SwaggerValuationHistoryResponse;
+
+function normalizeCandlesPayload(raw: unknown): SwaggerCandle[] {
+  if (Array.isArray(raw)) {
+    return raw as SwaggerCandle[];
+  }
+  if (raw && typeof raw === 'object' && Array.isArray((raw as SwaggerCandlesResponse).data)) {
+    return (raw as SwaggerCandlesResponse).data ?? [];
+  }
+  return [];
+}
 
 export const marketDataApi = {
   getCandles: async (
@@ -49,18 +55,29 @@ export const marketDataApi = {
   ): Promise<GetCandlesResponse> => {
     const query = { ...params } as Record<string, string | number>;
 
+    let raw: unknown;
     if (isServer) {
       const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-      return apiClient.get<GetCandlesResponse>(MARKET_DATA_ENDPOINTS.CANDLES, query, {
-        headers,
-        skipAuth: !accessToken,
-      });
+      raw = await apiClient.get<SwaggerCandle[] | SwaggerCandlesResponse>(
+        MARKET_DATA_ENDPOINTS.CANDLES,
+        query,
+        {
+          headers,
+          skipAuth: !accessToken,
+        },
+      );
+    } else {
+      raw = await apiClient.get<SwaggerCandle[] | SwaggerCandlesResponse>(
+        `/api${MARKET_DATA_ENDPOINTS.CANDLES}`,
+        query,
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
     }
 
-    return apiClient.get<GetCandlesResponse>(`/api${MARKET_DATA_ENDPOINTS.CANDLES}`, query, {
-      baseUrl: CLIENT_BASE_URL,
-      skipAuth: false,
-    });
+    return normalizeCandlesPayload(raw);
   },
 
   getReferencePrice: async (

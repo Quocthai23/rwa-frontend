@@ -3272,7 +3272,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns array of OHLCV candles wrapped in data property"
+            "description": "Returns array of OHLCV candles wrapped in data property",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandlesResponse"
+                }
+              }
+            }
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
@@ -3315,11 +3322,11 @@
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Reference NAV and market price",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReferencePrice"
                 }
               }
             }
@@ -3386,7 +3393,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns valuation history data"
+            "description": "Returns valuation history data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValuationHistoryResponse"
+                }
+              }
+            }
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
@@ -6123,7 +6137,7 @@
       "description": "Dev server"
     },
     {
-      "url": "http://0.0.0.0:3001",
+      "url": "http://localhost:3002",
       "description": "Local server"
     }
   ],
@@ -6888,16 +6902,13 @@
             "description": "Set to true to cancel the order. If true, other fields are ignored"
           },
           "price": {
-            "type": "object",
-            "description": "New limit/stop price. Only applicable for non-MARKET orders"
+            "$ref": "#/components/schemas/PriceObject"
           },
           "stopLossPrice": {
-            "type": "object",
-            "description": "New stop loss price. Optional, set to null to remove"
+            "$ref": "#/components/schemas/PriceObject"
           },
           "takeProfitPrice": {
-            "type": "object",
-            "description": "New take profit price. Optional, set to null to remove"
+            "$ref": "#/components/schemas/PriceObject"
           }
         }
       },
@@ -7813,6 +7824,143 @@
           "expiresAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "Candle": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "integer",
+            "description": "Epoch milliseconds since Unix epoch"
+          },
+          "open": {
+            "type": "number"
+          },
+          "high": {
+            "type": "number"
+          },
+          "low": {
+            "type": "number"
+          },
+          "close": {
+            "type": "number"
+          },
+          "volume": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "time",
+          "open",
+          "high",
+          "low",
+          "close"
+        ]
+      },
+      "CandlesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Candle"
+            }
+          },
+          "resolution": {
+            "type": "string"
+          }
+        }
+      },
+      "ReferencePrice": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "referencePrice": {
+            "type": "string",
+            "description": "Reference NAV (decimal string)"
+          },
+          "marketPrice": {
+            "type": "string",
+            "description": "Latest market price (decimal string)"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ValuationHistoryItem": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string"
+          },
+          "areaCode": {
+            "type": "string"
+          },
+          "reportedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "ValuationHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValuationHistoryItem"
+            }
+          }
+        }
+      },
+      "PriceObject": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          }
+        }
+      },
+      "AssetTicker": {
+        "type": "object",
+        "properties": {
+          "bid": { "type": "string" },
+          "ask": { "type": "string" },
+          "lastPrice": { "type": "string" },
+          "volume": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AssetSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "symbol": { "type": "string" },
+          "name": { "type": "string" },
+          "isActive": { "type": "boolean" },
+          "ticker": { "$ref": "#/components/schemas/AssetTicker" }
+        }
+      },
+      "AssetsListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetSummary"
+            }
           }
         }
       }

@@ -19,6 +19,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { buildKlineStoreKey, useKlineSocketStore } from '@/store/klineSocketStore';
+import { candlesArrayFromMarketDataFetch } from '@/types/swagger';
 
 type CandleData = {
   open: number;
@@ -67,7 +68,7 @@ export const useCandlestickData = (
   const [currentCandle, setCurrentCandle] = useState<CandleData | null>(null);
 
   // Get kline socket store
-  const { connect, subscribe, unsubscribe, isConnected, klineData } = useKlineSocketStore();
+  const { subscribe, unsubscribe, isConnected, klineData } = useKlineSocketStore();
 
   // Convert timeframe (seconds) to resolution (1m, 5m, 15m, 1h, 4h, 1d)
   const getResolution = (seconds: number): string => {
@@ -113,13 +114,15 @@ export const useCandlestickData = (
 
       const data = await response.json();
 
-      // Support multiple response shapes:
-      // 1) Array directly
-      // 2) { candles: [...] }
-      // 3) { data: [...] }  <-- backend uses this
-      const rawArray = Array.isArray(data)
-        ? data
-        : data.candles ?? data.data ?? [];
+      let rawArray: unknown[] = candlesArrayFromMarketDataFetch(data);
+      if (rawArray.length === 0) {
+        rawArray = Array.isArray(data)
+          ? data
+          : ((data as { candles?: unknown[] }).candles as unknown[]) ??
+            (Array.isArray((data as { data?: unknown }).data)
+              ? ((data as { data: unknown[] }).data as unknown[])
+              : []);
+      }
 
       // Normalize each candle to our internal CandleData shape
       const toNumber = (v: unknown) => Number(String(v ?? 'NaN'));
@@ -200,7 +203,7 @@ export const useCandlestickData = (
     });
 
     return unsubscribe;
-  }, [klineTopicId, timeframe, autoConnect, connect, subscribe]);
+  }, [klineTopicId, timeframe, autoConnect, subscribe]);
 
   // Load initial data on mount
   useEffect(() => {

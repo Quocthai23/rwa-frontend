@@ -7,10 +7,14 @@ import { useEffect } from 'react';
 import { GetdataProvider } from '../context/GetdataContext';
 import { AnimationProvider } from '../context/AnimationContext';
 import { orderSocketService } from '@/store/orderSocket';
+import { useKlineSocketStore } from '@/store/klineSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import I18nSync from '@/components/shared/I18nSync';
 import { useMediaQuery } from '@/hook/useMediaQuery';
 import '@/i18n';
+
+/** Keeps kline WebSocket alive across route changes (e.g. Market ↔ Trade) so candles stay continuous. */
+let klineAppSessionConnectStarted = false;
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +35,12 @@ export const queryClient = new QueryClient({
 export function Providers({ children }: { children: React.ReactNode }) {
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const isDesktop = useMediaQuery('(min-width: 768px)', false);
+
+  useEffect(() => {
+    if (klineAppSessionConnectStarted) return;
+    klineAppSessionConnectStarted = true;
+    useKlineSocketStore.getState().connect();
+  }, []);
 
   useEffect(() => {
     if (selectedAccount) {
