@@ -68,7 +68,7 @@ export const useCandlestickData = (
   const [currentCandle, setCurrentCandle] = useState<CandleData | null>(null);
 
   // Get kline socket store
-  const { subscribe, unsubscribe, isConnected, klineData } = useKlineSocketStore();
+  const { connect, subscribe, unsubscribe, isConnected, klineData } = useKlineSocketStore();
 
   // Convert timeframe (seconds) to resolution (1m, 5m, 15m, 1h, 4h, 1d)
   const getResolution = (seconds: number): string => {
@@ -119,9 +119,9 @@ export const useCandlestickData = (
         rawArray = Array.isArray(data)
           ? data
           : ((data as { candles?: unknown[] }).candles as unknown[]) ??
-            (Array.isArray((data as { data?: unknown }).data)
-              ? ((data as { data: unknown[] }).data as unknown[])
-              : []);
+          (Array.isArray((data as { data?: unknown }).data)
+            ? ((data as { data: unknown[] }).data as unknown[])
+            : []);
       }
 
       // Normalize each candle to our internal CandleData shape

@@ -65,6 +65,7 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
 
   const isTransfer = transaction?.type === 1 && !!transaction?.withdrawalMetadata?.toAccountId;
   const isWithdrawal = transaction?.type === 1 && !isTransfer;
+  const isDeposit = transaction?.type === 0;
 
   const typeName = isTransfer
     ? t('transactionHistory.transfer')
@@ -130,8 +131,6 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                         <SwitchHorizontal01 className={cn('size-6', statusColor.text)} />
                       ) : (
                         <ArrowCircleBrokenUpRight className={cn('size-6', statusColor.text)} />
-                      ) : (
-                      <ArrowCircleRight className={cn('size-6', statusColor.text)} />
                       )}
                       <div className="flex flex-row items-center gap-1">
                         <span className="text-h3-medium text-foreground">{typeName}</span>
@@ -277,9 +276,7 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                         className="size-6"
                       />
                       <span className="text-body-large-medium text-foreground">
-                        {isIncomingTransfer
-                          ? transaction.withdrawalMetadata?.fromAccountId
-                          : transaction.accountId}
+                        {transaction.accountId}
                       </span>
                     </div>
                   </div>

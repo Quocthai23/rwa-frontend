@@ -64,17 +64,17 @@ function InfoTab({ assetId }: InfoTabProps) {
         <InfoRow label={t('symbolDetail.info.currencyOfQuote')} value={asset.profitCurrency} />
         <InfoRow label={t('symbolDetail.info.spread')} value={asset.spread} />
         {referencePriceData && (
-          <InfoRow 
-            label="Reference Price (NAV)" 
-            value={referencePriceData?.navPrice ? String(referencePriceData.navPrice) : referencePriceData?.price ? String(referencePriceData.price) : '-'} 
+          <InfoRow
+            label="Reference Price (NAV)"
+            value={referencePriceData?.referencePrice ? String(referencePriceData.referencePrice) : referencePriceData?.marketPrice ? String(referencePriceData.marketPrice) : '-'}
           />
         )}
       </div>
 
-      {valuationHistoryData && Array.isArray(valuationHistoryData?.history) && valuationHistoryData.history.length > 0 && (
+      {valuationHistoryData && Array.isArray(valuationHistoryData?.data) && valuationHistoryData.data.length > 0 && (
         <div className="px-4 py-4 pt-0">
           <p className="text-body-large-regular mb-3">Valuation History</p>
-          {valuationHistoryData.history.slice(0, 3).map((item: any, idx: number) => (
+          {valuationHistoryData.data.slice(0, 3).map((item: any, idx: number) => (
             <div key={idx} className="mb-4 flex items-center justify-between">
               <p className="text-muted-foreground">{item.date || item.timestamp}</p>
               <p className="">{item.value || item.price}</p>

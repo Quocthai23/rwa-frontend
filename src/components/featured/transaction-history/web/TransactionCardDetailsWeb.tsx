@@ -65,7 +65,7 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
   const isOutgoingTransfer =
     transaction?.type === 1 && !!transaction?.withdrawalMetadata?.toAccountId;
   const isIncomingTransfer =
-    transaction?.type === 0 && !!transaction?.withdrawalMetadata?.fromAccountId;
+    transaction?.type === 0 && !!transaction?.withdrawalMetadata?.toAccountId;
   const isTransfer = isOutgoingTransfer || isIncomingTransfer;
   const isWithdrawal = transaction?.type === 1 && !isOutgoingTransfer;
   const isDeposit = transaction?.type === 0 && !isIncomingTransfer;
@@ -74,12 +74,12 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
     ? t('transactionHistory.transfer')
     : transaction
       ? TYPE_HISTORY_NAME[transaction.type as keyof typeof TYPE_HISTORY_NAME] ||
-        t('transactionHistory.unknown')
+      t('transactionHistory.unknown')
       : t('transactionHistory.unknown');
 
   const statusName = transaction
     ? STATUS_HISTORY_NAME[transaction.status as keyof typeof STATUS_HISTORY_NAME] ||
-      t('transactionHistory.unknown')
+    t('transactionHistory.unknown')
     : t('transactionHistory.unknown');
 
   const formatDate = (dateString: string) => {
@@ -267,9 +267,7 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
                         className="size-6"
                       />
                       <span className="text-body-large-medium text-foreground">
-                        {isIncomingTransfer
-                          ? transaction.withdrawalMetadata?.fromAccountId
-                          : transaction.accountId}
+                        {transaction.accountId}
                       </span>
                     </div>
                   </div>

@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { useMarketSocketStore } from '../store/marketSocketStore';
+import { useRealtimeStore } from '@/store/realtimeStore';
 
 export function useSymbols(symbols: string[], enabled: boolean) {
-  const connect = useMarketSocketStore((s) => s.connect);
-  const subscribeSymbols = useMarketSocketStore((s) => s.subscribeSymbols);
-  const unsubscribeSymbols = useMarketSocketStore((s) => s.unsubscribeSymbols);
+  const connect = useRealtimeStore((s) => s.connect);
+  const subscribeSymbol = useRealtimeStore((s) => s.subscribeSymbol);
+  const unsubscribeSymbol = useRealtimeStore((s) => s.unsubscribeSymbol);
 
   // Stabilize based on symbol *content* (not the array identity).
   // This prevents effect thrashing when callers pass `[symbol]` as a new array each render.
@@ -19,10 +19,10 @@ export function useSymbols(symbols: string[], enabled: boolean) {
   React.useEffect(() => {
     if (!enabled) return;
     connect();
-    subscribeSymbols(stableSymbols);
+    stableSymbols.forEach((symbol) => subscribeSymbol(symbol));
 
     return () => {
-      unsubscribeSymbols(stableSymbols);
+      stableSymbols.forEach((symbol) => unsubscribeSymbol(symbol));
     };
-  }, [connect, enabled, subscribeSymbols, unsubscribeSymbols, stableSymbols]);
+  }, [connect, enabled, subscribeSymbol, unsubscribeSymbol, stableSymbols]);
 }

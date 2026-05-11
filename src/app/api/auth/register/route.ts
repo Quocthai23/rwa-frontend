@@ -37,14 +37,17 @@ export async function POST(request: Request) {
     }
 
     const backendUrl = API_BASE_URL || 'http://localhost:3001';
-    
-    const { data: response, response: backendResponse } = await apiClient.postWithResponse<RegisterApiResponse>('auth/register', {
-      avatar: body.avatar,
+
+    const payload: Record<string, any> = {
       password,
-      referenceCode: body.referenceCode,
-      registerToken,
       username: body.username,
-    }, {
+    };
+
+    if (body.avatar) payload.avatar = body.avatar;
+    if (body.referenceCode) payload.referenceCode = body.referenceCode;
+    if (registerToken) payload.registerToken = registerToken;
+
+    const { data: response, response: backendResponse } = await apiClient.postWithResponse<RegisterApiResponse>('auth/register', payload, {
       baseUrl: backendUrl,
       skipAuth: true,
     });

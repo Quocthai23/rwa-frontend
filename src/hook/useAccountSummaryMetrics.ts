@@ -14,7 +14,7 @@ import {
 import { useGetData } from '@/context/GetdataContext';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useInfinitePositions } from './usePosition';
-import { useMarketSocketStore } from '@/store/marketSocketStore';
+import { useRealtimeStore } from '@/store/realtimeStore';
 
 const round2 = (val: Decimal.Value) => new Decimal(val).toDecimalPlaces(2);
 
@@ -22,7 +22,7 @@ export const useAccountSummaryMetrics = () => {
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const activeAccount = selectedAccount;
   const { assets } = useGetData();
-  const rtBySymbol = useMarketSocketStore((s) => s.rtBySymbol);
+  const rtBySymbol = useRealtimeStore((s) => s.rtBySymbol);
   const { data: apiData, isLoading: isLoadingPositions } = useInfinitePositions({
     accountId: selectedAccount?.id || '',
     status: [0, 1],

@@ -141,7 +141,7 @@ export default function TransactionHistory() {
     if (filters.type && filters.type.length > 0) {
       list = rawList.filter((tx) => {
         const isOutgoingTransfer = tx.type === 1 && !!tx?.withdrawalMetadata?.toAccountId;
-        const isIncomingTransfer = tx.type === 0 && !!tx?.withdrawalMetadata?.fromAccountId;
+        const isIncomingTransfer = tx.type === 0 && !!tx?.withdrawalMetadata?.toAccountId;
         const isTransfer = isOutgoingTransfer || isIncomingTransfer;
         const isDeposit = tx.type === 0 && !isIncomingTransfer;
         const isWithdrawal = tx.type === 1 && !isOutgoingTransfer;

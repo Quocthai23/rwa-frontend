@@ -1,50 +1,61 @@
 /**
- * Hook: useTradingRealtimeSocket
- * Manages trading realtime socket connection and subscriptions
- * Auto-connects on mount and subscribes to symbols
+ * Hook: useTradingRealtimeSocket (Refactored)
+ * 
+ * Unified API for accessing real-time trading data from BOTH:
+ * - / namespace: ticker (bid/ask/price)
+ * - /trading namespace: order events, trades, orderbook
+ * 
+ * Auto-subscribes to provided symbols and handles cleanup
  */
 
 import { useEffect } from 'react';
-import { useTradingRealtimeSocketStore } from '@/store/tradingRealtimeSocketStore';
+import { useRealtimeStore } from '@/store/realtimeStore';
 
-type UseRealtimeSocketOptions = {
-  /** Symbols to subscribe to on mount */
+interface UseRealtimeSocketOptions {
+  /** Symbols to auto-subscribe to */
   symbols?: string[];
-  /** User account ID for receiving personal order matched events */
-  accountId?: string;
   /** Auto-connect on mount (default: true) */
   autoConnect?: boolean;
-};
+}
 
 export const useTradingRealtimeSocket = (options: UseRealtimeSocketOptions = {}) => {
-  const { symbols = [], accountId, autoConnect = true } = options;
-  const store = useTradingRealtimeSocketStore();
+  const { symbols = [], autoConnect = true } = options;
+  const store = useRealtimeStore();
 
+  // Auto-subscribe to symbols
   useEffect(() => {
-    if (!autoConnect) return;
-
-    // Connect to socket
-    store.connect();
+    symbols.forEach((symbol) => {
+      store.subscribeSymbol(symbol);
+    });
 
     return () => {
-      // Don't disconnect on unmount - socket should persist
-      // This allows multiple components to use the same socket
+      symbols.forEach((symbol) => {
+        store.unsubscribeSymbol(symbol);
+      });
     };
-  }, [autoConnect, store]);
+  }, [symbols, store]);
 
-  useEffect(() => {
-    // Subscribe to symbols when they change
-    for (const symbol of symbols) {
-      store.subscribeSymbol(symbol, accountId);
-    }
+  return {
+    // Connection status
+    isConnected: store.isConnected,
+    isReconnecting: store.isReconnecting,
+    connectionError: store.connectionError,
 
-    return () => {
-      // Optionally unsubscribe on unmount
-      // for (const symbol of symbols) {
-      //   store.unsubscribeSymbol(symbol);
-      // }
-    };
-  }, [symbols, accountId, store]);
+    // Price data unified (prefers /trading namespace, fallback to /default)
+    getCurrentPrice: (symbol: string) => store.getCurrentPrice(symbol),
 
-  return store;
+    // Market ticker from / namespace
+    rtBySymbol: store.rtBySymbol,
+
+    // Real-time data from /trading namespace
+    orderBooks: store.orderBooks,
+    lastTrades: store.lastTrades,
+    pricesBySymbol: store.pricesBySymbol,
+
+    // Actions
+    connect: store.connect,
+    disconnect: store.disconnect,
+    subscribe: store.subscribeSymbol,
+    unsubscribe: store.unsubscribeSymbol,
+  };
 };

@@ -58,6 +58,7 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
   const statusColor = getStatusColor();
   const isTransfer = transaction.type === TYPE_HISTORY_ID.WITHDRAWAL && !!transaction?.withdrawalMetadata?.toAccountId;
   const isWithdrawal = transaction.type === TYPE_HISTORY_ID.WITHDRAWAL && !isTransfer;
+  const isDeposit = transaction.type === TYPE_HISTORY_ID.DEPOSIT;
 
   const typeName = isTransfer
     ? t('transactionHistory.transfer')

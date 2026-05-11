@@ -1,43 +1,23 @@
 /**
- * Example: Trading Dashboard Component
+ * Example: Trading Dashboard Component (REFACTORED)
  * 
- * Real-time trading data from /trading namespace
+ * Real-time trading data from unified /trading namespace
  * - Trades (trade_matched events)
  * - Prices (price_update events)
  * - Order book (order_book_update events)
- * - My orders (my_order_matched events)
  * 
- * Separate from candlestick chart which uses default namespace /
+ * Uses new unified useRealtimeStore instead of separate callbacks
  */
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useTradingRealtimeSocket } from '@/hook/useTradingRealtimeSocket';
+import React, { useMemo } from 'react';
+import { useRealtimeStore } from '@/store/realtimeStore';
 
 interface TradingDashboardProps {
   symbol: string;
   accountId?: string;
 }
-
-type TradeEvent = {
-  id: string;
-  symbol: string;
-  price: number;
-  quantity: number;
-  side: 'BUY' | 'SELL';
-  timestamp: number;
-};
-
-type PriceUpdate = {
-  symbol: string;
-  lastPrice: number;
-  bid: number;
-  ask: number;
-  bidSize: number;
-  askSize: number;
-  timestamp: number;
-};
 
 /**
  * Trading dashboard displaying real-time data from /trading namespace
@@ -49,50 +29,26 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
   symbol,
   accountId,
 }) => {
-  const [trades, setTrades] = useState<TradeEvent[]>([]);
-  const [priceData, setPriceData] = useState<PriceUpdate | null>(null);
-  const [myMatches, setMyMatches] = useState<any[]>([]);
-
-  // Connect to /trading namespace
+  // Use unified realtime store
   const {
-    onTradeMatched,
-    onPriceUpdate,
-    onMyOrderMatched,
     isConnected,
-    latestTrades,
-    latestPrices,
-  } = useTradingRealtimeSocket({
-    symbols: [symbol],
-    accountId,
-    autoConnect: true,
-  });
+    lastTrades,
+    pricesBySymbol,
+    orderBooks,
+  } = useRealtimeStore();
 
-  // Listen to trade_matched events
-  useEffect(() => {
-    return onTradeMatched((trade) => {
-      if (trade.symbol === symbol) {
-        setTrades((prev) => [trade, ...prev].slice(0, 50));
-      }
-    });
-  }, [onTradeMatched, symbol]);
+  // Get symbol-specific data
+  const symbolTrades = useMemo(() => {
+    return (lastTrades[symbol] || []).slice(0, 50);
+  }, [lastTrades, symbol]);
 
-  // Listen to price_update events
-  useEffect(() => {
-    return onPriceUpdate((data) => {
-      if (data.symbol === symbol) {
-        setPriceData(data);
-      }
-    });
-  }, [onPriceUpdate, symbol]);
+  const priceData = useMemo(() => {
+    return pricesBySymbol[symbol] || null;
+  }, [pricesBySymbol, symbol]);
 
-  // Listen to my_order_matched events
-  useEffect(() => {
-    return onMyOrderMatched((data) => {
-      if (data.symbol === symbol) {
-        setMyMatches((prev) => [data, ...prev].slice(0, 20));
-      }
-    });
-  }, [onMyOrderMatched, symbol]);
+  const orderBook = useMemo(() => {
+    return orderBooks[symbol] || null;
+  }, [orderBooks, symbol]);
 
   return (
     <div className="space-y-4">
@@ -144,11 +100,11 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
       {/* Recent Trades */}
       <div className="bg-white rounded border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
-          <h3 className="font-bold">Recent Trades ({trades.length})</h3>
+          <h3 className="font-bold">Recent Trades ({symbolTrades.length})</h3>
         </div>
 
         <div className="max-h-80 overflow-y-auto">
-          {trades.length === 0 ? (
+          {symbolTrades.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               No trades yet. Waiting for trade_matched events...
             </div>
@@ -163,7 +119,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {trades.map((trade) => (
+                {symbolTrades.map((trade) => (
                   <tr
                     key={trade.id}
                     className={`border-t ${trade.side === 'BUY' ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}`}
@@ -187,42 +143,13 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
       </div>
 
       {/* My Matched Orders */}
-      {myMatches.length > 0 && accountId && (
-        <div className="bg-white rounded border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="font-bold">My Matched Orders ({myMatches.length})</h3>
-          </div>
-
-          <div className="max-h-60 overflow-y-auto">
-            {myMatches.map((match, idx) => (
-              <div
-                key={idx}
-                className={`p-3 border-b ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`px-2 py-1 rounded text-sm font-bold ${match.side === 'BUY' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-                    >
-                      {match.side}
-                    </span>
-                    <div>
-                      <p className="font-semibold">
-                        {match.matchedQuantity.toFixed(4)} @ $
-                        {match.matchedPrice.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Order: {match.orderId.substring(0, 12)}...
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    {new Date(match.timestamp).toLocaleTimeString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {accountId && (
+        <div className="bg-purple-50 p-3 rounded text-xs text-purple-700 border border-purple-200">
+          <p className="font-semibold mb-1">Note:</p>
+          <p>
+            For account-specific matched orders, subscribe to order updates using:
+            useOrderSocketStore().onOrderMatched(callback)
+          </p>
         </div>
       )}
 

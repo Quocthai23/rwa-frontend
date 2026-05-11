@@ -6,7 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { GetdataProvider } from '../context/GetdataContext';
 import { AnimationProvider } from '../context/AnimationContext';
-import { orderSocketService } from '@/store/orderSocket';
+import { useRealtimeStore } from '@/store/realtimeStore';
+import { useOrderSocketStore } from '@/store/orderSocketStore';
 import { useKlineSocketStore } from '@/store/klineSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import I18nSync from '@/components/shared/I18nSync';
@@ -15,6 +16,7 @@ import '@/i18n';
 
 /** Keeps kline WebSocket alive across route changes (e.g. Market ↔ Trade) so candles stay continuous. */
 let klineAppSessionConnectStarted = false;
+let realtimeAppSessionConnectStarted = false;
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,27 +38,35 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const isDesktop = useMediaQuery('(min-width: 768px)', false);
 
+  // Initialize kline socket (keeps candlestick data alive)
   useEffect(() => {
     if (klineAppSessionConnectStarted) return;
     klineAppSessionConnectStarted = true;
     useKlineSocketStore.getState().connect();
   }, []);
 
+  // Initialize realtime store (unified market + trading data)
   useEffect(() => {
-    if (selectedAccount) {
-      // Connect socket with optional accountId
-      // const accountId = useAppStore.getState().selectedAccount;
-      orderSocketService.connect(selectedAccount?.id);
+    if (realtimeAppSessionConnectStarted) return;
+    realtimeAppSessionConnectStarted = true;
+    useRealtimeStore.getState().connect();
+  }, []);
+
+  // Initialize order socket when account is selected
+  useEffect(() => {
+    if (selectedAccount?.id) {
+      useOrderSocketStore.getState().connect();
+      useOrderSocketStore.getState().subscribeAccount(selectedAccount.id);
     } else {
-      // Disconnect socket when logged out
-      orderSocketService.disconnect();
+      useOrderSocketStore.getState().disconnect();
     }
 
     return () => {
-      // Optional: disconnect on unmount
-      // orderSocketService.disconnect();
+      if (selectedAccount?.id) {
+        useOrderSocketStore.getState().unsubscribeAccount(selectedAccount.id);
+      }
     };
-  }, [selectedAccount]);
+  }, [selectedAccount?.id]);
 
   return (
     <QueryClientProvider client={queryClient}>
