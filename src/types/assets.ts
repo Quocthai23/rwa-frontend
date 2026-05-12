@@ -58,6 +58,19 @@ export type Asset = {
   swapRates?: SwapRates;
 };
 
+export type AssetMarketData = {
+  sellPrice?: number;
+  buyPrice?: number;
+  spread?: number;
+  volume?: number;
+  sellPercent?: number;
+  buyPercent?: number;
+  chgPercent?: number;
+  low?: number;
+  lastUpdated?: string;
+  source?: string;
+};
+
 export type ToggleFavoriteAssetRequest = {
   assetId: string;
 };

@@ -6,7 +6,7 @@
  */
 
 import { queryClient } from '@/app/provider';
-import { SOCKET_CHART_URL } from '@/constants/env';
+import { getSocketBaseUrl } from '@/utils/socketUrl';
 import { OrderItem } from '@/types/orders';
 import { Position } from '@/types/position';
 import { io } from 'socket.io-client';
@@ -80,7 +80,8 @@ export const useOrderSocketStore = create<OrderSocketState>((set, get) => {
             set({ isReconnecting: true });
 
             try {
-                socket = io(`${SOCKET_CHART_URL}/trading`, {
+                const socketBaseUrl = getSocketBaseUrl() ?? '';
+                socket = io(`${socketBaseUrl}/trading`, {
                     path: '/socket.io',
                     auth: { token: localStorage.getItem('token') },
                     reconnectionDelay: 1000,

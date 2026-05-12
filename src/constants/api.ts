@@ -51,6 +51,7 @@ export const CALENDAR_ENDPOINTS = {
 export const ASSETS_ENDPOINTS = {
   CATEGORIES: '/asset-categories',
   LIST: '/assets',
+  MARKET_DATA: (id: string) => `/assets/${id}/market-data`,
 } as const;
 
 export const PAYMENT_ENDPOINTS = {

@@ -17,7 +17,8 @@ export const IS_APP_PRODUCTION = APP_ENV === 'production';
  * API Configuration
  */
 export const API_CHART_URL = process.env.NEXT_PUBLIC_API_CHART_URL;
-export const SOCKET_CHART_URL = process.env.NEXT_PUBLIC_SOCKET_CHART_URL;
+export const SOCKET_CHART_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL ?? process.env.NEXT_PUBLIC_SOCKET_CHART_URL;
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 /** @deprecated Prefer {@link SOCKET_CHART_URL}; order/trading realtime uses Socket.IO `/trading` on this origin. */
 export const WS_ORDER_URL = process.env.NEXT_PUBLIC_WS_ORDER_URL;
@@ -42,13 +43,15 @@ export const SHOULD_LOG_REQUESTS = !IS_PRODUCTION;
  * Validate required env variables
  */
 const validateEnv = () => {
-  const requiredEnvVars = [
-    'NEXT_PUBLIC_API_BASE_URL',
-    'NEXT_PUBLIC_API_CHART_URL',
-    'NEXT_PUBLIC_SOCKET_CHART_URL',
-  ];
+  const requiredEnvVars = ['NEXT_PUBLIC_API_BASE_URL', 'NEXT_PUBLIC_API_CHART_URL'];
 
   const missingVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+  const hasSocketUrl =
+    Boolean(process.env.NEXT_PUBLIC_SOCKET_URL) ||
+    Boolean(process.env.NEXT_PUBLIC_SOCKET_CHART_URL);
+  if (!hasSocketUrl) {
+    missingVars.push('NEXT_PUBLIC_SOCKET_URL');
+  }
 
   if (missingVars.length > 0 && IS_PRODUCTION) {
     throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);

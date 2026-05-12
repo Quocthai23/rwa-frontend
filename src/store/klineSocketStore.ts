@@ -1,4 +1,4 @@
-import { SOCKET_CHART_URL } from '@/constants/env';
+import { getSocketBaseUrl } from '@/utils/socketUrl';
 import { io, type Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
@@ -190,7 +190,8 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
       return;
     }
 
-    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SOCKET_CHART_URL, {
+    const socketBaseUrl = getSocketBaseUrl();
+    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(socketBaseUrl, {
       autoConnect: false,
       reconnection: true,
       reconnectionAttempts: Infinity,

@@ -8,7 +8,7 @@
  * Single source of truth for prices, orderbook, trades
  */
 
-import { SOCKET_CHART_URL } from '@/constants/env';
+import { getSocketBaseUrl } from '@/utils/socketUrl';
 import { io, type Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
@@ -18,31 +18,39 @@ import { create } from 'zustand';
 
 /** Market ticker from / namespace */
 export type TickerMessage = {
-    ask: number;
-    askSize: number;
-    bid: number;
-    bidSize: number;
-    change: number;
-    changePercent: number;
-    code: string;
-    lastPrice: number;
-    seq: number;
-    sessionStats: {
-        high: number;
-        low: number;
-        open: number;
-        prevClose: number;
+    assetId?: string;
+    symbol?: string;
+    ask?: number;
+    askSize?: number;
+    bid?: number;
+    bidSize?: number;
+    change?: number;
+    changePercent?: number;
+    code?: string;
+    lastPrice?: number;
+    seq?: number;
+    sessionStats?: {
+        high?: number;
+        low?: number;
+        open?: number;
+        prevClose?: number;
     };
-    symbol: string;
-    tick_time: number;
-    timestamp: number;
-    updatedAt: string;
-    takerBuyVolume24h: number;
-    takerSellVolume24h: number;
+    low?: number;
+    high?: number;
+    open?: number;
+    prevClose?: number;
+    tick_time?: number;
+    timestamp?: number | string;
+    updatedAt?: string;
+    volume?: number;
+    buyPercent?: number;
+    sellPercent?: number;
+    takerBuyVolume24h?: number;
+    takerSellVolume24h?: number;
     takerBuyRatio5m?: number;
-    takerBuyRatio24h: number;
-    takerBuyVolume5m: number;
-    takerSellVolume5m: number;
+    takerBuyRatio24h?: number;
+    takerBuyVolume5m?: number;
+    takerSellVolume5m?: number;
 };
 
 export type RT = { ts?: number } & TickerMessage;
@@ -172,8 +180,10 @@ export const useRealtimeStore = create<RealtimeStoreState>((set, get) => {
 
             try {
                 // === DEFAULT NAMESPACE (Market ticker) ===
-                marketSocket = io(SOCKET_CHART_URL, {
+                const socketBaseUrl = getSocketBaseUrl();
+                marketSocket = io(socketBaseUrl, {
                     path: '/socket.io',
+                    transports: ['websocket'],
                     reconnectionDelay: 1000,
                     reconnection: true,
                     reconnectionDelayMax: 5000,
@@ -190,9 +200,30 @@ export const useRealtimeStore = create<RealtimeStoreState>((set, get) => {
                     stopFlushLoop();
                 });
 
-                marketSocket.on('ticker', (message: { data: TickerMessage; event: string }) => {
-                    const rt: RT = { ...message.data, ts: Date.now() };
-                    batchedTickerUpdates[message.data.symbol] = rt;
+                marketSocket.on('ticker', (message: TickerMessage | { data?: TickerMessage }) => {
+                    const payload: TickerMessage | undefined =
+                        message && typeof message === 'object' && 'data' in message
+                            ? (message as { data?: TickerMessage }).data
+                            : (message as TickerMessage);
+                    const symbol = payload?.symbol ?? payload?.assetId;
+                    if (!payload || !symbol) {
+                        return;
+                    }
+                    const sessionStats =
+                        payload.sessionStats ??
+                        (payload.low == null &&
+                            payload.high == null &&
+                            payload.open == null &&
+                            payload.prevClose == null
+                            ? undefined
+                            : {
+                                high: payload.high,
+                                low: payload.low,
+                                open: payload.open,
+                                prevClose: payload.prevClose,
+                            });
+                    const rt: RT = { ...payload, symbol, sessionStats, ts: Date.now() };
+                    batchedTickerUpdates[symbol] = rt;
                 });
 
                 marketSocket.on('connect_error', (error: Error) => {
@@ -201,8 +232,10 @@ export const useRealtimeStore = create<RealtimeStoreState>((set, get) => {
                 });
 
                 // === TRADING NAMESPACE (Orders, prices, orderbook) ===
-                tradingSocket = io(`${SOCKET_CHART_URL}/trading`, {
+                const tradingBaseUrl = socketBaseUrl ?? '';
+                tradingSocket = io(`${tradingBaseUrl}/trading`, {
                     path: '/socket.io',
+                    transports: ['websocket'],
                     auth: { token: localStorage.getItem('token') },
                     reconnectionDelay: 1000,
                     reconnection: true,

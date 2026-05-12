@@ -18,11 +18,13 @@ import {
 } from '@/components/shared/atoms/data-table';
 import { ToggleFavouriteAsset } from '@/components/shared/components/ToggleFavouriteAsset/ToggleFavouriteAsset';
 import { useMiniChartData } from '@/hook/useMinichartData';
+import { useAssetsMarketData } from '@/hook/useAssetsMarketData';
 import { useSymbols } from '@/hook/useSymbols';
 import { cn } from '@/lib/utils';
 import type { Candle } from '@/services/marketService';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { isCategoryOpenByOtcRule } from '@/components/featured/market/web/helpers/marketOpenRule';
+import type { AssetMarketData } from '@/types/assets';
 
 const MARKET_WEB_DEFAULT_TAB = 'popular';
 const MARKET_EQUAL_COLUMN_WIDTH = 'w-[10%]';
@@ -43,7 +45,10 @@ type SortColumn =
 type MarketTicker = {
   ask?: DecimalValue;
   bid?: DecimalValue;
+  buyPercent?: DecimalValue;
   changePercent?: DecimalValue;
+  sellPercent?: DecimalValue;
+  volume?: DecimalValue;
   takerBuyRatio24h?: DecimalValue;
   takerBuyVolume24h?: DecimalValue;
   takerSellVolume24h?: DecimalValue;
@@ -133,31 +138,61 @@ function calculateSpread(
   return askTicks.sub(bidTicks).abs().toNumber();
 }
 
-function resolveRowMetrics(row: MarketRowVM, ticker?: MarketTicker): ResolvedMarketRow {
+function resolveRowMetrics(
+  row: MarketRowVM,
+  ticker?: MarketTicker,
+  marketData?: AssetMarketData,
+): ResolvedMarketRow {
   const initialHigh = row.initialHigh;
   const initialLow = row.initialLow;
   const ask = toFiniteNumberFromNumberish(ticker?.ask);
   const bid = toFiniteNumberFromNumberish(ticker?.bid);
-  const changePercent = toFiniteNumberFromNumberish(ticker?.changePercent);
+  const marketAsk = toFiniteNumberFromNumberish(marketData?.buyPrice);
+  const marketBid = toFiniteNumberFromNumberish(marketData?.sellPrice);
+  const changePercent =
+    toFiniteNumberFromNumberish(ticker?.changePercent) ??
+    toFiniteNumberFromNumberish(marketData?.chgPercent);
   const high = toFiniteNumberFromNumberish(ticker?.sessionStats?.high);
-  const low = toFiniteNumberFromNumberish(ticker?.sessionStats?.low);
-  const resolvedAsk = ask ?? (row.askValue > 0 ? row.askValue : undefined);
-  const resolvedBid = bid ?? (row.bidValue > 0 ? row.bidValue : undefined);
+  const low =
+    toFiniteNumberFromNumberish(ticker?.sessionStats?.low) ??
+    toFiniteNumberFromNumberish(marketData?.low);
+  const resolvedAsk = ask ?? marketAsk ?? (row.askValue > 0 ? row.askValue : undefined);
+  const resolvedBid = bid ?? marketBid ?? (row.bidValue > 0 ? row.bidValue : undefined);
   const resolvedChangePercent = changePercent;
   const resolvedHigh = high ?? (initialHigh > 0 ? initialHigh : undefined);
   const resolvedLow = low ?? (initialLow > 0 ? initialLow : undefined);
-  const takerBuyVolume24h = toFiniteNumberFromNumberish(ticker?.takerBuyVolume24h) ?? 0;
-  const takerSellVolume24h = toFiniteNumberFromNumberish(ticker?.takerSellVolume24h) ?? 0;
+  const takerBuyVolume24h = toFiniteNumberFromNumberish(ticker?.takerBuyVolume24h);
+  const takerSellVolume24h = toFiniteNumberFromNumberish(ticker?.takerSellVolume24h);
+  const tickerVolume = toFiniteNumberFromNumberish(ticker?.volume);
   const takerBuyRatio24h = toFiniteNumberFromNumberish(ticker?.takerBuyRatio24h);
-  const totalVolume = takerBuyVolume24h + takerSellVolume24h;
+  const hasTakerVolume =
+    Number.isFinite(takerBuyVolume24h) || Number.isFinite(takerSellVolume24h);
+  const totalVolume = hasTakerVolume
+    ? (takerBuyVolume24h ?? 0) + (takerSellVolume24h ?? 0)
+    : (tickerVolume ?? toFiniteNumberFromNumberish(marketData?.volume) ?? 0);
+  const marketBuyPercent =
+    toFiniteNumberFromNumberish(ticker?.buyPercent) ??
+    toFiniteNumberFromNumberish(marketData?.buyPercent);
+  const marketSellPercent =
+    toFiniteNumberFromNumberish(ticker?.sellPercent) ??
+    toFiniteNumberFromNumberish(marketData?.sellPercent);
   const buyPercentRaw =
     takerBuyRatio24h != null
       ? takerBuyRatio24h
-      : totalVolume > 0
-        ? (takerBuyVolume24h / totalVolume) * 100
-        : undefined;
+      : marketBuyPercent != null
+        ? marketBuyPercent
+        : hasTakerVolume && totalVolume > 0
+          ? ((takerBuyVolume24h ?? 0) / totalVolume) * 100
+          : undefined;
   const buyPercent = buyPercentRaw == null ? undefined : clampPercent(buyPercentRaw);
-  const sellPercent = buyPercent == null ? undefined : clampPercent(100 - buyPercent);
+  const sellPercentRaw =
+    marketSellPercent != null
+      ? marketSellPercent
+      : buyPercent == null
+        ? undefined
+        : 100 - buyPercent;
+  const sellPercent = sellPercentRaw == null ? undefined : clampPercent(sellPercentRaw);
+  const spread = toFiniteNumberFromNumberish(marketData?.spread);
 
   return {
     ask: resolvedAsk,
@@ -168,7 +203,7 @@ function resolveRowMetrics(row: MarketRowVM, ticker?: MarketTicker): ResolvedMar
     low: resolvedLow,
     row,
     sellPercent,
-    spread: calculateSpread(resolvedAsk, resolvedBid, row.digit),
+    spread: spread ?? calculateSpread(resolvedAsk, resolvedBid, row.digit),
     volume: totalVolume,
   };
 }
@@ -350,6 +385,14 @@ export default function MarketWebScreen() {
   );
   const rtBySymbol = useMarketSocketStore((state) => state.rtBySymbol);
   const visibleSymbols = useMemo(() => rows.map((row) => row.symbol).filter(Boolean), [rows]);
+  const visibleAssetIds = useMemo(
+    () => rows.map((row) => row.id).filter((id): id is string => Boolean(id)),
+    [rows],
+  );
+  const { data: marketDataById = {} } = useAssetsMarketData(
+    visibleAssetIds,
+    visibleAssetIds.length > 0,
+  );
   useSymbols(visibleSymbols, visibleSymbols.length > 0);
   const symbolsForMiniCharts = useMemo(
     () => Array.from(new Set(rows.map((row) => row.symbol).filter(Boolean))),
@@ -372,12 +415,14 @@ export default function MarketWebScreen() {
   const resolvedRows = useMemo(
     () =>
       rows
-        .map((row) => resolveRowMetrics(row, rtBySymbol?.[row.symbol]))
+        .map((row) =>
+          resolveRowMetrics(row, rtBySymbol?.[row.symbol], marketDataById[row.id]),
+        )
         .filter((resolved) => {
           if (!marketOpenOnly) return true;
           return isCategoryOpenByOtcRule(resolved.row.categoryCode);
         }),
-    [marketOpenOnly, rows, rtBySymbol],
+    [marketDataById, marketOpenOnly, rows, rtBySymbol],
   );
   const sortedRows = useMemo(() => {
     if (!sortState) {

@@ -1,5 +1,24 @@
 import type { NextConfig } from "next";
 
+const resolveSocketProxyTarget = (): string | null => {
+  const raw = process.env.NEXT_PUBLIC_SOCKET_URL ?? process.env.NEXT_PUBLIC_SOCKET_CHART_URL;
+  if (!raw) return null;
+
+  try {
+    const url = new URL(raw);
+    if (url.protocol === 'ws:') {
+      url.protocol = 'http:';
+    } else if (url.protocol === 'wss:') {
+      url.protocol = 'https:';
+    }
+    return url.origin;
+  } catch {
+    return null;
+  }
+};
+
+const socketProxyTarget = resolveSocketProxyTarget();
+
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
@@ -35,6 +54,18 @@ const nextConfig: NextConfig = {
             value: "default-src 'self'; script-src 'self'",
           },
         ],
+      },
+    ];
+  },
+  async rewrites() {
+    if (!socketProxyTarget) {
+      return [];
+    }
+
+    return [
+      {
+        source: '/socket.io/:path*',
+        destination: `${socketProxyTarget}/socket.io/:path*`,
       },
     ];
   },

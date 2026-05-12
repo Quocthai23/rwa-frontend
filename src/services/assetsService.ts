@@ -1,5 +1,5 @@
 import { ASSETS_ENDPOINTS } from '../constants/api';
-import type { Asset, Category, GetAssetsParams, GetAssetsResponse } from '../types';
+import type { Asset, AssetMarketData, Category, GetAssetsParams, GetAssetsResponse } from '../types';
 import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
@@ -65,4 +65,17 @@ export const getActiveAssets = async (): Promise<Asset[]> => {
   const assets = await getAssets();
 
   return assets.filter((asset) => asset.isActive);
+};
+
+export const getAssetMarketData = async (assetId: string): Promise<AssetMarketData> => {
+  if (isServer) {
+    return apiClient.get<AssetMarketData>(ASSETS_ENDPOINTS.MARKET_DATA(assetId), undefined, {
+      skipAuth: true,
+    });
+  }
+
+  return apiClient.get<AssetMarketData>(`/api/assets/${assetId}/market-data`, undefined, {
+    baseUrl: CLIENT_BASE_URL,
+    skipAuth: true,
+  });
 };
