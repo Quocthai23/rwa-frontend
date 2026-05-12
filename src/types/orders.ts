@@ -41,7 +41,6 @@ export { OrderSide as ORDER_SIDES, OrderTypeCode as ORDER_TYPE_CODES, ClosedBy a
 
 export type CreateOrderPayload = {
   accountId: string;
-  leverage: number;
   orderType: OrderTypeCode.MARKET | OrderTypeCode.LIMIT | OrderTypeCode.STOP;
   quantity: number;
   side: OrderSide;
@@ -86,7 +85,6 @@ export type OrderItem = {
   filledQuantity: string;
   id: string;
   initialMargin: string;
-  leverage: number;
   orderType: number;
   price: string | null;
   quantity: string;

@@ -42,7 +42,6 @@ export type Asset = {
   isHot?: boolean;
   marginCurrency: string;
   marginMultiplier: string;
-  maxLeverage: number;
   maxTradeSize: string;
   minTradeSize: string;
   name: string;
