@@ -40,7 +40,7 @@ export function OneClickTrading({
       <DialogContent
         showCloseButton={false}
         aria-describedby={undefined}
-        className="bg-sheet text-foreground mx-auto flex max-h-[90dvh] w-full max-w-192 flex-col overflow-hidden border-none p-0"
+        className="bg-sheet text-foreground mx-auto flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden border-none p-0"
       >
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="border-border flex items-start justify-between gap-3 border-b px-4 pt-4 pb-3">

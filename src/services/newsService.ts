@@ -50,24 +50,38 @@ export const newsService = {
   async getNewsList(parameters?: GetNewsListRequest): Promise<NewsDataResponse> {
     const searchParameters: Record<string, string> = {};
 
-    if (parameters?.take !== undefined) searchParameters.take = String(parameters.take);
-    if (parameters?.skip !== undefined) searchParameters.skip = String(parameters.skip);
-    if (parameters?.topics?.length) searchParameters.topics = parameters.topics.join(',');
+    if (parameters?.take !== undefined) searchParameters.limit = String(parameters.take);
+    // Backend doesn't support numeric skip, only cursor. 
+    // If skip is provided, we might have to fetch more and slice, but let's stick to limit for now.
+    
+    if (parameters?.topics?.length) {
+      // Backend expects a single source per request currently in NewsController.findAll
+      searchParameters.source = parameters.topics[0];
+    }
 
     return apiClient.get<NewsDataResponse>(
-      isServer ? NEWS_ENDPOINTS.LIST : '/api/news',
+      NEWS_ENDPOINTS.LIST,
       searchParameters,
-      { baseUrl: isServer ? undefined : CLIENT_BASE_URL, skipAuth: true },
+      { 
+        baseUrl: isServer ? undefined : CLIENT_BASE_URL, 
+        skipAuth: true 
+      },
       true,
     );
   },
 
   async getNewsTopics(): Promise<string[]> {
-    return apiClient.get<string[]>(
-      isServer ? NEWS_ENDPOINTS.TOPICS : '/api/news/topics',
-      undefined,
-      { baseUrl: isServer ? undefined : CLIENT_BASE_URL, skipAuth: true },
-      isServer,
-    );
+    try {
+      const sources = await apiClient.get<any[]>(
+        NEWS_ENDPOINTS.SOURCES,
+        undefined,
+        { baseUrl: isServer ? undefined : CLIENT_BASE_URL, skipAuth: true }
+      );
+      // Return source IDs as "topics"
+      return sources.map(s => s.id || s);
+    } catch (error) {
+      console.error('Error fetching news sources:', error);
+      return [];
+    }
   },
 };

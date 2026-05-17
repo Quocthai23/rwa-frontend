@@ -47,8 +47,6 @@ export default function More() {
     FeatureId.Withdraw,
     FeatureId.Transfer,
     FeatureId.History,
-    FeatureId.Referral,
-    FeatureId.RewardsHub,
     FeatureId.Copy,
   ];
 
@@ -79,18 +77,7 @@ export default function More() {
         handleShowDepositMethod();
         return;
       }
-      if (featureId === FeatureId.RewardsHub) {
-        if (!user) {
-          router.push('/login');
-          return;
-        }
-        if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-          showError(t('home.rewardsFailedTitle'), t('home.rewardsDemoError'));
-          return;
-        }
-        router.push('/rewards-center');
-        return;
-      }
+      
       if (featureId === FeatureId.Withdraw) {
         if (!user) {
           router.push('/login');
@@ -103,17 +90,8 @@ export default function More() {
         handleShowWithdrawMethod();
         return;
       }
-
-      if (featureId === FeatureId.Referral) {
-        if (!user) {
-          router.push('/login');
-          return;
-        }
-        router.push('/referral');
-        return;
-      }
-
-      if (featureId === FeatureId.Social) {
+      
+      if (FeatureId.Social === featureId) {
         router.push('/discover?discoverTab=for-you');
         return;
       }
@@ -129,7 +107,7 @@ export default function More() {
 
       if (
         !user &&
-        [FeatureId.History, FeatureId.Transfer, FeatureId.RewardsHub, FeatureId.Feedback].includes(
+        [FeatureId.History, FeatureId.Transfer, FeatureId.Feedback].includes(
           featureId,
         )
       ) {

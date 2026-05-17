@@ -91,7 +91,7 @@ export function useRegisterFlow() {
   useEffect(() => {
     if (
       !tokenIssuedAt ||
-      (step !== RegisterStep.CreatePassword && step !== RegisterStep.ReferralCode)
+      (step !== RegisterStep.CreatePassword)
     ) {
       return;
     }

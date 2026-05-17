@@ -12,13 +12,12 @@ import {
   SheetTitle,
 } from '@/components/shared/atoms/web/sheet';
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
-import { STATUS_HISTORY_ID, TYPE_HISTORY_ID } from '@/constants/payment';
 import { cn } from '@/lib/utils';
 import type { Account } from '@/types/account';
 
 type FilterState = {
-  type: number[];
-  status: number[];
+  type: string[];
+  status: string[];
   accountId: string;
 };
 
@@ -30,22 +29,19 @@ type Props = {
   onClose: () => void;
 };
 
-const transactionTypes: Array<{ id: number | 'all'; translationKey: string }> = [
+const transactionTypes: Array<{ id: string | 'all'; translationKey: string }> = [
   { id: 'all', translationKey: 'transactionHistory.all' },
-  { id: TYPE_HISTORY_ID.DEPOSIT, translationKey: 'transactionHistory.deposit' },
-  { id: TYPE_HISTORY_ID.WITHDRAWAL, translationKey: 'transactionHistory.withdrawal' },
-  { id: 2, translationKey: 'transactionHistory.transfer' },
+  { id: 'DEPOSIT', translationKey: 'transactionHistory.deposit' },
+  { id: 'WITHDRAW', translationKey: 'transactionHistory.withdrawal' },
+  { id: 'TRANSFER', translationKey: 'transactionHistory.transfer' },
 ];
 
-const statuses: Array<{ id: number | 'all'; translationKey: string }> = [
+const statuses: Array<{ id: string | 'all'; translationKey: string }> = [
   { id: 'all', translationKey: 'transactionHistory.all' },
-  { id: STATUS_HISTORY_ID.PENDING, translationKey: 'transactionHistory.pending' },
-  { id: STATUS_HISTORY_ID.APPROVED, translationKey: 'transactionHistory.approved' },
-  { id: STATUS_HISTORY_ID.PROCESSING, translationKey: 'transactionHistory.processing' },
-  { id: STATUS_HISTORY_ID.COMPLETED, translationKey: 'transactionHistory.completed' },
-  { id: STATUS_HISTORY_ID.FAILED, translationKey: 'transactionHistory.failed' },
-  { id: STATUS_HISTORY_ID.REJECTED, translationKey: 'transactionHistory.rejected' },
-  { id: STATUS_HISTORY_ID.CANCELLED, translationKey: 'transactionHistory.cancelled' },
+  { id: 'PENDING', translationKey: 'transactionHistory.pending' },
+  { id: 'COMPLETED', translationKey: 'transactionHistory.completed' },
+  { id: 'FAILED', translationKey: 'transactionHistory.failed' },
+  { id: 'CANCELLED', translationKey: 'transactionHistory.cancelled' },
 ];
 
 export default function FilterTransactionWeb({
@@ -56,15 +52,15 @@ export default function FilterTransactionWeb({
   onClose,
 }: Props) {
   const { t } = useTranslation();
-  const [selectedTypes, setSelectedTypes] = useState<(number | 'all')[]>(['all']);
-  const [selectedStatuses, setSelectedStatuses] = useState<(number | 'all')[]>(['all']);
+  const [selectedTypes, setSelectedTypes] = useState<(string | 'all')[]>(['all']);
+  const [selectedStatuses, setSelectedStatuses] = useState<(string | 'all')[]>(['all']);
   const [selectedAccount, setSelectedAccount] = useState<string>(selectedAccountId);
 
   useEffect(() => {
     setSelectedAccount(selectedAccountId);
   }, [selectedAccountId]);
 
-  const handleSelectType = (typeId: number | 'all') => {
+  const handleSelectType = (typeId: string | 'all') => {
     if (typeId === 'all') {
       setSelectedTypes(['all']);
       return;
@@ -75,7 +71,7 @@ export default function FilterTransactionWeb({
     setSelectedTypes(next.length === 0 ? ['all'] : next);
   };
 
-  const handleSelectStatus = (statusId: number | 'all') => {
+  const handleSelectStatus = (statusId: string | 'all') => {
     if (statusId === 'all') {
       setSelectedStatuses(['all']);
       return;
@@ -100,8 +96,8 @@ export default function FilterTransactionWeb({
 
   const handleApply = () => {
     onApply?.({
-      type: selectedTypes.includes('all') ? [] : (selectedTypes as number[]),
-      status: selectedStatuses.includes('all') ? [] : (selectedStatuses as number[]),
+      type: selectedTypes.includes('all') ? [] : (selectedTypes.filter((t) => t !== 'all') as string[]),
+      status: selectedStatuses.includes('all') ? [] : (selectedStatuses.filter((s) => s !== 'all') as string[]),
       accountId: selectedAccount,
     });
     onClose();

@@ -13,7 +13,6 @@ import TradePanel, {
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useSymbols } from '@/hook/useSymbols';
 import MT5PriceText from '../market/components/MT5PriceText';
-import AnalysisTab from './components/AnalysisTab';
 import InfoTab from './components/InfoTab';
 import AnalysisDataSection from './components/AnalysisDataSection';
 import { ToggleFavouriteAsset } from '@/components/shared/components/ToggleFavouriteAsset';
@@ -25,7 +24,6 @@ import { Sheet, SheetContent } from '@/components/shared/atoms/sheet';
 import Search from '../search/app/Search';
 import { useIsTinyPhone } from '@/hook/useMediaQuery';
 import { useToast } from '@/hook/useToast';
-import { useStrategyPage } from '@/hook/useStrategyPage';
 import { useAppStore } from '@/store/useAppStore';
 import { useAppHydrated } from '@/hook/useAppHydrated';
 import { resolveRouteExperience } from '@/lib/experience/resolveExperience';
@@ -63,44 +61,17 @@ function SymbolDetailScreen() {
   const [showSearchSheet, setShowSearchSheet] = useState(false);
   const [hasOpenedSearchSheet, setHasOpenedSearchSheet] = useState(false);
   const marketRef = useRef<HTMLDivElement | null>(null);
-  const strategyRef = useRef<HTMLDivElement | null>(null);
   const dataRef = useRef<HTMLDivElement | null>(null);
   const infoRef = useRef<HTMLDivElement | null>(null);
   const [limitPrice, setLimitPrice] = useState('');
   const [showSectionTabs, setShowSectionTabs] = useState(false);
-  const [activeSection, setActiveSection] = useState<'market' | 'strategy' | 'data' | 'info'>(
+  const [activeSection, setActiveSection] = useState<'market' | 'data' | 'info'>(
     'market',
   );
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const setSymbolTrade = useTransactionStore((s) => s.setSymbolTrade);
   const tradePanelRef = useRef<TradePanelSheetHandle | null>(null);
   useSymbols(currentSymbol ? [currentSymbol] : [], Boolean(currentSymbol));
-  const strategyLocale = useMemo(() => {
-    if (!appLanguage) return 'en-US';
-    const code = String(appLanguage);
-    const lower = code.toLowerCase();
-    if (lower === 'en' || lower.startsWith('en-')) return 'en-US';
-    if (lower === 'vi' || lower.startsWith('vi-')) return 'vi-VN';
-    if (lower.startsWith('zh-')) return code;
-    return code.replace(/-en$/i, '-US');
-  }, [appLanguage]);
-  const { data: strategyData } = useStrategyPage(
-    {
-      page: 1,
-      size: 20,
-      type: 'ALL',
-      locale: strategyLocale,
-      symbols: currentSymbol,
-    },
-    {
-      enabled: hasHydratedApp && Boolean(currentSymbol),
-    },
-  );
-  const strategyItems = strategyData?.value?.resultList ?? [];
-  const strategyItem = strategyItems[0];
-  const hasStrategy = Boolean(strategyItem);
-  const visibleActiveSection =
-    !hasStrategy && activeSection === 'strategy' ? 'market' : activeSection;
 
   useEffect(() => {
     const el = contentScrollRef.current;
@@ -132,7 +103,6 @@ function SymbolDetailScreen() {
         const topMost = visible[0];
         const id = topMost?.target?.getAttribute('data-section') as
           | 'market'
-          | 'strategy'
           | 'data'
           | 'info'
           | null;
@@ -147,18 +117,16 @@ function SymbolDetailScreen() {
 
     const els = [
       marketRef.current,
-      ...(hasStrategy ? [strategyRef.current] : []),
       dataRef.current,
       infoRef.current,
     ].filter(Boolean) as HTMLDivElement[];
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [hasStrategy, showSectionTabs]);
+  }, [showSectionTabs]);
 
-  const scrollToSection = (section: 'market' | 'strategy' | 'data' | 'info') => {
+  const scrollToSection = (section: 'market' | 'data' | 'info') => {
     const map: Record<typeof section, React.RefObject<HTMLDivElement | null>> = {
       market: marketRef,
-      strategy: strategyRef,
       data: dataRef,
       info: infoRef,
     };
@@ -178,7 +146,7 @@ function SymbolDetailScreen() {
   const initialAsk = Number.parseFloat(asset?.ask || '0');
   const initialBid = Number.parseFloat(asset?.bid || '0');
   const digit = asset?.digit ?? 2;
-  const leverage = asset?.maxLeverage ?? 100;
+  const leverage = typeof asset?.maxLeverage === 'string' ? Number.parseFloat(asset.maxLeverage) : (asset?.maxLeverage ?? 100);
 
   const lastPrice = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.lastPrice);
   const ask = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.ask) ?? initialAsk;
@@ -239,15 +207,7 @@ function SymbolDetailScreen() {
 
   const handleOpenPositionClick = () => {
     if (!currentSymbol) return;
-
-    const targetUrl = `/opening-order?tab=open_position&symbol=${currentSymbol}&tabBack=market`;
-
-    if (!isAuthenticated) {
-      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-      return;
-    }
-
-    router.push(targetUrl);
+    router.push(`/trade/${currentSymbol}`);
   };
 
   const handleSymbolSelect = useCallback(
@@ -362,14 +322,11 @@ function SymbolDetailScreen() {
                 {(
                   [
                     { id: 'market', label: t('symbolDetail.tabs.market') },
-                    ...(hasStrategy
-                      ? ([{ id: 'strategy', label: t('symbolDetail.tabs.strategy') }] as const)
-                      : []),
                     { id: 'data', label: t('symbolDetail.tabs.data') },
                     { id: 'info', label: t('symbolDetail.tabs.info') },
                   ] as const
                 ).map((t) => {
-                  const isActive = visibleActiveSection === t.id;
+                  const isActive = activeSection === t.id;
                   return (
                     <button
                       key={t.id}
@@ -483,12 +440,6 @@ function SymbolDetailScreen() {
             )}
           </div>
 
-          {hasStrategy ? (
-            <div ref={strategyRef} data-section="strategy">
-              <AnalysisTab strategy={strategyItem} />
-            </div>
-          ) : null}
-
           <div className="border-b border-neutral-200 py-3"></div>
 
           <div ref={dataRef} data-section="data">
@@ -518,7 +469,7 @@ function SymbolDetailScreen() {
           }}
         />
 
-        <div className="bg-muted fixed bottom-15 left-1/2 z-40 w-full max-w-192 -translate-x-1/2">
+        <div className="bg-muted fixed bottom-15 left-1/2 z-40 w-full max-w-3xl -translate-x-1/2">
           <div className="bg-background mx-auto flex max-w-full items-center justify-between gap-4 px-4 py-3 shadow-[0_-2px_8px_rgba(15,23,42,0.08)]">
             <div className="text-muted-foreground flex items-center gap-4">
               <ToggleFavouriteAsset assetId={asset?.id ?? ''} size={24} />

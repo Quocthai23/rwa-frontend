@@ -4,37 +4,26 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
-import { useClosePositions, useInfinitePositions, usePositionStats } from '@/hook/usePosition';
 import { useCancelOrders, useInfiniteOrders } from '@/hook/useOrder';
-import { useSymbols } from '@/hook/useSymbols';
 import { cn } from '@/lib/utils';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthHydrated } from '@/hook/useAuthHydrated';
-import { useGetData } from '@/context/GetdataContext';
-import { ORDER_TYPE_CODES } from '@/types/orders';
 import { OrderItem, OrderStatus } from '@/types/orders';
-import OpenPositionsTabContent from './components/tab/OpenPositionsTabContent';
+import PortfolioTabContent from './components/tab/PortfolioTabContent';
 import OpenOrdersTabContent from './components/tab/OpenOrdersTabContent';
-import PositionHistoryTabContent from './components/tab/PositionHistoryTabContent';
 import OrderHistoryTabContent from './components/tab/OrderHistoryTabContent';
 import Image from 'next/image';
 import { Button } from '@/components/shared/atoms/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/shared/atoms/dialog';
 import AssetOverview from './components/AssetOverview';
-import { Position } from '@/types';
 import HistoryDateRangePicker, {
   getDefaultHistoryRange,
   type HistoryRangeValue,
 } from './components/shared/HistoryDateRangePicker';
 import { toISODateString } from '@/utils/dateUtils';
-import {
-  getEnrichedPositionsFromInfiniteData,
-  splitPositionsByPnL,
-} from '../utils/position.calculations';
 
-const POSITION_HISTORY_RANGE_STORAGE_KEY = 'position:web:history-range:position';
 const ORDER_HISTORY_RANGE_STORAGE_KEY = 'position:web:history-range:order';
 
 function getDefaultDateRangeValue(): HistoryRangeValue {
@@ -68,7 +57,7 @@ function persistDateRange(storageKey: string, value: HistoryRangeValue) {
   }
 }
 
-type PositionWebTab = 'positions' | 'orders' | 'position-history' | 'order-history';
+type PositionWebTab = 'portfolio' | 'orders' | 'order-history';
 
 interface PositionWebScreenProps {
   setIsPositionPanelExpanded?: (expanded: boolean) => void;
@@ -85,18 +74,17 @@ export default function PositionWebScreen({
   const pathname = usePathname();
   const checkPathname = pathname === '/position';
   const [isBulkCloseModalOpen, setIsBulkCloseModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<PositionWebTab>(activeTabProp ?? 'positions');
+  const [activeTab, setActiveTab] = useState<PositionWebTab>(activeTabProp ?? 'portfolio');
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const accountId = selectedAccount?.id || '';
-  const positionRangeStorageKey = `${POSITION_HISTORY_RANGE_STORAGE_KEY}:${accountId}`;
-  const orderRangeStorageKey = `${ORDER_HISTORY_RANGE_STORAGE_KEY}:${accountId}`;
-  const [positionHistoryDateRange, setPositionHistoryDateRange] = useState<HistoryRangeValue>(
-    () => readPersistedDateRange(positionRangeStorageKey) ?? getDefaultDateRangeValue(),
-  );
-  const [orderHistoryDateRange, setOrderHistoryDateRange] = useState<HistoryRangeValue>(
-    () => readPersistedDateRange(orderRangeStorageKey) ?? getDefaultDateRangeValue(),
-  );
-  const { assets } = useGetData();
+  const POSITION_WEB_TABS = [
+    { id: 'portfolio', label: t('position.tabs.portfolio', { defaultValue: 'Portfolio' }) },
+    { id: 'orders', label: t('position.tabs.orders', { defaultValue: 'Orders' }) },
+    {
+      id: 'order-history',
+      label: t('position.tabs.orderHistory', { defaultValue: 'Order History' }),
+    },
+  ] as const;
 
   const currentActiveTab = activeTabProp ?? activeTab;
   const handleTabChange = (tab: PositionWebTab) => {
@@ -106,85 +94,42 @@ export default function PositionWebScreen({
     onTabChange?.(tab);
   };
 
-  const POSITION_WEB_TABS: { id: PositionWebTab; label: string }[] = [
-    { id: 'positions', label: t('position.tabs.positions', { defaultValue: 'Positions' }) },
-    { id: 'orders', label: t('position.tabs.orders', { defaultValue: 'Orders' }) },
-    {
-      id: 'position-history',
-      label: t('position.tabs.positionHistory', { defaultValue: 'Position History' }),
-    },
-    {
-      id: 'order-history',
-      label: t('position.tabs.orderHistory', { defaultValue: 'Order History' }),
-    },
-  ];
-
-  useEffect(() => {
-    setPositionHistoryDateRange(
-      readPersistedDateRange(positionRangeStorageKey) ?? getDefaultDateRangeValue(),
-    );
-  }, [positionRangeStorageKey]);
+  const [orderHistoryDateRange, setOrderHistoryDateRange] = useState<HistoryRangeValue>(
+    () => readPersistedDateRange(ORDER_HISTORY_RANGE_STORAGE_KEY) ?? getDefaultDateRangeValue(),
+  );
 
   useEffect(() => {
     setOrderHistoryDateRange(
-      readPersistedDateRange(orderRangeStorageKey) ?? getDefaultDateRangeValue(),
+      readPersistedDateRange(ORDER_HISTORY_RANGE_STORAGE_KEY) ?? getDefaultDateRangeValue(),
     );
-  }, [orderRangeStorageKey]);
+  }, []);
 
   useEffect(() => {
-    persistDateRange(positionRangeStorageKey, positionHistoryDateRange);
-  }, [positionHistoryDateRange, positionRangeStorageKey]);
+    persistDateRange(ORDER_HISTORY_RANGE_STORAGE_KEY, orderHistoryDateRange);
+  }, [orderHistoryDateRange]);
 
-  useEffect(() => {
-    persistDateRange(orderRangeStorageKey, orderHistoryDateRange);
-  }, [orderHistoryDateRange, orderRangeStorageKey]);
-
-  const { data: openPositionsData } = useInfinitePositions(
-    { accountId, status: [0, 1] },
-    undefined,
-    'active',
-  );
   const { data: openOrdersData } = useInfiniteOrders(
-    { accountId, status: [OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED] },
+    { accountId, status: [OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED] },
     undefined,
     'active',
   );
-  const closePositionsMutation = useClosePositions(accountId);
   const cancelOrdersMutation = useCancelOrders(accountId);
-
-  const { data: stats } = usePositionStats({ accountId });
-  const symbolsToSubscribe =
-    stats?.fxRateSymbols?.length && stats.fxRateSymbols.length > 0
-      ? stats.fxRateSymbols
-      : (stats?.positionSymbols ?? []);
-  useSymbols(symbolsToSubscribe, symbolsToSubscribe.length > 0);
 
   const rtBySymbol = useMarketSocketStore((state) => state.rtBySymbol);
   const hasHydratedAuth = useAuthHydrated();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
-  const enrichedPositions = useMemo(
-    () => getEnrichedPositionsFromInfiniteData(openPositionsData, assets),
-    [openPositionsData, assets],
-  );
-
-  const { profitablePositions, losingPositions } = useMemo(
-    () => splitPositionsByPnL(enrichedPositions, rtBySymbol),
-    [enrichedPositions, rtBySymbol],
-  );
 
   const allOpenOrders = useMemo(
     () => openOrdersData?.pages.flatMap((page: { data: OrderItem[] }) => page.data) ?? [],
     [openOrdersData],
   );
   const limitOrders = useMemo(
-    () => allOpenOrders.filter((order) => order.orderType === ORDER_TYPE_CODES.LIMIT),
+    () =>
+      allOpenOrders.filter((order) => order.orderType === 'LIMIT'),
     [allOpenOrders],
   );
-  const stopOrders = useMemo(
-    () => allOpenOrders.filter((order) => order.orderType === ORDER_TYPE_CODES.STOP),
-    [allOpenOrders],
-  );
+  // Stop orders no longer supported in RWA backend
 
   if (hasHydratedAuth && !isAuthenticated) {
     return (
@@ -215,24 +160,8 @@ export default function PositionWebScreen({
     );
   }
 
-  const canShowBulkCloseButton = currentActiveTab === 'positions' || currentActiveTab === 'orders';
-  const isHistoryTab =
-    currentActiveTab === 'position-history' || currentActiveTab === 'order-history';
-
-  const onBulkActionSuccess = () => {
-    setIsBulkCloseModalOpen(false);
-  };
-
-  const handleBulkClosePositions = (positions: Position[]) => {
-    if (positions.length === 0) {
-      setIsBulkCloseModalOpen(false);
-      return;
-    }
-
-    closePositionsMutation.mutate(positions, {
-      onSuccess: onBulkActionSuccess,
-    });
-  };
+  const canShowBulkCloseButton = currentActiveTab === 'orders';
+  const isHistoryTab = currentActiveTab === 'order-history';
 
   const handleBulkCancelOrders = (orders: OrderItem[]) => {
     if (orders.length === 0) {
@@ -241,7 +170,9 @@ export default function PositionWebScreen({
     }
 
     cancelOrdersMutation.mutate(orders, {
-      onSuccess: onBulkActionSuccess,
+      onSuccess: () => {
+        setIsBulkCloseModalOpen(false);
+      },
     });
   };
 
@@ -249,8 +180,8 @@ export default function PositionWebScreen({
     <div
       className={`flex ${checkPathname ? 'h-[calc(100dvh-72px)]' : 'h-[calc(100%)]'} ${checkPathname ? 'p-6' : 'p-1'} border-border bg-background flex-col gap-3 overflow-hidden border-t`}
     >
-      {checkPathname && (
-        <AssetOverview position={openPositionsData} activeAccount={selectedAccount!} />
+      {checkPathname && selectedAccount && (
+        <AssetOverview activeAccount={selectedAccount} />
       )}
 
       <div className="bg-background h-full min-h-0 flex-1 overflow-hidden">
@@ -277,10 +208,8 @@ export default function PositionWebScreen({
               {POSITION_WEB_TABS.map((tab) => {
                 const getTabLabel = () => {
                   switch (tab.id) {
-                    case 'positions':
-                      return `${tab.label}(${stats?.openPositions ?? 0})`;
                     case 'orders':
-                      return `${tab.label}(${stats?.openOrders ?? 0})`;
+                      return `${tab.label}(${allOpenOrders.length})`;
                     default:
                       return tab.label;
                   }
@@ -308,27 +237,18 @@ export default function PositionWebScreen({
               <Button
                 variant="white-contained"
                 onClick={() => setIsBulkCloseModalOpen(true)}
-                aria-label="Close positions panel"
-                title="Close positions panel"
+                aria-label="Cancel orders"
+                title="Cancel orders"
                 className="text-primary-500 hover:text-primary-400 shrink-0 rounded px-3 py-1 transition-colors"
               >
-                {t('position.modal.close')}
+                {t('position.modal.cancelOrders', { defaultValue: 'Cancel Orders' })}
               </Button>
             )}
 
             {isHistoryTab && (
               <HistoryDateRangePicker
-                value={
-                  currentActiveTab === 'position-history'
-                    ? positionHistoryDateRange
-                    : orderHistoryDateRange
-                }
+                value={orderHistoryDateRange}
                 onRangeChange={(value) => {
-                  if (currentActiveTab === 'position-history') {
-                    setPositionHistoryDateRange(value);
-                    return;
-                  }
-
                   setOrderHistoryDateRange(value);
                 }}
               />
@@ -337,13 +257,10 @@ export default function PositionWebScreen({
         </div>
 
         <div className="scrollbar-neutral-slim h-[calc(100%-35px)] overflow-auto py-1">
-          {currentActiveTab === 'positions' ? (
-            <OpenPositionsTabContent accountId={accountId} rtBySymbol={rtBySymbol} />
+          {currentActiveTab === 'portfolio' ? (
+            <PortfolioTabContent accountId={accountId} rtBySymbol={rtBySymbol} />
           ) : null}
           {currentActiveTab === 'orders' ? <OpenOrdersTabContent accountId={accountId} /> : null}
-          {currentActiveTab === 'position-history' ? (
-            <PositionHistoryTabContent accountId={accountId} dateRange={positionHistoryDateRange} />
-          ) : null}
           {currentActiveTab === 'order-history' ? (
             <OrderHistoryTabContent accountId={accountId} dateRange={orderHistoryDateRange} />
           ) : null}
@@ -361,49 +278,6 @@ export default function PositionWebScreen({
               {t('position.modal.bulkOperations')}
             </DialogTitle>
           </div>
-
-          {currentActiveTab === 'positions' ? (
-            <>
-              <div className="flex flex-col gap-3 px-4 pt-3">
-                <Button
-                  className="items-center px-4 py-3 disabled:opacity-50"
-                  disabled={closePositionsMutation.isPending || enrichedPositions.length === 0}
-                  onClick={() => handleBulkClosePositions(enrichedPositions)}
-                  variant="neutral-contained"
-                >
-                  <p className="text-button-large-medium text-foreground">
-                    {closePositionsMutation.isPending
-                      ? t('position.modal.processing')
-                      : t('position.modal.closeAllPositions')}
-                  </p>
-                </Button>
-                <Button
-                  className="items-center px-4 py-3 disabled:opacity-50"
-                  disabled={closePositionsMutation.isPending || profitablePositions.length === 0}
-                  onClick={() => handleBulkClosePositions(profitablePositions)}
-                  variant="neutral-contained"
-                >
-                  <p className="text-button-large-medium text-foreground">
-                    {closePositionsMutation.isPending
-                      ? t('position.modal.processing')
-                      : t('position.modal.closeProfitablePositions')}
-                  </p>
-                </Button>
-                <Button
-                  className="items-center px-4 py-3 disabled:opacity-50"
-                  disabled={closePositionsMutation.isPending || losingPositions.length === 0}
-                  onClick={() => handleBulkClosePositions(losingPositions)}
-                  variant="neutral-contained"
-                >
-                  <p className="text-button-large-medium text-foreground">
-                    {closePositionsMutation.isPending
-                      ? t('position.modal.processing')
-                      : t('position.modal.closeLosingPositions')}
-                  </p>
-                </Button>
-              </div>
-            </>
-          ) : null}
 
           {currentActiveTab === 'orders' ? (
             <>
@@ -430,18 +304,6 @@ export default function PositionWebScreen({
                     {cancelOrdersMutation.isPending
                       ? t('position.modal.processing')
                       : t('position.modal.deleteLimitOrders')}
-                  </p>
-                </Button>
-                <Button
-                  className="items-center px-4 py-3 disabled:opacity-50"
-                  disabled={cancelOrdersMutation.isPending || stopOrders.length === 0}
-                  onClick={() => handleBulkCancelOrders(stopOrders)}
-                  variant="neutral-contained"
-                >
-                  <p className="text-button-large-medium text-foreground">
-                    {cancelOrdersMutation.isPending
-                      ? t('position.modal.processing')
-                      : t('position.modal.deleteStopOrders')}
                   </p>
                 </Button>
               </div>

@@ -81,7 +81,7 @@ export function buildMarketRows({
         askValue: toNumber(asset.ask),
         bidText: asset.bid,
         bidValue: toNumber(asset.bid),
-        categoryCode: asset.category?.code ?? '',
+        categoryCode: asset.category?.code ?? asset.category?.name ?? '',
         categoryName: asset.category?.name ?? '',
         digit: Number.isFinite(asset.digit) ? asset.digit : 2,
         id: asset.id,

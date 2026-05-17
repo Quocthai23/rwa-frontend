@@ -107,7 +107,7 @@ export default function HomeHeader() {
       {dropdownVisible && (
         <>
           <div
-            className="fixed inset-y-0 top-16 left-1/2 z-50 w-full max-w-192 -translate-x-1/2 bg-black/50"
+            className="fixed inset-y-0 top-16 left-1/2 z-50 w-full max-w-3xl -translate-x-1/2 bg-black/50"
             onClick={() => setDropdownVisible(false)}
           />
 

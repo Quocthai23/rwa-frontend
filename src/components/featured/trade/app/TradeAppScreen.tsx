@@ -12,7 +12,6 @@ import { useCreateOrder } from '@/hook/orders/useCreateOrder';
 import { useToast } from '@/hook/useToast';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
-import { useInfinitePositions } from '@/hook/usePosition';
 import { useInfiniteOrders } from '@/hook/useOrder';
 import {
   calculateOrderMargin,
@@ -36,7 +35,7 @@ import {
   snapQuantityToVolumeStep,
   toPositiveAssetNumber,
 } from '@/components/shared/chart/components/tradePanel/utils/tradePanelInputHelpers';
-import { ORDER_SIDES, ORDER_TYPE_CODES } from '@/types';
+import { ORDER_SIDES, ORDER_TYPES, OrderStatus } from '@/types/orders';
 
 const ChartCommon = dynamic(() => import('@/components/chart/ChartCommon'), {
   ssr: false,
@@ -253,19 +252,15 @@ function TradeAppScreen() {
   const { isPending, mutateAsync: createOrder } = useCreateOrder();
   const user = useAuthStore((s) => s.user);
 
-  const { refetch: refetchPositions } = useInfinitePositions({
-    accountId: selectedAccount?.id || '',
-    status: [0, 1],
-  });
   const { availableBalance } = useAccountSummaryMetrics();
   const { refetch: refetchOrders } = useInfiniteOrders({
     accountId: selectedAccount?.id || '',
-    status: [0, 1],
+    status: [OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED],
   });
 
   const handleOrder = async (
     side: (typeof ORDER_SIDES)[keyof typeof ORDER_SIDES],
-    orderType: (typeof ORDER_TYPE_CODES)[keyof typeof ORDER_TYPE_CODES],
+    orderType: (typeof ORDER_TYPES)[keyof typeof ORDER_TYPES],
   ) => {
     if (!canTrade) {
       showError(
@@ -350,7 +345,7 @@ function TradeAppScreen() {
 
     setVolumeBoth(qty);
 
-    if (orderType === ORDER_TYPE_CODES.MARKET) {
+    if (orderType === ORDER_TYPES.MARKET) {
       const price = side === ORDER_SIDES.BUY ? ask : bid;
       const requiredMargin = calculateOrderMargin(
         qty,
@@ -372,11 +367,11 @@ function TradeAppScreen() {
     try {
       const response = await createOrder({
         accountId: selectedAccount?.id || '',
-        leverage,
-        orderType: orderType as 0 | 2 | 1,
-        quantity: qty,
-        side: side,
-        symbol: currentSymbol,
+        assetId: data?.id || '',
+        type: orderType === ORDER_TYPES.LIMIT ? 'LIMIT' : 'MARKET',
+        quantity: qty.toString(),
+        side: side === ORDER_SIDES.BUY ? 'BUY' : 'SELL',
+        price: orderType === ORDER_TYPES.LIMIT ? limitPrice : undefined,
       });
       if (response) {
         showSuccess(
@@ -386,7 +381,6 @@ function TradeAppScreen() {
       } else {
         showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.failedCreateOrder'));
       }
-      refetchPositions();
       refetchOrders();
     } catch (error) {
       console.error(error);
@@ -421,7 +415,7 @@ function TradeAppScreen() {
       router.push('/login');
       return;
     }
-    handleOrder(side, ORDER_TYPE_CODES.MARKET);
+    handleOrder(side, ORDER_TYPES.MARKET);
   };
 
   const handleSymbolSelect = useCallback(

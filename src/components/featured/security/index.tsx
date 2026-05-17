@@ -49,9 +49,12 @@ function SecurityItem({ isDestructive = false, label, onPress, rightElement }: S
   );
 }
 
+import { useKyc } from '@/hook/useKyc';
+
 export default function SecurityCenter() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { kycStatus } = useKyc();
 
   const [enabledMfa, setEnabledMfa] = useState<boolean | null>(null);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
@@ -119,6 +122,32 @@ export default function SecurityCenter() {
         </div>
 
         <div className="flex flex-col">
+          <SecurityItem
+            label={t('security.kyc.title', { defaultValue: 'Identity Verification' })}
+            onPress={() => router.push('/settings/security/kyc')}
+            rightElement={
+              <div className="flex flex-row items-center gap-2">
+                <span
+                  className={cn(
+                    'text-sm font-medium',
+                    kycStatus?.status === 'APPROVED' && 'text-green-500',
+                    kycStatus?.status === 'PENDING' && 'text-yellow-500',
+                    kycStatus?.status === 'REJECTED' && 'text-red-500',
+                    !kycStatus?.status && 'text-muted-foreground',
+                  )}
+                >
+                  {kycStatus?.status === 'APPROVED'
+                    ? t('security.kyc.verified', 'Verified')
+                    : kycStatus?.status === 'PENDING'
+                      ? t('security.kyc.pending', 'Pending')
+                      : kycStatus?.status === 'REJECTED'
+                        ? t('security.kyc.rejected', 'Rejected')
+                        : t('security.kyc.unverified', 'Unverified')}
+                </span>
+                <ChevronRight size={20} className="text-muted-foreground" />
+              </div>
+            }
+          />
           <SecurityItem
             label={
               hasPassword === false

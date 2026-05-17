@@ -1,21 +1,27 @@
 import Decimal from 'decimal.js';
-import { Position, Asset } from '@/types';
-import { OrderItem, OrderSide } from '@/types/orders';
+import { Asset } from '@/types';
+import { OrderItem, ORDER_SIDES, ORDER_TYPES } from '@/types/orders';
 import { toDecimal } from '@/utils/decimal';
+
+type Position = any; // Legacy type placeholder for spot-only transition
 
 type Price = {
   bid?: number | string;
   ask?: number | string;
 };
 
-type UnrealizedPnL = Pick<
-  Position,
-  'side' | 'openPrice' | 'symbol' | 'contractSize' | 'quantity' | 'profitCurrency'
->;
+type UnrealizedPnL = {
+  side: string | number;
+  openPrice: string;
+  symbol: string;
+  contractSize?: number;
+  quantity: string;
+  profitCurrency?: string;
+};
 
-const getPriceBySide = (price: Price, side: number) => {
+const getPriceBySide = (price: Price, side: string) => {
   if (!price) return null;
-  return toDecimal(side === OrderSide.BUY ? price.bid : price.ask);
+  return toDecimal(side === ORDER_SIDES.BUY ? price.bid : price.ask);
 };
 const getBaseQuote = (symbol: string, profitCurrency?: string) => {
   // If we have profitCurrency, use it to determine quote
@@ -46,7 +52,7 @@ const getBaseQuote = (symbol: string, profitCurrency?: string) => {
 };
 const getConversionRate = (
   symbol: string,
-  side: number,
+  side: string,
   rtBySymbol: Record<string, Price>,
   profitCurrency: string,
 ): Decimal => {
@@ -84,7 +90,7 @@ const getConversionRate = (
 
 export const calculatePositionFields = (position: Position, rtBySymbol: Record<string, Price>) => {
   if (!position) return;
-  const isBuy = position.side === OrderSide.BUY;
+  const isBuy = position.side === ORDER_SIDES.BUY;
   const openPriceDecimal = toDecimal(position.openPrice);
   if (!openPriceDecimal || openPriceDecimal.lte(0)) return;
 
@@ -149,7 +155,7 @@ export const calculateUnrealizedPnL = (
   position: UnrealizedPnL,
   rtBySymbol: Record<string, Price>,
 ): number => {
-  const isBuy = position.side === OrderSide.BUY;
+  const isBuy = position.side === ORDER_SIDES.BUY;
   const openPrice = toDecimal(position.openPrice);
   if (!openPrice || openPrice.lte(0)) return 0;
   const rt = rtBySymbol?.[position.symbol];
@@ -166,7 +172,7 @@ export const calculateUnrealizedPnL = (
   const profitCurrency = position.profitCurrency;
   const rate = getConversionRate(
     position.symbol,
-    OrderSide.BUY,
+    ORDER_SIDES.BUY,
     rtBySymbol,
     profitCurrency ?? 'USD',
   );
@@ -175,7 +181,7 @@ export const calculateUnrealizedPnL = (
 };
 
 type CalcPnLUsdInput = {
-  side: OrderSide;
+  side: 'BUY' | 'SELL';
   openPrice: number;
   targetPrice: number;
   lotNumber: number;
@@ -270,7 +276,7 @@ export const calculateOrderMargin = (
     return 0;
   }
 
-  const rate = getConversionRate(symbol, 1, rtBySymbol, profitCurrency).toNumber() || 1;
+  const rate = getConversionRate(symbol, ORDER_SIDES.BUY, rtBySymbol, profitCurrency).toNumber() || 1;
   return (lot * contractSize * price * rate) / leverage;
 };
 

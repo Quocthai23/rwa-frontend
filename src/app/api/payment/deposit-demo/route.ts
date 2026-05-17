@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 
 import { depositDemo } from '@/services/paymentService';
-import { type CreateWalletPayload } from '@/types/payment';
+import { type DepositDemoPayload } from '@/types/payment';
 import { withServerTokenRefresh } from '@/app/api/_utils/auth';
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as CreateWalletPayload;
+  const body = (await request.json()) as DepositDemoPayload;
 
   return withServerTokenRefresh(
     request,

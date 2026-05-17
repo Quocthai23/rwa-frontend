@@ -79,3 +79,20 @@ export const getAssetMarketData = async (assetId: string): Promise<AssetMarketDa
     skipAuth: true,
   });
 };
+
+export const submitAssetOnboardingAPI = async (
+  assetId: string,
+  data: any, // Use proper DTO type if available
+  authHeader?: string,
+): Promise<any> => {
+  if (isServer) {
+    const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
+    return apiClient.post(ASSETS_ENDPOINTS.ONBOARDING(assetId), data, {
+      headers,
+    });
+  }
+
+  return apiClient.post(`/api/assets/${assetId}/onboarding/submit`, data, {
+    baseUrl: CLIENT_BASE_URL,
+  });
+};

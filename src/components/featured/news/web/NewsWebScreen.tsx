@@ -4,13 +4,11 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
-import NewsCalendar from './components/NewsCalendar';
 import NewsContent from './components/NewsContent';
-import NewsStrategy from './components/NewsStrategy';
 import { NewsWebHeader } from './components/NewsWebHeader';
 
-type NewsTabId = 'strategy' | 'calendar' | 'news';
-const VALID_TABS: NewsTabId[] = ['strategy', 'calendar', 'news'];
+type NewsTabId = 'news';
+const VALID_TABS: NewsTabId[] = ['news'];
 
 export default function NewsWebScreen() {
   const { t } = useTranslation();
@@ -18,7 +16,7 @@ export default function NewsWebScreen() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<NewsTabId>('strategy');
+  const [activeTab, setActiveTab] = useState<NewsTabId>('news');
 
   useEffect(() => {
     if (!tabParam) return;
@@ -39,18 +37,6 @@ export default function NewsWebScreen() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'strategy':
-        return (
-          <div className="w-full px-4 py-5 xl:px-6">
-            <NewsStrategy />
-          </div>
-        );
-      case 'calendar':
-        return (
-          <div className="w-full px-4 py-5 xl:px-6">
-            <NewsCalendar />
-          </div>
-        );
       case 'news':
         return (
           <div className="w-full px-4 py-5 xl:px-6">
@@ -60,7 +46,7 @@ export default function NewsWebScreen() {
       default:
         return (
           <div className="w-full px-4 py-5 xl:px-6">
-            <NewsStrategy />
+            <NewsContent />
           </div>
         );
     }
@@ -71,8 +57,6 @@ export default function NewsWebScreen() {
       <div className="bg-white dark:bg-neutral-950">
         <NewsWebHeader
           tabs={[
-            { id: 'strategy', label: t('home.strategyTab') },
-            { id: 'calendar', label: t('home.calendarTab') },
             { id: 'news', label: t('home.newsTab') },
           ]}
           activeTab={activeTab}

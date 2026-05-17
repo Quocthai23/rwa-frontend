@@ -13,10 +13,6 @@ export type AccountBalanceResponse = {
   accountId: string;
   currentBalance: string;
   pnl: string;
-  positionLots?: Array<{
-    symbol: string;
-    quantity: string;
-  }>;
 };
 const isServer = typeof window === 'undefined';
 
@@ -93,40 +89,6 @@ export const updateAccountName = async (id: string, name: string): Promise<Accou
   }
 };
 
-export const updateAccountLeverage = async (
-  id: string,
-  leverage: number,
-  accessToken?: string,
-): Promise<Account> => {
-  try {
-    if (isServer) {
-      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-
-      const response = await apiClient.patch<Account>(
-        ACCOUNTS_ENDPOINTS.UPDATE(id),
-        { leverage },
-        {
-          headers,
-          skipAuth: !accessToken,
-        },
-      );
-      return response;
-    }
-
-    return apiClient.patch<Account>(
-      `/api/accounts/${id}`,
-      { leverage },
-      {
-        baseUrl: CLIENT_BASE_URL,
-        skipAuth: false,
-      },
-    );
-  } catch (error) {
-    console.error('Error updating account leverage:', error);
-    throw error;
-  }
-};
-
 export const archiveAccount = async (id: string): Promise<Account> => {
   try {
     const response = await apiClient.patch<Account>(ACCOUNTS_ENDPOINTS.UPDATE(id), {
@@ -136,42 +98,6 @@ export const archiveAccount = async (id: string): Promise<Account> => {
     return response;
   } catch (error) {
     console.error('Error archiving account:', error);
-    throw error;
-  }
-};
-
-export const getAccountBalance = async (
-  accountId: string,
-  accessToken?: string,
-): Promise<AccountBalanceResponse> => {
-  try {
-    if (isServer) {
-      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-      const response = await apiClient.get<AccountBalanceResponse>(
-        ACCOUNTS_ENDPOINTS.BALANCE,
-        {
-          accountId,
-        },
-        {
-          headers,
-        },
-      );
-      return response;
-    }
-
-    const response = await apiClient.get<AccountBalanceResponse>(
-      `api${ACCOUNTS_ENDPOINTS.BALANCE}`,
-      {
-        accountId,
-      },
-      {
-        baseUrl: CLIENT_BASE_URL,
-      },
-    );
-
-    return response;
-  } catch (error) {
-    // console.error('Error fetching account balance:', error.message);
     throw error;
   }
 };

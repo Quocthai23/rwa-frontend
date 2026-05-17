@@ -17,7 +17,6 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/shared/atoms/button';
 import { Sheet, SheetContent } from '@/components/shared/atoms/web/sheet';
-import { STATUS_HISTORY_ID, STATUS_HISTORY_NAME, TYPE_HISTORY_NAME } from '@/constants/payment';
 import { cn } from '@/lib/utils';
 import type { PaymentHistoryItem } from '@/types/payment';
 import { copyText } from '@/utils/copy';
@@ -43,43 +42,35 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
     }
   }, [isVisible]);
 
-  const getStatusColor = () => {
-    if (!transaction) return { bg: 'bg-muted', text: 'text-muted-foreground' };
-    switch (transaction.status) {
-      case STATUS_HISTORY_ID.COMPLETED:
-      case STATUS_HISTORY_ID.PENDING:
-      case STATUS_HISTORY_ID.APPROVED:
-        return { bg: 'bg-green-50', text: 'text-green-500' };
-      case STATUS_HISTORY_ID.PROCESSING:
-        return { bg: 'bg-yellow-50', text: 'text-yellow-500' };
-      case STATUS_HISTORY_ID.FAILED:
-      case STATUS_HISTORY_ID.REJECTED:
-      case STATUS_HISTORY_ID.CANCELLED:
-        return { bg: 'bg-red-50', text: 'text-red-500' };
-      default:
-        return { bg: 'bg-muted', text: 'text-muted-foreground' };
-    }
+  const STATUS_COLOR_MAP: Record<string, { bg: string; text: string }> = {
+    COMPLETED: { bg: 'bg-green-50', text: 'text-green-500' },
+    PENDING: { bg: 'bg-green-50', text: 'text-green-500' },
+    FAILED: { bg: 'bg-red-50', text: 'text-red-500' },
+    CANCELLED: { bg: 'bg-red-50', text: 'text-red-500' },
   };
+  const statusColor = transaction
+    ? (STATUS_COLOR_MAP[transaction.status] ?? { bg: 'bg-muted', text: 'text-muted-foreground' })
+    : { bg: 'bg-muted', text: 'text-muted-foreground' };
 
-  const statusColor = getStatusColor();
-  const isOutgoingTransfer =
-    transaction?.type === 1 && !!transaction?.withdrawalMetadata?.toAccountId;
-  const isIncomingTransfer =
-    transaction?.type === 0 && !!transaction?.withdrawalMetadata?.toAccountId;
-  const isTransfer = isOutgoingTransfer || isIncomingTransfer;
-  const isWithdrawal = transaction?.type === 1 && !isOutgoingTransfer;
-  const isDeposit = transaction?.type === 0 && !isIncomingTransfer;
+  const isDeposit = transaction?.type === 'DEPOSIT';
+  const isTransfer = transaction?.type === 'TRANSFER';
+  const isWithdrawal = transaction?.type === 'WITHDRAW';
+
+  const TYPE_DISPLAY: Record<string, string> = {
+    DEPOSIT: 'Deposit', WITHDRAW: 'Withdrawal', TRANSFER: 'Transfer', DIVIDEND_CLAIM: 'Dividend',
+  };
+  const STATUS_DISPLAY: Record<string, string> = {
+    COMPLETED: 'Completed', PENDING: 'Pending', FAILED: 'Failed', CANCELLED: 'Cancelled',
+  };
 
   const typeName = isTransfer
     ? t('transactionHistory.transfer')
     : transaction
-      ? TYPE_HISTORY_NAME[transaction.type as keyof typeof TYPE_HISTORY_NAME] ||
-      t('transactionHistory.unknown')
+      ? TYPE_DISPLAY[transaction.type] || t('transactionHistory.unknown')
       : t('transactionHistory.unknown');
 
   const statusName = transaction
-    ? STATUS_HISTORY_NAME[transaction.status as keyof typeof STATUS_HISTORY_NAME] ||
-    t('transactionHistory.unknown')
+    ? STATUS_DISPLAY[transaction.status] || t('transactionHistory.unknown')
     : t('transactionHistory.unknown');
 
   const formatDate = (dateString: string) => {
@@ -96,8 +87,8 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
 
   const formatAmount = () => {
     if (!transaction) return `0.00 ${t('transactionHistory.usd')}`;
-    const amount = parseFloat(transaction.netAmount);
-    const sign = transaction.type === 1 ? '-' : '+';
+    const amount = parseFloat(transaction.amount);
+    const sign = isDeposit ? '+' : '-';
     return `${sign}${Math.abs(amount).toFixed(2)} ${t('transactionHistory.usd')}`;
   };
 
@@ -107,7 +98,7 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const isCompleted = transaction?.status === STATUS_HISTORY_ID.COMPLETED;
+  const isCompleted = transaction?.status === 'COMPLETED';
 
   return (
     <Sheet open={isVisible} onOpenChange={(open) => !open && onClose()}>
@@ -231,7 +222,7 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
                   </div>
                   <div className="flex flex-1 flex-col gap-0.5">
                     <span className="text-body-small-semibold text-foreground">
-                      {transaction.type === 0
+                      {isDeposit
                         ? t('transactionHistory.creditingToAccount')
                         : t('transactionHistory.transferComplete')}
                     </span>
@@ -267,29 +258,26 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
                         className="size-6"
                       />
                       <span className="text-body-large-medium text-foreground">
-                        {transaction.accountId}
+                        {transaction.userId}
                       </span>
                     </div>
                   </div>
 
-                  {isWithdrawal && transaction.withdrawalMetadata?.address ? (
+                  {isWithdrawal && transaction.txHash ? (
                     <div className="flex w-full items-center justify-between gap-1">
                       <span className="text-body-small-regular text-muted-foreground">
                         {t('transactionHistory.to')}
                       </span>
                       <div className="flex items-center gap-2">
                         <Image
-                          src={
-                            chainIconMap[String(transaction.withdrawalMetadata.chainId)] ??
-                            '/assets/images/97.png'
-                          }
+                          src="/assets/images/97.png"
                           alt="Chain"
                           width={24}
                           height={24}
                           className="size-6"
                         />
                         <span className="text-body-large-medium text-foreground max-w-[200px] truncate">
-                          {transaction.withdrawalMetadata.address}
+                          {transaction.txHash}
                         </span>
                       </div>
                     </div>
@@ -309,9 +297,7 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
                           className="size-6"
                         />
                         <span className="text-body-large-medium text-foreground">
-                          {isOutgoingTransfer
-                            ? transaction.withdrawalMetadata?.toAccountId
-                            : transaction.accountId}
+                          {t('transactionHistory.transfer')}
                         </span>
                       </div>
                     </div>

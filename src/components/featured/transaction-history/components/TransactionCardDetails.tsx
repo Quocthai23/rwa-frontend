@@ -5,7 +5,6 @@ import {
   Copy01,
   Clock,
   DotsVertical,
-  ArrowCircleRight,
   ArrowCircleBrokenUpRight,
   ArrowCircleBrokenDownLeft,
   SwitchHorizontal01,
@@ -15,11 +14,11 @@ import Image from 'next/image';
 import React from 'react';
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/shared/atoms/dialog';
-import { STATUS_HISTORY_ID, STATUS_HISTORY_NAME, TYPE_HISTORY_NAME } from '@/constants/payment';
 import { cn } from '@/lib/utils';
 import type { PaymentHistoryItem } from '@/types/payment';
 import { useTranslation } from 'react-i18next';
 import { copyText } from '@/utils/copy';
+
 type Props = {
   transaction?: PaymentHistoryItem;
   isVisible: boolean;
@@ -31,53 +30,45 @@ const chainIconMap: Record<string, string> = {
   '11155111': '/assets/images/11155111.png',
 };
 
+// BE now uses string enums for type and status
+const STATUS_COLOR_MAP: Record<string, { bg: string; text: string }> = {
+  COMPLETED: { bg: 'bg-green-50', text: 'text-green-500' },
+  PENDING: { bg: 'bg-yellow-50', text: 'text-yellow-500' },
+  FAILED: { bg: 'bg-red-50', text: 'text-red-500' },
+  CANCELLED: { bg: 'bg-red-50', text: 'text-red-500' },
+};
+
+const STATUS_DISPLAY: Record<string, string> = {
+  COMPLETED: 'Completed',
+  PENDING: 'Pending',
+  FAILED: 'Failed',
+  CANCELLED: 'Cancelled',
+};
+
+const TYPE_DISPLAY: Record<string, string> = {
+  DEPOSIT: 'Deposit',
+  WITHDRAW: 'Withdrawal',
+  TRANSFER: 'Transfer',
+  DIVIDEND_CLAIM: 'Dividend',
+};
+
 const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
   const { t } = useTranslation();
-  // Get status color mappings (using Tailwind classes instead of raw hex values)
-  const getStatusColor = () => {
+
+  const getStatusStyle = () => {
     if (!transaction) return { bg: 'bg-muted', text: 'text-muted-foreground' };
-
-    const getStatusColor = () => {
-      switch (transaction.status) {
-        case STATUS_HISTORY_ID.COMPLETED: // Completed
-          return { bg: 'bg-green-50', text: 'text-green-500' };
-        case STATUS_HISTORY_ID.PENDING: // Pending
-          return { bg: 'bg-green-50', text: 'text-green-500' };
-        case STATUS_HISTORY_ID.APPROVED: // Approved
-          return { bg: 'bg-green-50', text: 'text-green-500' };
-        case STATUS_HISTORY_ID.PROCESSING: // Processing
-          return { bg: 'bg-yellow-50', text: 'text-yellow-500' };
-        case STATUS_HISTORY_ID.FAILED: // Failed
-          return { bg: 'bg-red-50', text: 'text-red-500' };
-        case STATUS_HISTORY_ID.REJECTED: // Rejected
-          return { bg: 'bg-red-50', text: 'text-red-500' };
-        case STATUS_HISTORY_ID.CANCELLED: // Cancelled
-          return { bg: 'bg-red-50', text: 'text-red-500' };
-        default:
-          return { bg: 'bg-muted', text: 'text-muted-foreground' };
-      }
-    };
-
-    return getStatusColor();
+    return STATUS_COLOR_MAP[transaction.status] ?? { bg: 'bg-muted', text: 'text-muted-foreground' };
   };
 
-  const statusColor = getStatusColor();
+  const statusColor = getStatusStyle();
 
-  const isTransfer = transaction?.type === 1 && !!transaction?.withdrawalMetadata?.toAccountId;
-  const isWithdrawal = transaction?.type === 1 && !isTransfer;
-  const isDeposit = transaction?.type === 0;
+  const isDeposit = transaction?.type === 'DEPOSIT';
+  const isTransfer = transaction?.type === 'TRANSFER';
+  const isWithdrawal = transaction?.type === 'WITHDRAW';
 
-  const typeName = isTransfer
-    ? t('transactionHistory.transfer')
-    : transaction ? TYPE_HISTORY_NAME[transaction.type as keyof typeof TYPE_HISTORY_NAME] || t('transactionHistory.unknown')
-      : t('transactionHistory.unknown');
+  const typeName = TYPE_DISPLAY[transaction?.type ?? ''] ?? t('transactionHistory.unknown');
+  const statusName = STATUS_DISPLAY[transaction?.status ?? ''] ?? t('transactionHistory.unknown');
 
-  const statusName = transaction
-    ? STATUS_HISTORY_NAME[transaction.status as keyof typeof STATUS_HISTORY_NAME] ||
-    t('transactionHistory.unknown')
-    : t('transactionHistory.unknown');
-
-  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -90,15 +81,13 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
     return `${day} ${month}, ${time}`;
   };
 
-  // Format amount
   const formatAmount = () => {
     if (!transaction) return `0 ${t('transactionHistory.usd')}`;
-    const amount = parseFloat(transaction.netAmount);
-    const sign = transaction.type === 1 ? '-' : '+';
-    return `${sign}${Math.abs(amount)} ${t('transactionHistory.usd')}`;
+    const amount = parseFloat(transaction.amount);
+    const sign = isDeposit ? '+' : '-';
+    return `${sign}${Math.abs(amount).toFixed(2)} ${t('transactionHistory.usd')}`;
   };
 
-  // Copy to clipboard
   const [isCopied, setIsCopied] = React.useState(false);
   const handleCopy = (text: string) => {
     copyText(text);
@@ -106,7 +95,7 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const isCompleted = transaction?.status === STATUS_HISTORY_ID.COMPLETED;
+  const isCompleted = transaction?.status === 'COMPLETED';
 
   return (
     <Dialog open={isVisible} onOpenChange={(open) => !open && onClose()}>
@@ -122,7 +111,6 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
               {/* Header */}
               <div className="flex flex-col gap-3">
                 <div className="flex flex-row items-start justify-between">
-                  {/* Left: Title and Badge */}
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row items-center gap-2">
                       {isDeposit ? (
@@ -148,7 +136,6 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                     </span>
                   </div>
 
-                  {/* Close button */}
                   <button
                     onClick={onClose}
                     className="hover:bg-muted flex size-7 items-center justify-center rounded-full transition-colors"
@@ -157,17 +144,16 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                   </button>
                 </div>
 
-                {/* Txh and Amount */}
                 <div className="flex flex-row items-center justify-between">
                   <div className="flex flex-row items-center gap-1">
                     <span className="text-body-small-regular text-muted-foreground">
                       {t('transactionHistory.txh')}
                     </span>
                     <span className="text-body-small-regular text-primary-500">
-                      {transaction.id.slice(-12)}
+                      {transaction.txHash?.slice(-12) ?? transaction.id.slice(-12)}
                     </span>
                     <button
-                      onClick={() => handleCopy(transaction.id)}
+                      onClick={() => handleCopy(transaction.txHash ?? transaction.id)}
                       className="ml-1 flex items-center justify-center hover:opacity-70"
                     >
                       {isCopied ? (
@@ -183,7 +169,6 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
 
               {/* Stepper */}
               <div className="flex flex-col gap-2">
-                {/* Step 1: Created */}
                 <div className="flex flex-row gap-2">
                   <div className="bg-primary-100 flex size-8 shrink-0 items-center justify-center rounded-full">
                     <Check className="text-primary-500 size-4" />
@@ -198,10 +183,8 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <DotsVertical className="text-primary-500 ml-1 size-6" />
 
-                {/* Step 2: Processed */}
                 <div className="flex flex-row gap-2">
                   <div className="bg-primary-100 flex size-8 shrink-0 items-center justify-center rounded-full">
                     <Check className="text-primary-500 size-4" />
@@ -216,12 +199,10 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                   </div>
                 </div>
 
-                {/* Divider */}
                 <DotsVertical
                   className={cn('ml-1 size-6', isCompleted ? 'text-primary-500' : 'text-muted')}
                 />
 
-                {/* Step 3: Final step based on status */}
                 <div className="flex flex-row gap-2">
                   <div
                     className={cn(
@@ -237,13 +218,13 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                   </div>
                   <div className="flex flex-1 flex-col gap-0.5">
                     <span className="text-body-small-semibold text-foreground">
-                      {transaction.type === 0
+                      {isDeposit
                         ? t('transactionHistory.creditingToAccount')
                         : t('transactionHistory.transferComplete')}
                     </span>
                     {isCompleted && (
                       <span className="text-caption-regular text-muted-foreground">
-                        {formatDate(transaction.createdAt || new Date().toISOString())}
+                        {formatDate(transaction.updatedAt || transaction.createdAt || new Date().toISOString())}
                       </span>
                     )}
                   </div>
@@ -276,52 +257,27 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                         className="size-6"
                       />
                       <span className="text-body-large-medium text-foreground">
-                        {transaction.accountId}
+                        {transaction.userId}
                       </span>
                     </div>
                   </div>
 
-                  {/* To */}
-                  {/* UI For Withdrawal (To Address) */}
-                  {isWithdrawal && transaction.withdrawalMetadata?.address && (
+                  {/* To: Withdrawal address */}
+                  {isWithdrawal && transaction.txHash && (
                     <div className="flex w-full flex-row items-center justify-between gap-1">
                       <span className="text-body-small-regular text-muted-foreground">
                         {t('transactionHistory.to')}
                       </span>
                       <div className="flex flex-row items-center gap-2">
                         <Image
-                          src={
-                            chainIconMap[String(transaction.withdrawalMetadata.chainId)] ??
-                            '/assets/images/97.png'
-                          }
+                          src={chainIconMap['56'] ?? '/assets/images/97.png'}
                           alt="Chain"
                           width={24}
                           height={24}
                           className="size-6"
                         />
                         <span className="text-body-large-medium text-foreground max-w-[150px] truncate md:max-w-[200px]">
-                          {transaction.withdrawalMetadata.address}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* UI For Transfer (To Account ID) */}
-                  {isTransfer && transaction.withdrawalMetadata?.toAccountId && (
-                    <div className="flex w-full flex-row items-center justify-between gap-1">
-                      <span className="text-body-small-regular text-muted-foreground">
-                        {t('transactionHistory.to')}
-                      </span>
-                      <div className="flex flex-row items-center gap-2">
-                        <Image
-                          src="/assets/images/transaction-history/icon.png"
-                          alt="Icon"
-                          width={24}
-                          height={24}
-                          className="size-6"
-                        />
-                        <span className="text-body-large-medium text-foreground">
-                          {transaction.withdrawalMetadata.toAccountId}
+                          {transaction.txHash}
                         </span>
                       </div>
                     </div>
@@ -337,7 +293,7 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                       {t('transactionHistory.commission')}
                     </span>
                     <span className="text-body-large-medium text-foreground">
-                      0 {t('transactionHistory.usd')}
+                      {transaction.fee ?? '0'} {t('transactionHistory.usd')}
                     </span>
                   </div>
                   <div className="flex flex-row justify-between">
@@ -345,7 +301,7 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
                       {t('transactionHistory.grossAmount')}
                     </span>
                     <span className="text-body-large-medium text-foreground">
-                      {transaction.netAmount} {t('transactionHistory.usd')}
+                      {transaction.amount} {t('transactionHistory.usd')}
                     </span>
                   </div>
                 </div>

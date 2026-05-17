@@ -84,7 +84,7 @@ function AccountDropdown() {
         {showAccountDropdown && (
           <>
             <div
-              className="fixed inset-y-0 top-16 left-1/2 z-50 w-full max-w-192 -translate-x-1/2 bg-black/50"
+              className="fixed inset-y-0 top-16 left-1/2 z-50 w-full max-w-3xl -translate-x-1/2 bg-black/50"
               onClick={() => setShowAccountDropdown(false)}
             />
             <div className="bg-background absolute top-full right-0 left-0 z-50 shadow-lg">

@@ -18,6 +18,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import type { WithdrawPayload } from '@/types/payment';
 import { sanitizeDecimalInput } from '@/utils/decimalInput';
+import { apiClient } from '@/services/apiClient';
+import { CLIENT_BASE_URL } from '@/services/baseUrl';
 
 type WithdrawFlowSheetProps = {
   isOpen: boolean;
@@ -41,6 +43,7 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
   const [otpCode, setOtpCode] = useState('');
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [challengeId, setChallengeId] = useState('');
 
   const availableBalance = useMemo(
     () => parseFloat(selectedAccount?.availableBalance || '0'),
@@ -60,6 +63,7 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
     setOtpCode('');
     setOtpCountdown(0);
     setIsSendingOtp(false);
+    setChallengeId('');
   }, []);
 
   useEffect(() => {
@@ -71,25 +75,6 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
     return () => window.clearInterval(timer);
   }, [otpCountdown]);
 
-  const getApiErrorCode = (error: unknown): string | undefined => {
-    if (typeof error !== 'object' || error === null) return undefined;
-    if ('code' in error && typeof (error as { code?: unknown }).code === 'string') {
-      return (error as { code: string }).code;
-    }
-    return undefined;
-  };
-
-  const isRateLimitOtpError = (error: unknown): boolean => {
-    const code = getApiErrorCode(error)?.toLowerCase();
-    if (code === 'rate-limit-exceeded') return true;
-
-    const message = localizeApiError(error, t).toLowerCase();
-    return (
-      message.includes('rate-limit-exceeded') ||
-      (message.includes('otp') && message.includes('recently sent'))
-    );
-  };
-
   const handleAmountChange = (text: string) => {
     setAmount(
       sanitizeDecimalInput(text, {
@@ -99,11 +84,10 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
     );
   };
 
-  const withdrawPayloadBase: Omit<WithdrawPayload, 'idempotencyKey'> | null = selectedAccount?.id
+  const withdrawPayloadBase: Omit<WithdrawPayload, 'idempotencyKey' | 'challengeId'> | null = selectedAccount?.id
     ? {
-        accountId: selectedAccount.id,
-        address: normalizedAddress,
         amount,
+        destinationAddress: normalizedAddress,
         chainId,
       }
     : null;
@@ -117,9 +101,29 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(userEmail, 'withdrawal');
-      setOtpCountdown(60);
-      showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
+      const response = await apiClient.post<any>(
+        '/api/payment/withdraw',
+        {
+          purpose: 'WITHDRAW',
+          payload: {
+            amount,
+            destinationAddress: normalizedAddress,
+            chainId,
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
+      } else {
+        throw new Error('MFA challenge failed to initialize');
+      }
     } catch (error) {
       showError(t('security.resetPassword.otpSendFailedTitle'), localizeApiError(error, t));
     } finally {
@@ -135,19 +139,31 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(userEmail, 'withdrawal');
-      setOtpCountdown(60);
-      showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
-      setStep('otp');
-    } catch (error) {
-      if (isRateLimitOtpError(error)) {
+      const response = await apiClient.post<any>(
+        '/api/payment/withdraw',
+        {
+          purpose: 'WITHDRAW',
+          payload: {
+            amount,
+            destinationAddress: normalizedAddress,
+            chainId,
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
         setStep('otp');
-        showInfo(
-          t('withdraw.detail.otpAlreadySentTitle'),
-          t('withdraw.detail.otpAlreadySentMessage'),
-        );
-        return;
+      } else {
+        throw new Error('MFA challenge failed to initialize');
       }
+    } catch (error) {
       showError(t('security.resetPassword.otpSendFailedTitle'), localizeApiError(error, t));
     } finally {
       setIsSendingOtp(false);
@@ -254,6 +270,7 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
             onResend={handleResendOtp}
             resendCountdown={otpCountdown}
             recipientEmail={userEmail}
+            challengeId={challengeId}
             withdrawPayload={withdrawPayloadBase}
             onWithdrawSuccess={() => setStep('success')}
             onWithdrawError={handleWithdrawError}

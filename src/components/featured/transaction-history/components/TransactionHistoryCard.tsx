@@ -9,12 +9,6 @@ import {
 } from '@untitledui/icons';
 import Image from 'next/image';
 
-import {
-  STATUS_HISTORY_ID,
-  STATUS_HISTORY_NAME,
-  TYPE_HISTORY_ID,
-  TYPE_HISTORY_NAME,
-} from '@/constants/payment';
 import { cn } from '@/lib/utils';
 import type { PaymentHistoryItem } from '@/types/payment';
 import { useTranslation } from 'react-i18next';
@@ -31,44 +25,35 @@ const chainIconMap: Record<string, string> = {
 
 const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
   const { t } = useTranslation();
-  const getStatusColor = () => {
-    switch (transaction.status) {
-      case STATUS_HISTORY_ID.COMPLETED: // Completed
-        return { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-500 dark:text-green-200' };
-      case STATUS_HISTORY_ID.PENDING: // Pending
-        return { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-500 dark:text-green-200' };
-      case STATUS_HISTORY_ID.APPROVED: // Approved
-        return { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-500 dark:text-green-200' };
-      case STATUS_HISTORY_ID.PROCESSING: // Processing
-        return {
-          bg: 'bg-yellow-50 dark:bg-yellow-900',
-          text: 'text-yellow-500 dark:text-yellow-200',
-        };
-      case STATUS_HISTORY_ID.FAILED: // Failed
-        return { bg: 'bg-red-50 dark:bg-red-900', text: 'text-red-500 dark:text-red-200' };
-      case STATUS_HISTORY_ID.REJECTED: // Rejected
-        return { bg: 'bg-red-50 dark:bg-red-900', text: 'text-red-500 dark:text-red-200' };
-      case STATUS_HISTORY_ID.CANCELLED: // Cancelled
-        return { bg: 'bg-red-50 dark:bg-red-900', text: 'text-red-500 dark:text-red-200' };
-      default:
-        return { bg: 'bg-muted', text: 'text-muted-foreground' };
-    }
+  const STATUS_COLOR_MAP: Record<string, { bg: string; text: string }> = {
+    COMPLETED: { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-500 dark:text-green-200' },
+    PENDING: { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-500 dark:text-green-200' },
+    FAILED: { bg: 'bg-red-50 dark:bg-red-900', text: 'text-red-500 dark:text-red-200' },
+    CANCELLED: { bg: 'bg-red-50 dark:bg-red-900', text: 'text-red-500 dark:text-red-200' },
   };
 
-  const statusColor = getStatusColor();
-  const isTransfer = transaction.type === TYPE_HISTORY_ID.WITHDRAWAL && !!transaction?.withdrawalMetadata?.toAccountId;
-  const isWithdrawal = transaction.type === TYPE_HISTORY_ID.WITHDRAWAL && !isTransfer;
-  const isDeposit = transaction.type === TYPE_HISTORY_ID.DEPOSIT;
+  const statusColor = STATUS_COLOR_MAP[transaction.status] ?? { bg: 'bg-muted', text: 'text-muted-foreground' };
+
+  const TYPE_DISPLAY: Record<string, string> = {
+    DEPOSIT: 'Deposit',
+    WITHDRAW: 'Withdrawal',
+    TRANSFER: 'Transfer',
+    DIVIDEND_CLAIM: 'Dividend',
+  };
+
+  const isDeposit = transaction.type === 'DEPOSIT';
+  const isTransfer = transaction.type === 'TRANSFER';
+  const isWithdrawal = transaction.type === 'WITHDRAW';
 
   const typeName = isTransfer
     ? t('transactionHistory.transfer')
-    : TYPE_HISTORY_NAME[transaction.type as keyof typeof TYPE_HISTORY_NAME] || t('transactionHistory.unknown');
+    : TYPE_DISPLAY[transaction.type] || t('transactionHistory.unknown');
 
-  const statusName =
-    STATUS_HISTORY_NAME[transaction.status as keyof typeof STATUS_HISTORY_NAME] ||
-    t('transactionHistory.unknown');
+  const STATUS_DISPLAY: Record<string, string> = {
+    COMPLETED: 'Completed', PENDING: 'Pending', FAILED: 'Failed', CANCELLED: 'Cancelled',
+  };
+  const statusName = STATUS_DISPLAY[transaction.status] || t('transactionHistory.unknown');
 
-  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -81,11 +66,10 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
     return `${day} ${month}, ${time}`;
   };
 
-  // Format amount with sign
   const formatAmount = () => {
-    const amount = parseFloat(transaction.netAmount);
-    const sign = transaction.type === 1 ? '-' : '+'; // Withdrawal is negative
-    return `${sign}${Math.abs(amount)} ${t('transactionHistory.usd')}`;
+    const amount = parseFloat(transaction.amount);
+    const sign = isDeposit ? '+' : '-';
+    return `${sign}${Math.abs(amount).toFixed(2)} ${t('transactionHistory.usd')}`;
   };
 
   return (
@@ -131,8 +115,8 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
         </div>
       </div>
 
-      {/* Details: From -> To */}
-      {isWithdrawal && transaction.withdrawalMetadata?.address && (
+      {/* Withdrawal details */}
+      {isWithdrawal && transaction.txHash && (
         <div className="mt-3 w-full border-t border-transparent pt-3">
           <div className="flex flex-row items-center gap-3">
             <div className="flex w-1/3 flex-row items-center gap-2">
@@ -144,7 +128,7 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
                 className="size-6 shrink-0"
               />
               <span className="text-body-small-regular text-foreground flex-1 truncate">
-                {transaction.accountId}
+                {transaction.userId}
               </span>
             </div>
 
@@ -152,52 +136,14 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
 
             <div className="flex flex-1 flex-row items-center gap-2 overflow-hidden">
               <Image
-                src={
-                  chainIconMap[String(transaction.withdrawalMetadata.chainId)] ??
-                  '/assets/images/97.png'
-                }
+                src="/assets/images/97.png"
                 alt="Chain"
                 width={24}
                 height={24}
                 className="size-6 shrink-0"
               />
               <span className="text-body-small-regular text-foreground flex-1 truncate">
-                {transaction.withdrawalMetadata.address}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Transfer Details */}
-      {isTransfer && transaction.withdrawalMetadata?.toAccountId && (
-        <div className="mt-3 w-full border-t border-transparent pt-3">
-          <div className="flex flex-row items-center gap-3">
-            <div className="flex w-1/3 flex-row items-center gap-2">
-              <Image
-                src="/assets/images/transaction-history/icon.png"
-                alt="Icon"
-                width={24}
-                height={24}
-                className="size-6 shrink-0"
-              />
-              <span className="text-body-small-regular text-foreground flex-1 truncate">
-                {transaction.accountId}
-              </span>
-            </div>
-
-            <ArrowRight className="text-muted-foreground size-4 shrink-0" />
-
-            <div className="flex flex-1 flex-row items-center gap-2 overflow-hidden">
-              <Image
-                src="/assets/images/transaction-history/icon.png"
-                alt="Icon"
-                width={24}
-                height={24}
-                className="size-6 shrink-0"
-              />
-              <span className="text-body-small-regular text-foreground flex-1 truncate">
-                {transaction.withdrawalMetadata.toAccountId}
+                {transaction.txHash}
               </span>
             </div>
           </div>

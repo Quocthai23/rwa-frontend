@@ -11,7 +11,7 @@ import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { useGetPaymentHistory } from '@/hook/payment/useGetPaymentHistory';
 import { useAccounts } from '@/hook/useAccount';
 import { useAccountStore } from '@/store/useAccountStore';
-import type { PaymentHistoryItem } from '@/types/payment';
+import type { PaymentHistoryItem, GetPaymentHistoryParams } from '@/types/payment';
 import { toEndOfDayISO, toStartOfDayISO } from '@/utils/dateUtils';
 
 import DateRangePicker from '../components/DateRangePicker';
@@ -62,7 +62,7 @@ export default function TransactionHistoryWeb() {
     weekAgo.setDate(today.getDate() - 7);
     return { startDate: toStartOfDayISO(weekAgo), endDate: toEndOfDayISO(today) };
   });
-  const [filters, setFilters] = useState<{ type?: number[]; status?: number[] }>({
+  const [filters, setFilters] = useState<{ type?: string[]; status?: string[] }>({
     type: [],
     status: [],
   });
@@ -82,13 +82,15 @@ export default function TransactionHistoryWeb() {
     }
   }, [accounts, selectedAccount?.id, selectedAccountId]);
 
-  const apiTypes = useMemo(() => {
-    if (!filters.type || filters.type.length === 0) return [];
-    if (filters.type.includes(2)) {
-      return [];
-    }
-    return filters.type;
+  const apiType = useMemo(() => {
+    if (!filters.type || filters.type.length === 0) return undefined;
+    return filters.type[0] as GetPaymentHistoryParams['type'];
   }, [filters.type]);
+
+  const apiStatus = useMemo(() => {
+    if (!filters.status || filters.status.length === 0) return undefined;
+    return filters.status[0] as GetPaymentHistoryParams['status'];
+  }, [filters.status]);
 
   const { data, isFetching } = useGetPaymentHistory({
     accountId: selectedAccountId || '',
@@ -96,8 +98,8 @@ export default function TransactionHistoryWeb() {
     skip: pagination.skip,
     startDate: dateRange.startDate,
     endDate: dateRange.endDate,
-    type: apiTypes,
-    status: filters.status,
+    type: apiType,
+    status: apiStatus,
   });
 
   const { list: newTransactions, total: totalTransactions } = useMemo(() => {
@@ -111,18 +113,7 @@ export default function TransactionHistoryWeb() {
         : [];
     let list = rawList;
     if (filters.type && filters.type.length > 0) {
-      list = rawList.filter((tx) => {
-        const isOutgoingTransfer = tx.type === 1 && !!tx?.withdrawalMetadata?.toAccountId;
-        const isIncomingTransfer = tx.type === 0 && !!tx?.withdrawalMetadata?.toAccountId;
-        const isTransfer = isOutgoingTransfer || isIncomingTransfer;
-        const isDeposit = tx.type === 0 && !isIncomingTransfer;
-        const isWithdrawal = tx.type === 1 && !isOutgoingTransfer;
-
-        if (filters.type!.includes(2) && isTransfer) return true;
-        if (filters.type!.includes(0) && isDeposit) return true;
-        if (filters.type!.includes(1) && isWithdrawal) return true;
-        return false;
-      });
+      list = rawList.filter((tx) => filters.type!.includes(tx.type));
     }
 
     const total =

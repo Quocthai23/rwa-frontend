@@ -25,6 +25,8 @@ import { sanitizeDecimalInput } from '@/utils/decimalInput';
 import { useTranslation } from 'react-i18next';
 import { localizeApiError } from '@/i18n/apiErrors';
 import { useAccounts } from '@/hook/useAccount';
+import { apiClient } from '@/services/apiClient';
+import { CLIENT_BASE_URL } from '@/services/baseUrl';
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -77,6 +79,7 @@ export default function Transfer() {
   const [otpCode, setOtpCode] = useState('');
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [challengeId, setChallengeId] = useState('');
 
   useEffect(() => {
     if (otpCountdown <= 0) {
@@ -167,9 +170,28 @@ export default function Transfer() {
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(recipientEmail, 'transfer');
-      setOtpCountdown(60);
-      showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
+      const response = await apiClient.post<any>(
+        '/api/payment/transfer',
+        {
+          purpose: 'TRANSFER',
+          payload: {
+            amount,
+            toEmail: recipientEmail.trim(),
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
+      } else {
+        throw new Error('MFA challenge failed to initialize');
+      }
     } catch (error) {
       showError(
         t('transfer.form.transferFailedTitle', t('home.transferFailedTitle')),
@@ -187,11 +209,30 @@ export default function Transfer() {
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(recipientEmail, 'transfer');
-      setOtpCountdown(60);
-      showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
-      setIsConfirmSheetOpen(false);
-      setIsOtpSheetOpen(true);
+      const response = await apiClient.post<any>(
+        '/api/payment/transfer',
+        {
+          purpose: 'TRANSFER',
+          payload: {
+            amount,
+            toEmail: recipientEmail.trim(),
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
+        setIsConfirmSheetOpen(false);
+        setIsOtpSheetOpen(true);
+      } else {
+        throw new Error('MFA challenge failed to initialize');
+      }
     } catch (error) {
       showError(
         t('transfer.form.transferFailedTitle', t('home.transferFailedTitle')),
@@ -402,17 +443,11 @@ export default function Transfer() {
               onResend={handleResendOtp}
               resendCountdown={otpCountdown}
               recipientEmail={recipientEmail}
-              transferPayload={
-                selectedAccount?.id
-                  ? {
-                      amount,
-                      chainId: 'USD',
-                      fromAccountId: selectedAccount.id,
-                      reason: selectedReasonLabel,
-                      toUserEmail: recipientEmail,
-                    }
-                  : null
-              }
+              challengeId={challengeId}
+              transferPayload={{
+                amount,
+                toEmail: recipientEmail,
+              }}
               onTransferSuccess={handleTransferSuccess}
               onTransferError={handleTransferError}
             />

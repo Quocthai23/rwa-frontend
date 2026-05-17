@@ -16,10 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/shared/atoms/button';
 import { cn } from '@/lib/utils';
 import type { StrategyResultItem } from '@/types/strategy';
-import { usePositionStats } from '@/hook/usePosition';
 import { useAccountStore } from '@/store/useAccountStore';
 import AnalysisDataSection from './AnalysisDataSection';
-import AnalysisTab from './AnalysisTab';
 import InfoTab from './InfoTab';
 import PositionWebScreen from '../../../position/web/PositionWebScreen';
 import { useTheme } from '@/theme';
@@ -29,14 +27,13 @@ const ChartCommon = dynamic(() => import('@/components/chart/ChartCommon'), {
   loading: () => <div className="bg-muted h-90 w-full animate-pulse" />,
 });
 
-type MainTabId = 'chart' | 'strategy' | 'analysis' | 'info';
-type PositionPanelTab = 'positions' | 'orders' | 'position-history' | 'order-history';
+type MainTabId = 'chart' | 'analysis' | 'info';
+type PositionPanelTab = 'portfolio' | 'orders' | 'order-history';
 
-const MAIN_TAB_IDS: MainTabId[] = ['chart', 'strategy', 'analysis', 'info'];
+const MAIN_TAB_IDS: MainTabId[] = ['chart', 'analysis', 'info'];
 const POSITION_PANEL_TAB_IDS: PositionPanelTab[] = [
-  'positions',
+  'portfolio',
   'orders',
-  'position-history',
   'order-history',
 ];
 
@@ -58,9 +55,7 @@ type TradeWebMainContentProps = {
   onOneClickHeaderPress: () => void;
   currentSymbol: string;
   onSymbolSelect: (symbol: string) => void;
-  strategyItem?: StrategyResultItem;
   symbolAssetId?: string;
-  openPositionsCount: number;
 };
 
 export function TradeWebMainContent({
@@ -78,13 +73,11 @@ export function TradeWebMainContent({
   onOneClickHeaderPress,
   currentSymbol,
   onSymbolSelect,
-  strategyItem,
   symbolAssetId,
-  openPositionsCount,
 }: TradeWebMainContentProps) {
   const { t } = useTranslation();
   const [activeMainTab, setActiveMainTab] = useState<MainTabId>('chart');
-  const [positionPanelTab, setPositionPanelTab] = useState<PositionPanelTab>('positions');
+  const [positionPanelTab, setPositionPanelTab] = useState<PositionPanelTab>('portfolio');
   const { mode } = useTheme();
   const isDarkMode = mode === 'dark';
   const wasShortViewportRef = useRef(false);
@@ -117,7 +110,6 @@ export function TradeWebMainContent({
   }, []);
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const accountId = selectedAccount?.id || '';
-  const { data: stats } = usePositionStats({ accountId });
 
   return (
     <main
@@ -304,14 +296,10 @@ export function TradeWebMainContent({
                 {POSITION_PANEL_TAB_IDS.map((tabId) => {
                   const getTabLabel = () => {
                     switch (tabId) {
-                      case 'positions':
-                        return `${t('position.tabs.positions', { defaultValue: 'Positions' })}(${stats?.openPositions ?? openPositionsCount})`;
+                      case 'portfolio':
+                        return t('position.tabs.portfolio', { defaultValue: 'Portfolio' });
                       case 'orders':
-                        return `${t('position.tabs.orders', { defaultValue: 'Orders' })}(${stats?.openOrders ?? 0})`;
-                      case 'position-history':
-                        return t('position.tabs.positionHistory', {
-                          defaultValue: 'Position History',
-                        });
+                        return t('position.tabs.orders', { defaultValue: 'Orders' });
                       default:
                         return t('position.tabs.orderHistory', { defaultValue: 'Order History' });
                     }
@@ -345,7 +333,6 @@ export function TradeWebMainContent({
           )}
           aria-hidden={activeMainTab === 'chart'}
         >
-          {activeMainTab === 'strategy' ? <AnalysisTab strategy={strategyItem} /> : null}
           {activeMainTab === 'analysis' ? <AnalysisDataSection symbol={currentSymbol} /> : null}
           {activeMainTab === 'info' ? <InfoTab assetId={symbolAssetId} /> : null}
         </div>

@@ -313,7 +313,6 @@ export function TradeOrderPanelAside({
           <TradeWebAsideOrderForm
             ref={asideOrderFormRef}
             symbol={currentSymbol}
-            leverage={leverage}
             digit={digit}
             limitPrice={limitPrice}
             setLimitPrice={setLimitPrice}

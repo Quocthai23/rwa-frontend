@@ -16,7 +16,8 @@ interface Props {
   onResend: () => void;
   resendCountdown: number;
   recipientEmail: string;
-  withdrawPayload: Omit<WithdrawPayload, 'idempotencyKey'> | null;
+  challengeId: string;
+  withdrawPayload: Omit<WithdrawPayload, 'idempotencyKey' | 'challengeId'> | null;
   onWithdrawSuccess: () => void;
   onWithdrawError: (error: unknown) => void;
 }
@@ -27,6 +28,7 @@ export default function WithdrawVerifyOTP({
   onResend,
   resendCountdown,
   recipientEmail,
+  challengeId,
   withdrawPayload,
   onWithdrawSuccess,
   onWithdrawError,
@@ -67,17 +69,24 @@ export default function WithdrawVerifyOTP({
 
   const handleSubmit = async () => {
     if (otpCode.trim().length !== 6 || isSubmitting) return;
-    if (!recipientEmail || !withdrawPayload) {
+    if (!withdrawPayload || !challengeId) {
       onWithdrawError(t('withdraw.verifyOtp.errors.missingWithdrawalData'));
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await authApi.verifyOTP(recipientEmail, otpCode.trim(), 'withdrawal');
+      // 1. Verify the challenge
+      await authApi.verifyAuthChallenge({
+        challengeId,
+        factor: 'EMAIL_OTP',
+        code: otpCode.trim(),
+      });
+
+      // 2. Submit the withdrawal
       const payload: WithdrawPayload = {
         ...withdrawPayload,
-        otpToken: response.token,
+        challengeId,
         idempotencyKey: generateUUID(),
       };
       await withdraw(payload);
@@ -100,17 +109,13 @@ export default function WithdrawVerifyOTP({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-border border-b px-6 py-5">
-        <h2 className="text-h3-semibold text-foreground">{t('withdraw.verifyOtp.title')}</h2>
-      </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-        <p className="text-muted-foreground mx-auto mb-6 max-w-80 text-center text-sm">
+    <div className="flex h-full flex-col justify-between">
+      <div className="flex h-full flex-col items-center justify-center p-4">
+        <h2 className="mb-4 text-lg font-semibold">{t('withdraw.verifyOtp.title')}</h2>
+        <p className="text-muted-foreground mx-auto mb-4 max-w-80 text-center text-sm">
           {t('withdraw.verifyOtp.description')}
         </p>
-
-        <div className="mb-6 flex justify-between space-x-2">
+        <div className="mb-4 flex justify-between space-x-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <Input
               key={i}
@@ -123,11 +128,10 @@ export default function WithdrawVerifyOTP({
               value={localCode[i] || ''}
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, i)}
-              className="border-border h-11 w-11 rounded-md border text-center focus:border-blue-500 focus:ring-2 focus:ring-blue-50"
+              className="border-border h-10 w-10 rounded border text-center focus:border-blue-500 focus:ring-2 focus:ring-blue-50 dark:border-neutral-700 dark:bg-neutral-800"
             />
           ))}
         </div>
-
         <div className="text-muted-foreground mb-4 text-sm">
           {t('withdraw.verifyOtp.didNotReceiveCode')}{' '}
           <button
@@ -142,16 +146,13 @@ export default function WithdrawVerifyOTP({
           </button>
         </div>
       </div>
-
-      <div className="border-border border-t px-6 py-4">
-        <Button
-          disabled={otpCode.trim().length !== 6 || isSubmitting}
-          className="w-full px-3 py-2"
-          onClick={handleSubmit}
-        >
-          {isSubmitting ? t('withdraw.common.processing') : t('withdraw.verifyOtp.continue')}
-        </Button>
-      </div>
+      <Button
+        disabled={otpCode.trim().length !== 6 || isSubmitting}
+        className="w-full px-3 py-2"
+        onClick={handleSubmit}
+      >
+        {isSubmitting ? t('withdraw.common.processing') : t('withdraw.verifyOtp.continue')}
+      </Button>
     </div>
   );
 }

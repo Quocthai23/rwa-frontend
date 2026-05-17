@@ -35,17 +35,8 @@ function InfoTab({ assetId }: InfoTabProps) {
     );
   }
 
-  // Format volume per trade
-  const volumePerTrade = `${asset.minTradeSize}-${asset.maxTradeSize} ${t('symbolDetail.units.lot')}`;
-
-  // Format leverage
-  const leverage = `${asset.maxLeverage}X`;
-
-  // Format contract size
-  const contractSize = `${asset.contractSize} ${t('symbolDetail.units.ounce')}`;
-
-  // Format max volume
-  const maxVolume = `${asset.maxTradeSize} ${t('symbolDetail.units.lot')}`;
+  // Format area
+  const areaDisplay = asset.area ? `${asset.area} sqm` : '-';
 
   return (
     <div className="bg-background flex-1 overflow-y-auto">
@@ -57,12 +48,11 @@ function InfoTab({ assetId }: InfoTabProps) {
         {/* <p className="text-body-small-regular">{t('symbolDetail.info.description')}</p> */}
 
         {/* Info Rows */}
-        <InfoRow label={t('symbolDetail.info.volumePerTrade')} value={volumePerTrade} />
-        <InfoRow label={t('symbolDetail.info.maximumLeverage')} value={leverage} />
-        <InfoRow label={t('symbolDetail.info.contractSize')} value={contractSize} />
-        <InfoRow label={t('symbolDetail.info.maxOpenVolume')} value={maxVolume} />
-        <InfoRow label={t('symbolDetail.info.currencyOfQuote')} value={asset.profitCurrency} />
-        <InfoRow label={t('symbolDetail.info.spread')} value={asset.spread} />
+        <InfoRow label="Location" value={asset.location || '-'} />
+        <InfoRow label="Total Area" value={areaDisplay} />
+        <InfoRow label="Zoning / Planning" value={asset.zoning || '-'} />
+        <InfoRow label="Business Model" value={asset.businessModel || '-'} />
+        <InfoRow label="Monthly Benefits" value={asset.monthlyBenefits || '-'} />
         {referencePriceData && (
           <InfoRow
             label="Reference Price (NAV)"
@@ -87,15 +77,18 @@ function InfoTab({ assetId }: InfoTabProps) {
       <div className="px-4 py-4 pt-0">
         <p className="text-body-large-regular mb-3">{t('symbolDetail.info.corporateActions')}</p>
 
-        {/* Action Item */}
         <div className="mb-4">
-          {/* <Text className=' mb-2'>{formatPositionDateTime(asset.createdAt)}</Text> */}
           <div className="flex items-center justify-between">
-            <p className="text-muted-foreground">{t('symbolDetail.info.indicesDividend')}</p>
+            <p className="text-muted-foreground">Property Ownership Document</p>
             <p className="">
-              {asset.profitCurrency} {asset.minTradeSize} / {t('symbolDetail.units.lot')}
+              Verified
             </p>
           </div>
+          {asset.titleDeedImage && (
+            <div className="mt-3 relative w-full h-48 rounded-xl overflow-hidden border border-border">
+              <img src={asset.titleDeedImage} alt="Title Deed" className="object-cover w-full h-full" />
+            </div>
+          )}
         </div>
       </div>
     </div>

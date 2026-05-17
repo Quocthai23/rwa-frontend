@@ -2,22 +2,16 @@
 
 import { Eye, EyeOff, Moon01, ChevronDown, ChevronRight, Sun, Check } from '@untitledui/icons';
 import Image from 'next/image';
-// import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/shared/atoms/button';
-import { useInfinitePositions } from '@/hook/usePosition';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from 'react-i18next';
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
-import type { Position } from '@/types/position';
-import { mapPositionsWithAssets } from '@/components/featured/position/utils/position.calculations';
-import { useGetData } from '@/context/GetdataContext';
 import { formatBalance } from '@/utils/currency';
 import type { SharedHeaderProps } from './AppHeader';
-import Decimal from 'decimal.js';
 import { useTheme } from '@/theme';
 import DepositFlowSheet from '@/components/featured/deposit/web/DepositFlowSheet';
 import TopUpFlowSheet from '@/components/featured/top-up/web/TopUpFlowSheet';
@@ -25,15 +19,11 @@ import Search from '@/components/featured/search/web/Search';
 import { cn } from '@/lib/utils';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
 
-type PositionPage = {
-  data: Position[];
-};
-
 export type WebHeaderProps = Omit<SharedHeaderProps, 'label'> & {
   label?: string;
 };
 
-type HeaderMetricId = 'equity' | 'available' | 'totalPnl' | 'marginLevel' | 'balance' | 'margin';
+type HeaderMetricId = 'equity' | 'available' | 'totalPnl' | 'balance';
 
 type HeaderMetricOption = {
   id: HeaderMetricId;
@@ -44,18 +34,16 @@ type HeaderMetricOption = {
 
 const HEADER_METRIC_STORAGE_KEY = 'web-header-selected-metrics';
 const HEADER_METRIC_MAX = 3;
-const FIXED_HEADER_METRIC_ID: HeaderMetricId = 'marginLevel';
+const FIXED_HEADER_METRIC_ID: HeaderMetricId = 'equity';
 const MAX_OPTIONAL_HEADER_METRICS = HEADER_METRIC_MAX - 1;
-const DEFAULT_HEADER_METRIC_IDS: HeaderMetricId[] = [FIXED_HEADER_METRIC_ID, 'equity', 'available'];
+const DEFAULT_HEADER_METRIC_IDS: HeaderMetricId[] = [FIXED_HEADER_METRIC_ID, 'available', 'balance'];
 
 function isHeaderMetricId(value: string): value is HeaderMetricId {
   return (
     value === 'equity' ||
     value === 'available' ||
     value === 'totalPnl' ||
-    value === 'marginLevel' ||
-    value === 'balance' ||
-    value === 'margin'
+    value === 'balance'
   );
 }
 
@@ -99,23 +87,14 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
   const selectAccount = useAccountStore((state) => state.selectAccount);
   const accounts = useAccountStore((state) => state.accounts);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const { data: apiData } = useInfinitePositions({
-    accountId: selectedAccount?.id || '',
-    status: [0, 1],
-  });
+
   const currentMode: 'demo' | 'live' = selectedAccount?.accountTypeId?.includes('demo')
     ? 'demo'
     : 'live';
-  const { assets } = useGetData();
-  const rawPositions: Position[] = useMemo(
-    () => apiData?.pages.flatMap((page: PositionPage) => page.data) || [],
-    [apiData],
-  );
-  const allPositions = useMemo(() => {
-    return mapPositionsWithAssets(rawPositions, assets);
-  }, [rawPositions, assets]);
-  const { availableBalance, balance, currentUnrealizedPnl, equity, marginLevel, marginPositions } =
+
+  const { availableBalance, balance, currentUnrealizedPnl, equity } =
     useAccountSummaryMetrics();
+
   const handleSwitchMode = (mode: 'demo' | 'live') => {
     const nextAccount = accounts.find((account) =>
       mode === 'demo'
@@ -172,27 +151,9 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
         valueClassName: currentUnrealizedPnl.gte(0) ? 'text-green-500' : 'text-red-500',
       },
       {
-        id: 'marginLevel',
-        label: t('account.marginLevel', { defaultValue: 'Margin Level' }),
-        value: accountValue(
-          marginLevel.toNumber() > 0 ? `${formatBalance(marginLevel.toNumber())}%` : '--',
-        ),
-        valueClassName:
-          allPositions.length === 0
-            ? 'text-foreground'
-            : marginLevel.toNumber() > 100
-              ? 'text-green-500'
-              : 'text-red-500',
-      },
-      {
         id: 'balance',
         label: t('account.balance', { defaultValue: 'Balance' }),
         value: accountValue(`$${formatBalance(balance.toNumber())}`),
-      },
-      {
-        id: 'margin',
-        label: t('account.margin', { defaultValue: 'Margin' }),
-        value: accountValue(`$${formatBalance(marginPositions.toNumber())}`),
       },
     ],
     [
@@ -201,10 +162,7 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
       equity,
       availableBalance,
       currentUnrealizedPnl,
-      marginLevel,
-      allPositions.length,
       balance,
-      marginPositions,
     ],
   );
 
@@ -465,9 +423,6 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
                 <Moon01 className="text-foreground size-5" />
               )}
             </Button>
-            {/* <div className="cursor-pointer" aria-label="Switch to light mode" title="Light mode">
-              <Scale02 className="text-foreground size-5" />
-            </div> */}
           </div>
           {rightItem as ReactNode}
         </div>

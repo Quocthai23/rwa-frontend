@@ -283,7 +283,7 @@ export default function PersonalInfo() {
         <SheetContent
           side="bottom"
           title="Select Avatar"
-          className="bg-card mx-auto max-h-[90vh] w-full max-w-192 overflow-y-auto rounded-t-lg p-0"
+          className="bg-card mx-auto max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-t-lg p-0"
         >
           <div className="bg-card flex flex-col pb-6">
             <div className="p-4">
@@ -314,7 +314,7 @@ export default function PersonalInfo() {
       <Sheet open={isGenderSheetOpen} onOpenChange={setIsGenderSheetOpen}>
         <SheetContent
           side="bottom"
-          className="bg-background mx-auto max-h-[90vh] w-full max-w-192 overflow-y-auto rounded-t-lg p-0"
+          className="bg-background mx-auto max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-t-lg p-0"
         >
           <div className="bg-background flex flex-col py-4">
             <div className="px-4">

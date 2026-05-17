@@ -11,6 +11,7 @@ import { useOrderSocketStore } from '@/store/orderSocketStore';
 import { useKlineSocketStore } from '@/store/klineSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import I18nSync from '@/components/shared/I18nSync';
+import { GlobalModals } from '@/components/shared/GlobalModals';
 import { useMediaQuery } from '@/hook/useMediaQuery';
 import '@/i18n';
 
@@ -74,6 +75,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <AnimationProvider>
           <GetdataProvider>
             <I18nSync />
+            <GlobalModals />
             {children}
             {isDesktop ? (
               <WebToaster richColors position="top-right" />

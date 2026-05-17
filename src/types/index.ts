@@ -12,3 +12,5 @@ export * from './assets';
 export * from './calendar';
 export * from './news';
 export * from './orders';
+export * from './portfolio';
+export * from './dividend';

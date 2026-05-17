@@ -1,18 +1,13 @@
-import { NextRequest } from 'next/server';
-import { updateAccountLeverage } from '@/services/accountService';
-import { withServerTokenRefresh } from '@/app/api/_utils/auth';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { leverage } = await request.json();
-  const { id: accountId } = await params;
-
-  if (typeof accountId !== 'string' || typeof leverage !== 'number') {
-    return new Response(JSON.stringify({ error: 'Invalid request body' }), { status: 400 });
-  }
-
-  return withServerTokenRefresh(
-    request,
-    (token) => updateAccountLeverage(accountId, leverage, token),
-    'accounts-update-leverage-failed',
+/**
+ * @deprecated updateAccountLeverage has been removed — the backend Accounts API
+ * does not support leverage updates. This is a Spot-only platform.
+ * Returns 410 Gone to prevent silent failures.
+ */
+export async function PATCH(_request: NextRequest) {
+  return NextResponse.json(
+    { error: 'Account leverage update is not supported. This is a Spot-only platform.', code: 'ENDPOINT_REMOVED' },
+    { status: 410 },
   );
 }

@@ -30,20 +30,25 @@ export async function GET(request: NextRequest) {
     statusArray = statusArray[0].split(',');
   }
 
+  // Use string-based enums as per Swagger spec
+  const sideParam = searchParams.get('side');
+  const orderTypeParam = searchParams.get('orderType');
+
   const params: GetOrdersParams = {
     accountId: searchParams.get('accountId') || '',
     take: searchParams.get('take') ? parseInt(searchParams.get('take')!) : undefined,
     cursor: searchParams.get('cursor') || undefined,
     symbol: searchParams.get('symbol') || undefined,
-    side: searchParams.get('side') ? (parseInt(searchParams.get('side')!) as 0 | 1) : undefined,
-    orderType: searchParams.get('orderType')
-      ? (parseInt(searchParams.get('orderType')!) as 0 | 1 | 2)
-      : undefined,
+    side: sideParam === 'BUY' || sideParam === 'SELL' ? sideParam : undefined,
+    orderType:
+      orderTypeParam === 'MARKET' || orderTypeParam === 'LIMIT' ? orderTypeParam : undefined,
     sortBy: parseSortBy(searchParams.get('sortBy')),
     sortDir: (searchParams.get('sortDir') as 'asc' | 'desc') || undefined,
     fromDate: searchParams.get('fromDate') || undefined,
     toDate: searchParams.get('toDate') || undefined,
-    status: statusArray.map((s) => parseInt(s.trim())).filter((n) => !isNaN(n)),
+    status: statusArray
+      .map((s) => s.trim())
+      .filter((s) => ['PENDING', 'OPEN', 'PARTIALLY_FILLED', 'FILLED', 'CANCELLED', 'REJECTED'].includes(s)) as GetOrdersParams['status'],
   };
   return withServerTokenRefresh(
     request,

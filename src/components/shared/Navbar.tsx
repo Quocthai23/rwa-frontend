@@ -19,7 +19,7 @@ const LOCAL_LAYOUT_NAV_ROUTES = [
   '/forgot-password',
 ];
 
-const HYDRATION_SENSITIVE_ROUTES = ['/position', '/discover', '/'];
+const HYDRATION_SENSITIVE_ROUTES = ['/portfolio', '/discover', '/'];
 
 export function Navbar() {
   const pathname = usePathname() || '/';

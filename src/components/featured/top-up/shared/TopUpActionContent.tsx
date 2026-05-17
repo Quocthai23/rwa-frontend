@@ -71,7 +71,8 @@ export default function TopUpActionContent({
     setIsLoading(true);
     depositDemo(
       {
-        accountId: String(selectedAccount?.id || ''),
+        amount: '500',
+        idempotencyKey: undefined,
       },
       {
         onError: (error: unknown) => {

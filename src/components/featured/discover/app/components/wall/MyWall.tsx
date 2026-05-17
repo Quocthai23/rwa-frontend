@@ -1512,7 +1512,7 @@ export function MyWall({ onOpenAuthorProfile }: MyWallProps) {
             className={cn(
               'text-body-small-medium sm:text-body-large-medium relative flex-1 py-3 text-center transition-colors',
               activeSubTab === tab.id
-                ? '!text-body-small-semibold text-primary-500'
+                ? 'text-body-small-semibold! text-primary-500'
                 : 'text-muted-foreground hover:text-foreground text-body-small-medium',
             )}
           >

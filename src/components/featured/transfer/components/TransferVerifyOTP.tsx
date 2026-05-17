@@ -14,7 +14,8 @@ interface TransferVerifyOTPProps {
   onResend: () => void;
   resendCountdown: number;
   recipientEmail: string;
-  transferPayload: Omit<TransferPayload, 'idempotencyKey'> | null;
+  challengeId: string;
+  transferPayload: Omit<TransferPayload, 'idempotencyKey' | 'challengeId'> | null;
   onTransferSuccess: () => void;
   onTransferError: (error: unknown) => void;
 }
@@ -25,6 +26,7 @@ export default function TransferVerifyOTP({
   onResend,
   resendCountdown,
   recipientEmail,
+  challengeId,
   transferPayload,
   onTransferSuccess,
   onTransferError,
@@ -112,21 +114,24 @@ export default function TransferVerifyOTP({
       return;
     }
 
-    if (!recipientEmail || !transferPayload) {
+    if (!transferPayload || !challengeId) {
       onTransferError(t('transfer.verifyOtp.errors.missingTransferData'));
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await authApi.verifyOTP(recipientEmail, otpCode.trim(), 'transfer');
-      if (!response.token) {
-        onTransferError(t('transfer.verifyOtp.errors.invalidOtp'));
-        return;
-      }
+      // 1. Verify the OTP challenge
+      await authApi.verifyAuthChallenge({
+        challengeId,
+        factor: 'EMAIL_OTP',
+        code: otpCode.trim(),
+      });
+
+      // 2. Process final transfer
       const payload: TransferPayload = {
         ...transferPayload,
-        otpToken: response.token,
+        challengeId,
         idempotencyKey: generateUUID(),
       };
       await authApi.transfer(payload);

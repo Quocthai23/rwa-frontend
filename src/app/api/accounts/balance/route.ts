@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAccountBalance } from '@/services/accountService';
-import { withServerTokenRefresh } from '@/app/api/_utils/auth';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const accountId = searchParams.get('accountId');
-
-  if (!accountId) {
-    return NextResponse.json({ errors: 'Missing accountId', success: false }, { status: 400 });
-  }
-
-  return withServerTokenRefresh(
-    request,
-    (token) => getAccountBalance(accountId, token),
-    'account-balance-fetch-failed',
+/**
+ * @deprecated getAccountBalance has been removed — the backend does not have
+ * a /accounts/balance endpoint. Account balances are retrieved via /user/portfolio/overview.
+ * This route returns 410 Gone to prevent silent failures.
+ */
+export async function GET(_request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: 'Account balance endpoint has been removed. Use /user/portfolio/overview instead.',
+      code: 'ENDPOINT_REMOVED',
+    },
+    { status: 410 },
   );
 }

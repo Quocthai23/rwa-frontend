@@ -19,6 +19,8 @@ import { useAuthStore } from '@/store/authStore';
 import { sanitizeDecimalInput } from '@/utils/decimalInput';
 import { useTranslation } from 'react-i18next';
 import { localizeApiError } from '@/i18n/apiErrors';
+import { apiClient } from '@/services/apiClient';
+import { CLIENT_BASE_URL } from '@/services/baseUrl';
 
 export default function WithdrawDetail() {
   const { t } = useTranslation();
@@ -32,6 +34,7 @@ export default function WithdrawDetail() {
   const [otpCode, setOtpCode] = useState('');
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [challengeId, setChallengeId] = useState('');
 
   const chainId = '97'; // bsc testnet
 
@@ -98,9 +101,29 @@ export default function WithdrawDetail() {
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(userEmail, 'withdrawal');
-      setOtpCountdown(60);
-      showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
+      const response = await apiClient.post<any>(
+        '/api/payment/withdraw',
+        {
+          purpose: 'WITHDRAW',
+          payload: {
+            amount,
+            destinationAddress: normalizedAddress,
+            chainId,
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
+      } else {
+        throw new Error('MFA challenge failed to initialize');
+      }
     } catch (error) {
       showError(t('security.resetPassword.otpSendFailedTitle'), localizeApiError(error, t));
     } finally {
@@ -116,21 +139,32 @@ export default function WithdrawDetail() {
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(userEmail, 'withdrawal');
-      setOtpCountdown(60);
-      showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
-      setIsConfirmSheetOpen(false);
-      setIsOtpSheetOpen(true);
-    } catch (error) {
-      if (isRateLimitOtpError(error)) {
+      const response = await apiClient.post<any>(
+        '/api/payment/withdraw',
+        {
+          purpose: 'WITHDRAW',
+          payload: {
+            amount,
+            destinationAddress: normalizedAddress,
+            chainId,
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('withdraw.detail.otpSentTitle'), t('withdraw.detail.checkEmail'));
         setIsConfirmSheetOpen(false);
         setIsOtpSheetOpen(true);
-        showInfo(
-          t('withdraw.detail.otpAlreadySentTitle'),
-          t('withdraw.detail.otpAlreadySentMessage'),
-        );
-        return;
+      } else {
+        throw new Error('MFA challenge failed to initialize');
       }
+    } catch (error) {
       showError(t('security.resetPassword.otpSendFailedTitle'), localizeApiError(error, t));
     } finally {
       setIsSendingOtp(false);
@@ -377,16 +411,12 @@ export default function WithdrawDetail() {
               onResend={handleResendOtp}
               resendCountdown={otpCountdown}
               recipientEmail={userEmail}
-              withdrawPayload={
-                selectedAccount?.id
-                  ? {
-                      accountId: selectedAccount.id,
-                      address: normalizedAddress,
-                      amount,
-                      chainId,
-                    }
-                  : null
-              }
+              challengeId={challengeId}
+              withdrawPayload={{
+                amount,
+                destinationAddress: normalizedAddress,
+                chainId,
+              }}
               onWithdrawSuccess={handleWithdrawSuccess}
               onWithdrawError={handleWithdrawError}
             />

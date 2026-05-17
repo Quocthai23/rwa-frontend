@@ -74,13 +74,6 @@ export function HomeFeatures() {
       return;
     }
 
-    if (featureId === FeatureId.Referral) {
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      router.push('/referral');
-    }
 
     if (featureId === FeatureId.Social) {
       router.push('/discover?discoverTab=for-you');
@@ -125,17 +118,6 @@ export function HomeFeatures() {
       }
       router.push('/transfer');
     }
-    if (featureId === FeatureId.RewardsHub) {
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-        showError(t('home.rewardsFailedTitle'), t('home.rewardsDemoError'));
-        return;
-      }
-      router.push('/rewards-center');
-    }
 
     if (featureId === FeatureId.Feedback) {
       if (!user) {
@@ -174,11 +156,9 @@ export function HomeFeatures() {
                 </div>
 
                 <p className="text-body-small-medium text-foreground w-full text-center">
-                  {feature.id === FeatureId.Referral && !user
-                    ? t('home.referralLabelGuest')
-                    : feature.labelKey
-                      ? t(feature.labelKey)
-                      : feature.label}
+                  {feature.labelKey
+                    ? t(feature.labelKey)
+                    : feature.label}
                 </p>
               </button>
             </div>

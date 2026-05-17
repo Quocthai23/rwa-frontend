@@ -48,7 +48,7 @@ export function TradeBottomBar({
   return (
     <div
       className={cn(
-        'bg-muted fixed bottom-16 left-1/2 z-40 w-full max-w-192 -translate-x-1/2',
+        'bg-muted fixed bottom-16 left-1/2 z-40 w-full max-w-3xl -translate-x-1/2',
         bottomClassName,
       )}
     >

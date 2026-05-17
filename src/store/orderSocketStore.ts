@@ -8,7 +8,6 @@
 import { queryClient } from '@/app/provider';
 import { getSocketBaseUrl } from '@/utils/socketUrl';
 import { OrderItem } from '@/types/orders';
-import { Position } from '@/types/position';
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
 

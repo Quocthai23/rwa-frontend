@@ -4,6 +4,8 @@ const OTC_WEEKEND_DAYS = new Set([0, 6]); // UTC: Sunday (0), Saturday (6)
 const OTC_OPEN_CRYPTO_CODES = new Set([
   CATEGORY_CODE.CRYPTO.toLowerCase(),
   'assets-category-crypto',
+  'real_estate',
+  'real estate',
 ]);
 
 function normalize(value: string | undefined): string {

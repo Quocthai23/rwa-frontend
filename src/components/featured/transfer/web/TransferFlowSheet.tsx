@@ -24,6 +24,8 @@ import { useAccountStore } from '@/store/useAccountStore';
 import { useTheme } from '@/theme';
 import type { TransferPayload } from '@/types/payment';
 import { sanitizeDecimalInput } from '@/utils/decimalInput';
+import { apiClient } from '@/services/apiClient';
+import { CLIENT_BASE_URL } from '@/services/baseUrl';
 
 type TransferFlowSheetProps = {
   isOpen: boolean;
@@ -57,6 +59,7 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
   const [otpCode, setOtpCode] = useState('');
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [challengeId, setChallengeId] = useState('');
 
   const reasonOptions = useMemo(
     () => [
@@ -95,6 +98,7 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
     setOtpCode('');
     setOtpCountdown(0);
     setIsSendingOtp(false);
+    setChallengeId('');
   }, []);
 
   useEffect(() => {
@@ -191,9 +195,28 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(recipientEmail, 'transfer');
-      setOtpCountdown(60);
-      showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
+      const response = await apiClient.post<any>(
+        '/api/payment/transfer',
+        {
+          purpose: 'TRANSFER',
+          payload: {
+            amount,
+            toEmail: recipientEmail.trim(),
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
+      } else {
+        throw new Error('MFA challenge failed to initialize');
+      }
     } catch (error) {
       showError(
         t('transfer.form.transferFailedTitle', t('home.transferFailedTitle')),
@@ -202,17 +225,36 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
     } finally {
       setIsSendingOtp(false);
     }
-  }, [isSendingOtp, otpCountdown, recipientEmail, showError, showSuccess, t]);
+  }, [amount, isSendingOtp, otpCountdown, recipientEmail, showError, showSuccess, t]);
 
   const handleRequestOtp = useCallback(async () => {
     if (!validateTransfer()) return;
 
     try {
       setIsSendingOtp(true);
-      await authApi.sendOTP(recipientEmail, 'transfer');
-      setOtpCountdown(60);
-      showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
-      setStep('otp');
+      const response = await apiClient.post<any>(
+        '/api/payment/transfer',
+        {
+          purpose: 'TRANSFER',
+          payload: {
+            amount,
+            toEmail: recipientEmail.trim(),
+          },
+        },
+        {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: false,
+        },
+      );
+
+      if (response && response.status === 'challenge_required') {
+        setChallengeId(response.challengeId);
+        setOtpCountdown(60);
+        showSuccess(t('transfer.form.otpSentTitle'), t('transfer.form.otpSentMessage'));
+        setStep('otp');
+      } else {
+        throw new Error('MFA challenge failed to initialize');
+      }
     } catch (error) {
       showError(
         t('transfer.form.transferFailedTitle', t('home.transferFailedTitle')),
@@ -221,7 +263,7 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
     } finally {
       setIsSendingOtp(false);
     }
-  }, [recipientEmail, showError, showSuccess, t, validateTransfer]);
+  }, [amount, recipientEmail, showError, showSuccess, t, validateTransfer]);
 
   const handleTransferSuccess = useCallback(() => {
     showSuccess(
@@ -243,13 +285,10 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
     [showError, t],
   );
 
-  const transferPayload: Omit<TransferPayload, 'idempotencyKey'> | null = fromAccountId
+  const transferPayload: Omit<TransferPayload, 'idempotencyKey' | 'challengeId'> | null = fromAccountId
     ? {
-        fromAccountId,
         amount,
-        chainId: '97',
-        reason,
-        toUserEmail: recipientEmail.trim(),
+        toEmail: recipientEmail.trim(),
       }
     : null;
 
@@ -409,6 +448,7 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
               onResend={handleResendOtp}
               resendCountdown={otpCountdown}
               recipientEmail={recipientEmail.trim()}
+              challengeId={challengeId}
               transferPayload={transferPayload}
               onTransferSuccess={handleTransferSuccess}
               onTransferError={handleTransferError}

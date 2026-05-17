@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 
 import CustomDatePicker, {
   type CustomDatePickerHandle,
-} from '@/components/featured/position/app/shared/CustomDateFilter';
+} from '@/components/featured/transaction-history/components/CustomDatePicker';
 import { toISODateString } from '@/utils/dateUtils';
 import { Calendar } from '@untitledui/icons';
 
@@ -66,7 +66,7 @@ function HistoryDateRangePicker({ onRangeChange, value }: HistoryDateRangePicker
     <>
       <button
         type="button"
-        onClick={() => pickerRef.current?.open(selectedStart, selectedEnd, 'range')}
+        onClick={() => pickerRef.current?.open(selectedStart, selectedEnd)}
         className="dark:bg-card text-foreground flex items-center gap-3 rounded-sm bg-neutral-100 px-4 py-2 transition-colors hover:bg-neutral-200 dark:text-white dark:hover:bg-neutral-600"
       >
         <Calendar className="text-muted-foreground size-5" />

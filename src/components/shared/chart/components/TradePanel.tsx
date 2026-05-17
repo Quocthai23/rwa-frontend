@@ -13,13 +13,12 @@ import { Switch } from '@/components/shared/atoms/switch';
 export type { TradePanelSheetHandle } from './tradePanel/utils/tradePanelTypes';
 
 import type { TradePanelSheetHandle } from './tradePanel/utils/tradePanelTypes';
-import { ORDER_SIDES } from '@/types/orders';
+import { ORDER_SIDES, OrderStatus } from '@/types/orders';
 import { useCreateOrder } from '@/hook/orders/useCreateOrder';
 import { useToast } from '@/hook/useToast';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAuthStore } from '@/store/authStore';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useInfinitePositions } from '@/hook/usePosition';
 import { useInfiniteOrders } from '@/hook/useOrder';
 import { TradePanelActionBar } from './tradePanel/components/TradePanelActionBar';
 import { TradePanelLimitPriceField } from './tradePanel/components/TradePanelLimitPriceField';
@@ -108,8 +107,6 @@ function TradePanel({
         return t('trade.tabs.market');
       case 'Limit':
         return t('trade.tabs.limit');
-      case 'Stop':
-        return t('trade.tabs.stop');
     }
   };
   const [isOpen, setIsOpen] = useState(false);
@@ -132,7 +129,7 @@ function TradePanel({
       open: (
         param?: 'orderLimit' | 'buySell' | 'buy' | 'sell',
         options?: {
-          defaultTab?: 'Market' | 'Limit' | 'Stop';
+          defaultTab?: 'Market' | 'Limit';
           quantity?: string;
         },
       ) => {
@@ -247,18 +244,16 @@ function TradePanel({
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
   const sellPrice = rt?.bid ?? 0;
   const buyPrice = rt?.ask ?? 0;
-  const { data: openPositionsData, refetch: refetchPositions } = useInfinitePositions({
+  const { data: openOrdersData, refetch: refetchOrders } = useInfiniteOrders({
     accountId: selectedAccount?.id || '',
-    status: [0, 1],
+    status: [OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED],
   });
-  const MAX_OPEN_POSITIONS = 10;
-  const openPositionsCount = openPositionsData?.pages?.[0]?.total ?? 0;
-  const hasReachedMaxOpenPositions = openPositionsCount >= MAX_OPEN_POSITIONS;
+  const MAX_OPEN_ORDERS = 10;
+  const openOrdersCount = openOrdersData?.pages?.[0]
+    ? (('total' in openOrdersData.pages[0] ? (openOrdersData.pages[0].total as number) : openOrdersData.pages[0].data.length) ?? 0)
+    : 0;
+  const hasReachedMaxOpenPositions = openOrdersCount >= MAX_OPEN_ORDERS;
   const { availableBalance } = useAccountSummaryMetrics();
-  const { refetch: refetchOrders } = useInfiniteOrders({
-    accountId: selectedAccount?.id || '',
-    status: [0, 1],
-  });
 
   const limitPriceNumber = Number.parseFloat(normalizeDecimalInput(limitPrice)) || 0;
   const takeProfitNumber =
@@ -373,7 +368,7 @@ function TradePanel({
     sellStopLossPnLUsdPrice,
   } = stopLossPreview;
 
-  const { isBuyLimitInvalid, isSellLimitInvalid, isSellStopLimitInvalid, isBuyStopLimitInvalid } =
+  const { isBuyLimitInvalid, isSellLimitInvalid } =
     useMemo(() => {
       const tpLimitFlags = computeTradePanelLimitStopFlags({
         activeTab,
@@ -397,10 +392,6 @@ function TradePanel({
       return {
         isBuyLimitInvalid: tpLimitFlags.isBuyLimitInvalid || slLimitFlags.isBuyLimitInvalid,
         isSellLimitInvalid: tpLimitFlags.isSellLimitInvalid || slLimitFlags.isSellLimitInvalid,
-        isSellStopLimitInvalid:
-          tpLimitFlags.isSellStopLimitInvalid || slLimitFlags.isSellStopLimitInvalid,
-        isBuyStopLimitInvalid:
-          tpLimitFlags.isBuyStopLimitInvalid || slLimitFlags.isBuyStopLimitInvalid,
       };
     }, [
       activeTab,
@@ -508,10 +499,10 @@ function TradePanel({
 
   const handleSubmitOrder = useCallback(
     (sideOverride?: (typeof ORDER_SIDES)[keyof typeof ORDER_SIDES]) => {
-      if (openPositionsCount >= MAX_OPEN_POSITIONS) {
+      if (openOrdersCount >= MAX_OPEN_ORDERS) {
         showError(
           t('trade.errors.tradeFailedTitle'),
-          `Maximum open positions limit exceeded (${MAX_OPEN_POSITIONS})`,
+          `Maximum open orders limit exceeded (${MAX_OPEN_ORDERS})`,
         );
         return;
       }
@@ -551,7 +542,6 @@ function TradePanel({
         stopLossValue,
         symbolAssetForConvert: symbolAsset,
         createOrder,
-        refetchPositions,
         refetchOrders,
         tradePanelRef,
         setIsSubmitLocked,
@@ -589,10 +579,7 @@ function TradePanel({
       stopLossTriggerType,
       takeProfitValue,
       stopLossValue,
-      openPositionsCount,
-      MAX_OPEN_POSITIONS,
       createOrder,
-      refetchPositions,
       refetchOrders,
       tradePanelRef,
     ],
@@ -823,14 +810,12 @@ function TradePanel({
                 sellDisabled={
                   hasReachedMaxOpenPositions ||
                   sellTpSlError !== null ||
-                  (activeTab === 'Limit' && isSellLimitInvalid) ||
-                  (activeTab === 'Stop' && isSellStopLimitInvalid)
+                  (activeTab === 'Limit' && isSellLimitInvalid)
                 }
                 buyDisabled={
                   hasReachedMaxOpenPositions ||
                   buyTpSlError !== null ||
-                  (activeTab === 'Limit' && isBuyLimitInvalid) ||
-                  (activeTab === 'Stop' && isBuyStopLimitInvalid)
+                  (activeTab === 'Limit' && isBuyLimitInvalid)
                 }
                 onSell={() => {
                   setTransactionType('sell');

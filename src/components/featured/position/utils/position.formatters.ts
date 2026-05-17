@@ -1,4 +1,4 @@
-import { ORDER_TYPE_CODES, OrderStatus } from '@/types/orders';
+import { ORDER_TYPES, OrderStatus } from '@/types/orders';
 import Decimal from 'decimal.js';
 
 export function formatDecimal(
@@ -25,19 +25,20 @@ export function formatOrderValue(value: string | number | null | undefined): str
   return formatDecimal(value, '');
 }
 
-export function getOrderStatusLabel(status: number, t: (key: string) => string): string {
-  if (status === OrderStatus.NEW) return t('position.modal.orderStatusPlaced');
-  if (status === OrderStatus.PARTIALLY_FILLED)
+export function getOrderStatusLabel(status: string | number, t: (key: string) => string): string {
+  if (status === OrderStatus.PENDING || status === 'PENDING') return t('position.modal.orderStatusPlaced');
+  if (status === OrderStatus.OPEN || status === 'OPEN') return t('position.modal.orderStatusPlaced');
+  if (status === OrderStatus.PARTIALLY_FILLED || status === 'PARTIALLY_FILLED')
     return t('position.modal.orderStatusPartiallyFilled');
-  if (status === OrderStatus.FILLED) return t('position.modal.orderStatusFilled');
-  if (status === OrderStatus.CANCELLED) return t('position.modal.orderStatusCancelled');
-  if (status === OrderStatus.REJECTED) return t('position.modal.orderStatusRejected');
+  if (status === OrderStatus.FILLED || status === 'FILLED') return t('position.modal.orderStatusFilled');
+  if (status === OrderStatus.CANCELLED || status === 'CANCELLED') return t('position.modal.orderStatusCancelled');
+  if (status === OrderStatus.REJECTED || status === 'REJECTED') return t('position.modal.orderStatusRejected');
   return t('position.modal.unknown');
 }
 
-export function getOrderTypeLabel(orderType: number, t: (key: string) => string): string {
-  if (orderType === ORDER_TYPE_CODES.MARKET) return t('position.modal.orderTypeMarket');
-  if (orderType === ORDER_TYPE_CODES.LIMIT) return t('position.modal.orderTypeLimit');
-  if (orderType === ORDER_TYPE_CODES.STOP) return t('position.modal.orderTypeStop');
+export function getOrderTypeLabel(orderType: number | string, t: (key: string) => string): string {
+  if (orderType === ORDER_TYPES.MARKET || orderType === 'MARKET') return t('position.modal.orderTypeMarket');
+  if (orderType === ORDER_TYPES.LIMIT || orderType === 'LIMIT') return t('position.modal.orderTypeLimit');
+  // Stop orders deprecated
   return t('position.modal.orderTypeMarket');
 }

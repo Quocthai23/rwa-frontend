@@ -1,8 +1,7 @@
 import {
-  calculateOrderMargin,
   isAvailableBalanceSufficient,
 } from '@/components/featured/position/utils/position.calculations';
-import { ORDER_SIDES, ORDER_TYPE_CODES } from '@/types/orders';
+import { ORDER_SIDES } from '@/types/orders';
 import { isForexMarketOpen } from '@/utils/forexMarketHours';
 import type { CreateOrderPayload } from '@/types/orders';
 import type { Asset } from '@/types/assets';
@@ -17,7 +16,7 @@ import {
   snapQuantityToVolumeStep,
   toFiniteNumberFromNumberish,
 } from './tradePanelInputHelpers';
-import { TABS, convertTPSLToPrice } from './tradePanelUtils';
+import { TABS } from './tradePanelUtils';
 import type { TriggerType } from '../components/TradePanelTriggerSelect';
 
 type RT = { ask?: DecimalValue; bid?: DecimalValue };
@@ -31,7 +30,7 @@ export type SubmitTradePanelOrderParams = {
   showError: (title: string, message: string) => void;
   showSuccess: (title: string, message: string) => void;
   t: TFunction;
-  symbolAsset: { category?: { code?: string } } | undefined;
+  symbolAsset: Asset | undefined;
   isCreatingOrder: boolean;
   submitLockRef: MutableRefObject<boolean>;
   quantity: string;
@@ -50,7 +49,7 @@ export type SubmitTradePanelOrderParams = {
   buyPrice: DecimalValue;
   calculatedAvailableBalance: number;
   contractSizeNumber: number;
-  rtBySymbol: Parameters<typeof calculateOrderMargin>[5];
+  rtBySymbol: any;
   limitPrice: string;
   rt: RT | undefined;
   takeProfitTriggerType: TriggerType;
@@ -66,7 +65,6 @@ export type SubmitTradePanelOrderParams = {
       onSettled: () => void;
     },
   ) => void;
-  refetchPositions: () => void;
   refetchOrders: () => void;
   tradePanelRef: MutableRefObject<TradePanelSheetHandle | null>;
   setIsSubmitLocked: (value: boolean) => void;
@@ -111,7 +109,6 @@ export function submitTradePanelOrder(
     stopLossValue,
     symbolAssetForConvert,
     createOrder,
-    refetchPositions,
     refetchOrders,
     tradePanelRef,
     setIsSubmitLocked,
@@ -127,8 +124,9 @@ export function submitTradePanelOrder(
     return;
   }
 
+  // Only check market hours for Forex. RWA and Crypto may trade 24/7
   const categoryCode = symbolAsset?.category?.code?.toUpperCase?.() ?? '';
-  if (categoryCode !== 'CRYPTO' && !isForexMarketOpen()) {
+  if (categoryCode === 'FOREX' && !isForexMarketOpen()) {
     showError(t('trade.errors.marketClosedTitle'), t('trade.errors.marketClosedForexMessage'));
     return;
   }
@@ -195,72 +193,48 @@ export function submitTradePanelOrder(
   const tpSlError = side === ORDER_SIDES.BUY ? buyTpSlError : sellTpSlError;
   if (tpSlError) return;
 
-  const orderTypeCode =
-    activeTab === 'Market'
-      ? ORDER_TYPE_CODES.MARKET
-      : activeTab === 'Stop'
-        ? ORDER_TYPE_CODES.STOP
-        : ORDER_TYPE_CODES.LIMIT;
+  // Map numeric enums to string enums for backend API
+  const sideString = side === ORDER_SIDES.BUY ? 'BUY' : 'SELL';
+  const orderTypeString = isMarket ? 'MARKET' : 'LIMIT';
 
-  const calculateMarginRequired = (q: number, price: number): number => {
+  const assetId = symbolAsset?.id;
+  if (!assetId) {
+    showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
+    return;
+  }
+
+  const calculateTotalCostRequired = (q: number, price: number): number => {
     if (!q || q <= 0 || !price || price <= 0) return 0;
-    return calculateOrderMargin(
-      q,
-      price,
-      symbol,
-      leverage,
-      contractSizeNumber,
-      rtBySymbol,
-      symbolAssetForConvert?.profitCurrency as string,
-    );
+    return q * price;
   };
 
   const payload: CreateOrderPayload = {
     accountId: selectedAccountId,
-    leverage,
-    orderType: orderTypeCode,
-    quantity: qty,
-    side,
-    symbol,
+    assetId,
+    type: orderTypeString,
+    quantity: qty.toString(), // Convert to string for decimal precision
+    side: sideString,
   };
 
   if (isMarket) {
     const marketPrice =
       toFiniteNumberFromNumberish(side === ORDER_SIDES.SELL ? sellPrice : buyPrice) ?? 0;
 
-    const requiredMargin = calculateMarginRequired(qty, marketPrice);
-    if (!isAvailableBalanceSufficient(calculatedAvailableBalance, requiredMargin)) {
+    const totalCost = calculateTotalCostRequired(qty, marketPrice);
+    if (!isAvailableBalanceSufficient(calculatedAvailableBalance, totalCost)) {
       showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.insufficientAvailableBalance'));
       return;
     }
 
-    const tpNum = takeProfitValue
-      ? Number.parseFloat(normalizeDecimalInput(takeProfitValue))
-      : null;
-    const slNum =
-      stopLossValue && stopLossValue !== '0.00'
-        ? Number.parseFloat(normalizeDecimalInput(stopLossValue))
-        : null;
+    // For Market BUY orders, calculate maxTotalCost to prevent slippage damage
+    if (sideString === 'BUY' && marketPrice > 0) {
+      // Add 1% slippage buffer to the total cost
+      payload.maxTotalCost = (qty * marketPrice * 1.01).toString();
+    }
 
-    const tpPrice = convertTPSLToPrice(
-      tpNum,
-      true,
-      side,
-      takeProfitTriggerType,
-      marketPrice,
-      symbolAssetForConvert,
-    );
-    const slPrice = convertTPSLToPrice(
-      slNum,
-      false,
-      side,
-      stopLossTriggerType,
-      marketPrice,
-      symbolAssetForConvert,
-    );
-    if (tpPrice != null) payload.takeProfitPrice = tpPrice;
-    if (slPrice != null) payload.stopLossPrice = slPrice;
+
   } else {
+    // LIMIT orders
     if (!limitPrice) {
       showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.enterLimitPrice'));
       return;
@@ -276,44 +250,26 @@ export function submitTradePanelOrder(
       return;
     }
 
-    if (activeTab === 'Limit') {
-      if (isBuy && !new Decimal(price).lt(ask)) {
-        showError(
+    // LIMIT order price validation
+    if (isBuy && !new Decimal(price).lt(ask)) {
+      showError(
           t('trade.errors.tradeFailedTitle'),
           t('trade.errors.buyLimitPriceBelowAsk', { price, ask }),
-        );
-        return;
-      }
-      if (!isBuy && !new Decimal(price).gt(bid)) {
-        showError(
+      );
+      return;
+    }
+    if (!isBuy && !new Decimal(price).gt(bid)) {
+      showError(
           t('trade.errors.tradeFailedTitle'),
           t('trade.errors.sellLimitPriceAboveBid', { price, bid }),
-        );
-        return;
-      }
+      );
+      return;
     }
 
-    if (activeTab === 'Stop') {
-      if (isBuy && !new Decimal(price).gt(ask)) {
-        showError(
-          t('trade.errors.tradeFailedTitle'),
-          t('trade.errors.buyStopPriceAboveAsk', { price, ask }),
-        );
-        return;
-      }
-      if (!isBuy && !new Decimal(price).lt(bid)) {
-        showError(
-          t('trade.errors.tradeFailedTitle'),
-          t('trade.errors.sellStopPriceBelowBid', { price, bid }),
-        );
-        return;
-      }
-    }
+    payload.price = price.toString();
 
-    payload.price = price;
-
-    const requiredMargin = calculateMarginRequired(qty, price);
-    if (!isAvailableBalanceSufficient(calculatedAvailableBalance, requiredMargin)) {
+    const totalCost = calculateTotalCostRequired(qty, price);
+    if (!isAvailableBalanceSufficient(calculatedAvailableBalance, totalCost)) {
       showError(
         t('trade.errors.tradeFailedTitle'),
         t('trade.errors.insufficientAvailableBalanceToPlaceOrder'),
@@ -321,33 +277,7 @@ export function submitTradePanelOrder(
       return;
     }
 
-    const tpNum =
-      takeProfitValue && takeProfitValue !== '0.00'
-        ? Number.parseFloat(normalizeDecimalInput(takeProfitValue))
-        : null;
-    const slNum =
-      stopLossValue && stopLossValue !== '0.00'
-        ? Number.parseFloat(normalizeDecimalInput(stopLossValue))
-        : null;
 
-    const tpPrice = convertTPSLToPrice(
-      tpNum,
-      true,
-      side,
-      takeProfitTriggerType,
-      price,
-      symbolAssetForConvert,
-    );
-    const slPrice = convertTPSLToPrice(
-      slNum,
-      false,
-      side,
-      stopLossTriggerType,
-      price,
-      symbolAssetForConvert,
-    );
-    if (tpPrice != null) payload.takeProfitPrice = tpPrice;
-    if (slPrice != null) payload.stopLossPrice = slPrice;
   }
 
   submitLockRef.current = true;
@@ -381,7 +311,6 @@ export function submitTradePanelOrder(
         t('trade.success.orderPlacedSuccessfullyTitle'),
         t('trade.success.orderPlacedSuccessfully'),
       );
-      refetchPositions();
       refetchOrders();
       tradePanelRef.current?.close();
     },

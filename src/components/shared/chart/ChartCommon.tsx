@@ -5,7 +5,6 @@ import SplashLogo from '@/components/shared/SplashLogo';
 import { API_CHART_URL } from '@/constants/env';
 import { useGetData } from '@/context/GetdataContext';
 import { useInfiniteOrders } from '@/hook/useOrder';
-import { useInfinitePositions } from '@/hook/usePosition';
 import { buildKlineStoreKey, useKlineSocketStore } from '@/store/klineSocketStore';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
@@ -15,7 +14,6 @@ import { useAppStore } from '@/store/useAppStore';
 import { normalizeToSupportedLanguage } from '@/i18n';
 import { ORDER_SIDES, type GetOrdersResponse, type OrderItem } from '@/types/orders';
 import { candlesArrayFromMarketDataFetch } from '@/types/swagger';
-import { Position } from '@/types/position';
 import type {
   Asset,
   TradingViewChart,
@@ -708,10 +706,10 @@ function ChartCommon({
   const lastAskRef = useRef<number | null>(null);
   const orderLineCreateQueueRef = useRef<Promise<void>>(Promise.resolve());
   const lastKlineCloseRef = useRef<number | null>(null);
+  const lastOrdersRef = useRef<Record<string, OrderItem[]>>({});
+  const lastPositionsRef = useRef<Record<string, any[]>>({});
   const positionLinesRef = useRef<Record<string, TradingViewOrderLine>>({});
   const orderLinesRef = useRef<Record<string, TradingViewOrderLine>>({});
-  const lastPositionsRef = useRef<Record<string, Position[]>>({});
-  const lastOrdersRef = useRef<Record<string, OrderItem[]>>({});
   const studiesAutosaveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMountedRef = useRef(true);
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
@@ -774,15 +772,7 @@ function ChartCommon({
     [dataOrder],
   );
 
-  const { data: dataPositions } = useInfinitePositions({
-    accountId: shouldFetchTradeData ? activeAccount?.id || '' : '',
-    symbol: shouldFetchTradeData ? currentSymbol : '',
-  });
-
-  const apiPositions: Position[] = useMemo(
-    () => dataPositions?.pages.flatMap((page: { data: Position[] }) => page.data) || [],
-    [dataPositions],
-  );
+  const apiPositions: any[] = [];
 
   const ordersList: OrderItem[] = Array.isArray(ordersData)
     ? ordersData
@@ -1861,82 +1851,7 @@ function ChartCommon({
     createOrderLineWithRetry,
   ]);
 
-  useEffect(() => {
-    if (!tvWidget) return;
-    if (!isTvChartReady) return;
-    const chart = chartRef.current;
-    if (!chart) return;
-
-    const supportsOrderLines = typeof chart.createOrderLine === 'function';
-    if (!supportsOrderLines) return;
-
-    const currentIds = new Set(positionsForChart.map((p: Position) => String(p.id)));
-
-    for (const [id, line] of Object.entries(positionLinesRef.current)) {
-      if (!currentIds.has(id)) {
-        try {
-          if (line) {
-            line.remove?.();
-          }
-        } catch (error) {
-          console.error('Failed to remove position line', error);
-        } finally {
-          delete positionLinesRef.current[id];
-        }
-      }
-    }
-
-    const ensurePositionLine = async (position: Position) => {
-      const id = String(position.id);
-      const price = Number(position.openPrice);
-      if (!Number.isFinite(price)) return;
-
-      let line = positionLinesRef.current[id];
-      if (!line) {
-        try {
-          line = await createOrderLineWithRetry(chart);
-
-          const isBuy =
-            position.side === ORDER_SIDES.BUY || String(position.side).toLowerCase?.() === 'buy';
-
-          const color = isBuy ? '#0158FF' : CHART_CANDLE_DOWN;
-
-          line.setQuantity?.('');
-          line.setText?.(`${isBuy ? 'BUY' : 'SELL'} ${formatQuantity(position.quantity ?? '')}`);
-          line.setLineStyle?.(2);
-          line.setLineColor?.(color);
-          line.setBodyBackgroundColor?.('rgba(0,0,0,0)');
-          line.setBodyBorderColor?.('rgba(0,0,0,0)');
-          line.setBodyTextColor?.(color);
-          line.setTextAlignment?.('left');
-          line.setCancelButtonVisible?.(false);
-          line.setModifyButtonVisible?.(false);
-          line.setReverseButtonVisible?.(false);
-          line.setCloseButtonVisible?.(false);
-
-          positionLinesRef.current[id] = line;
-        } catch (error) {
-          console.error('Failed to create position line', error);
-          return;
-        }
-      }
-
-      if (line) {
-        line.setPrice?.(price);
-      }
-    };
-
-    positionsForChart.forEach((p: Position) => {
-      void ensurePositionLine(p);
-    });
-  }, [
-    positionsForChart,
-    tvWidget,
-    isChartReady,
-    isTvChartReady,
-    currentSymbol,
-    createOrderLineWithRetry,
-  ]);
+  // Position lines logic removed for spot-only transition
 
   useEffect(() => {
     if (!tvWidget) return;
@@ -1976,7 +1891,6 @@ function ChartCommon({
 
           const isBuy =
             order.side === ORDER_SIDES.BUY ||
-            order.side === 0 ||
             String(order.side).toLowerCase?.() === 'buy';
 
           const color = isBuy ? '#0158FF' : CHART_CANDLE_DOWN;

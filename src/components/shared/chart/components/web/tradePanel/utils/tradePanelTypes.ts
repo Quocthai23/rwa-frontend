@@ -2,7 +2,7 @@ export interface TradePanelSheetHandle {
   open: (
     param?: 'orderLimit' | 'buySell' | 'buy' | 'sell',
     options?: {
-      defaultTab?: 'Market' | 'Limit' | 'Stop';
+      defaultTab?: 'Market' | 'Limit';
       quantity?: string;
     },
   ) => void;

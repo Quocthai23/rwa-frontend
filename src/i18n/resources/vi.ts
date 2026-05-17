@@ -318,10 +318,13 @@ const vi = {
     rewardsHub: 'Trung tâm thưởng',
     helpCenter: 'Trung tâm trợ giúp',
     feedback: 'Phản hồi',
+    dao: 'Quản trị DAO',
+    redemption: 'Tất toán RWA',
     sections: {
       coreFeatures: 'Tính năng chính',
       discover: 'Khám phá',
       eventRewards: 'Sự kiện & Thưởng',
+      governanceAndRwa: 'Quản trị & Tất toán',
       help: 'Trợ giúp',
     },
   },

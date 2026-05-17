@@ -30,7 +30,7 @@ export function TradeSymbolSearchSheet({
     >
       <SheetContent
         side="bottom"
-        className="mx-auto h-[80dvh] max-h-[80dvh] w-full max-w-192 gap-0 overflow-hidden p-0"
+        className="mx-auto h-[80dvh] max-h-[80dvh] w-full max-w-3xl gap-0 overflow-hidden p-0"
         showCloseButton={false}
         title=""
       >

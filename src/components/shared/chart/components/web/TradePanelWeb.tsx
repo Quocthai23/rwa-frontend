@@ -12,13 +12,12 @@ import { Switch } from '@/components/shared/atoms/switch';
 export type { TradePanelSheetHandle } from './tradePanel/utils/tradePanelTypes';
 
 import type { TradePanelSheetHandle } from './tradePanel/utils/tradePanelTypes';
-import { ORDER_SIDES } from '@/types/orders';
+import { ORDER_SIDES, OrderStatus } from '@/types/orders';
 import { useCreateOrder } from '@/hook/orders/useCreateOrder';
 import { useToast } from '@/hook/useToast';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAuthStore } from '@/store/authStore';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useInfinitePositions } from '@/hook/usePosition';
 import { useInfiniteOrders } from '@/hook/useOrder';
 import { TradePanelActionBar } from './tradePanel/components/TradePanelActionBar';
 import { TradePanelLimitPriceField } from './tradePanel/components/TradePanelLimitPriceField';
@@ -107,8 +106,8 @@ function TradePanel({
         return t('trade.tabs.market');
       case 'Limit':
         return t('trade.tabs.limit');
-      case 'Stop':
-        return t('trade.tabs.stop');
+      case 'Limit':
+        return t('trade.tabs.limit');
     }
   };
   const [isOpen, setIsOpen] = useState(false);
@@ -131,7 +130,7 @@ function TradePanel({
       open: (
         param?: 'orderLimit' | 'buySell' | 'buy' | 'sell',
         options?: {
-          defaultTab?: 'Market' | 'Limit' | 'Stop';
+          defaultTab?: 'Market' | 'Limit';
           quantity?: string;
         },
       ) => {
@@ -246,14 +245,10 @@ function TradePanel({
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
   const sellPrice = rt?.bid ?? 0;
   const buyPrice = rt?.ask ?? 0;
-  const { refetch: refetchPositions } = useInfinitePositions({
-    accountId: selectedAccount?.id || '',
-    status: [0, 1],
-  });
   const { availableBalance } = useAccountSummaryMetrics();
   const { refetch: refetchOrders } = useInfiniteOrders({
     accountId: selectedAccount?.id || '',
-    status: [0, 1],
+    status: [OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED],
   });
 
   const limitPriceNumber = Number.parseFloat(normalizeDecimalInput(limitPrice)) || 0;
@@ -369,7 +364,7 @@ function TradePanel({
     sellStopLossPnLUsdPrice,
   } = stopLossPreview;
 
-  const { isBuyLimitInvalid, isSellLimitInvalid, isSellStopLimitInvalid, isBuyStopLimitInvalid } =
+  const { isBuyLimitInvalid, isSellLimitInvalid } =
     useMemo(() => {
       const tpLimitFlags = computeTradePanelLimitStopFlags({
         activeTab,
@@ -393,10 +388,6 @@ function TradePanel({
       return {
         isBuyLimitInvalid: tpLimitFlags.isBuyLimitInvalid || slLimitFlags.isBuyLimitInvalid,
         isSellLimitInvalid: tpLimitFlags.isSellLimitInvalid || slLimitFlags.isSellLimitInvalid,
-        isSellStopLimitInvalid:
-          tpLimitFlags.isSellStopLimitInvalid || slLimitFlags.isSellStopLimitInvalid,
-        isBuyStopLimitInvalid:
-          tpLimitFlags.isBuyStopLimitInvalid || slLimitFlags.isBuyStopLimitInvalid,
       };
     }, [
       activeTab,
@@ -539,7 +530,6 @@ function TradePanel({
         stopLossValue,
         symbolAssetForConvert: symbolAsset,
         createOrder,
-        refetchPositions,
         refetchOrders,
         tradePanelRef,
         setIsSubmitLocked,
@@ -578,7 +568,6 @@ function TradePanel({
       takeProfitValue,
       stopLossValue,
       createOrder,
-      refetchPositions,
       refetchOrders,
       tradePanelRef,
     ],
@@ -663,6 +652,17 @@ function TradePanel({
                 volumeStep={volumeStepNum}
                 requiredMarginForPosition={requiredMarginForPosition}
               />
+
+              <div className="px-4 py-2">
+                <div className="flex items-center justify-between rounded border border-border bg-muted/50 p-3">
+                  <span className="text-body-small-medium text-muted-foreground">
+                    {t('trade.availableBalance', { defaultValue: 'Available' })}
+                  </span>
+                  <span className="text-body-small-semibold text-foreground">
+                    {availableBalance.toFixed(2)} {symbolAsset?.marginCurrency ?? 'USD'}
+                  </span>
+                </div>
+              </div>
 
               <div className="px-4">
                 {activeTab !== 'Market' && (
@@ -807,13 +807,11 @@ function TradePanel({
                 isSubmitLocked={isSubmitLocked}
                 sellDisabled={
                   sellTpSlError !== null ||
-                  (activeTab === 'Limit' && isSellLimitInvalid) ||
-                  (activeTab === 'Stop' && isSellStopLimitInvalid)
+                  (activeTab === 'Limit' && isSellLimitInvalid)
                 }
                 buyDisabled={
                   buyTpSlError !== null ||
-                  (activeTab === 'Limit' && isBuyLimitInvalid) ||
-                  (activeTab === 'Stop' && isBuyStopLimitInvalid)
+                  (activeTab === 'Limit' && isBuyLimitInvalid)
                 }
                 onSell={() => {
                   setTransactionType('sell');

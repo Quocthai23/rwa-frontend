@@ -21,8 +21,6 @@ import {
   type SortDir,
   SortHeader,
   TableLoadingState,
-  TargetPriceCell,
-  mapOrderTypeCodeToOrderType,
   sortRows,
   formatDateTime,
   formatDecimal,
@@ -90,7 +88,7 @@ function OrdersTable({
   sortKey?: string | null;
   sortDir?: SortDir;
   onSort?: (key: string) => void;
-  rtBySymbol: Record<string, { bid: number; ask: number }>;
+  rtBySymbol: Record<string, { bid?: number; ask?: number }>;
 }) {
   const [cancellingOrders, setCancellingOrders] = useState<Set<string>>(new Set());
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
@@ -106,21 +104,20 @@ function OrdersTable({
   );
   const { assets } = useGetData();
   const ordersData = enrichOrdersWithAssets(displayRows, assets);
-  const getOrderTypeLabel = (orderType: number) => getOrderTypeLabelText(orderType, t);
+  const getOrderTypeLabel = (orderType: number | string) => getOrderTypeLabelText(orderType, t);
 
   // Column width mappings: percentage-based
   const columnWidths = {
-    symbol: 11,
-    type: 6,
-    side: 6,
-    lots: 9,
-    price: 9,
-    currentPrice: 10,
-    takeProfit: 10,
-    stopLoss: 11,
-    status: 7,
-    openTime: 15,
-    action: 5,
+    symbol: 15,
+    type: 10,
+    side: 10,
+    lots: 15,
+    price: 15,
+    avgFillPrice: 15,
+    totalCost: 15,
+    status: 10,
+    openTime: 20,
+    action: 10,
   };
 
   const getColumnStyle = (columnKey: keyof typeof columnWidths) => {
@@ -250,21 +247,15 @@ function OrdersTable({
             </th>
             <th
               className="text-muted-foreground px-2 py-2 text-right font-normal"
-              style={getColumnStyle('currentPrice')}
+              style={getColumnStyle('avgFillPrice')}
             >
-              {t('position.modal.currentPrice', { defaultValue: 'Current Price' })}
+              {t('position.modal.avgFillPrice', { defaultValue: 'Avg Fill Price' })}
             </th>
             <th
               className="text-muted-foreground px-2 py-2 text-right font-normal"
-              style={getColumnStyle('takeProfit')}
+              style={getColumnStyle('totalCost')}
             >
-              {t('position.modal.takeProfitFull', { defaultValue: 'Take Profit' })}
-            </th>
-            <th
-              className="text-muted-foreground px-2 py-2 text-right font-normal"
-              style={getColumnStyle('stopLoss')}
-            >
-              {t('position.modal.stopLossFull', { defaultValue: 'Stop Loss' })}
+              {t('position.modal.totalCost', { defaultValue: 'Total Cost' })}
             </th>
             <th
               className="text-muted-foreground px-2 py-2 text-right font-normal"
@@ -314,17 +305,14 @@ function OrdersTable({
                     <InfoCircle size={19} />
                   </Button>
                   <span>{order.symbol}</span>
-                  <span className="text-caption-regular dark:bg-primary-900 rounded bg-blue-50 px-1.5 py-0.5 text-blue-500 dark:text-blue-200">
-                    {order.leverage}X
-                  </span>
                 </div>
               </td>
               <td className="px-2 py-2 text-right" style={getColumnStyle('type')}>
                 {getOrderTypeLabel(order.orderType)}
               </td>
               <td className="px-2 py-2 text-right" style={getColumnStyle('side')}>
-                <span className={order.side === 0 ? 'text-green-500' : 'text-red-500'}>
-                  {order.side === 0 ? t('position.filter.buy') : t('position.filter.sell')}
+                <span className={order.side === 'BUY' ? 'text-green-500' : 'text-red-500'}>
+                  {order.side === 'BUY' ? t('position.filter.buy') : t('position.filter.sell')}
                 </span>
               </td>
               <td className="px-2 py-2 text-right tabular-nums" style={getColumnStyle('lots')}>
@@ -335,53 +323,15 @@ function OrdersTable({
               </td>
               <td
                 className="px-2 py-2 text-right tabular-nums"
-                style={getColumnStyle('currentPrice')}
+                style={getColumnStyle('avgFillPrice')}
               >
-                {formatDecimal(
-                  order.side === 0
-                    ? rtBySymbol?.[order.symbol]?.ask
-                    : rtBySymbol?.[order.symbol]?.bid,
-                )}
+                {order.executedPrice ? formatDecimal(order.executedPrice) : '-'}
               </td>
-              <td className="px-2 py-2 text-right" style={getColumnStyle('takeProfit')}>
-                <TargetPriceCell
-                  value={order.takeProfitPrice}
-                  takeProfitValue={order.takeProfitPrice}
-                  stopLossValue={order.stopLossPrice}
-                  label={t('position.modal.addTP', { defaultValue: 'Add TP' })}
-                  estimateContext={{
-                    side: order.side as 0 | 1,
-                    symbol: order.symbol,
-                    quantity: order.quantity,
-                    entryPrice: order.price ?? '0',
-                    digit: order.digit,
-                    rtBySymbol,
-                    id: order.id,
-                    accountId: order.accountId,
-                    type: 'order',
-                    orderType: mapOrderTypeCodeToOrderType(order.orderType),
-                  }}
-                />
-              </td>
-              <td className="px-2 py-2 text-right" style={getColumnStyle('stopLoss')}>
-                <TargetPriceCell
-                  value={order.stopLossPrice}
-                  takeProfitValue={order.takeProfitPrice}
-                  stopLossValue={order.stopLossPrice}
-                  label={t('position.modal.addSL', { defaultValue: 'Add SL' })}
-                  estimateContext={{
-                    side: order.side as 0 | 1,
-                    symbol: order.symbol,
-                    quantity: order.quantity,
-                    entryPrice: order.price ?? '0',
-                    digit: order.digit,
-                    rtBySymbol,
-                    id: order.id,
-                    accountId: order.accountId,
-                    type: 'order',
-                    orderType: mapOrderTypeCodeToOrderType(order.orderType),
-                  }}
-                />
+              <td
+                className="px-2 py-2 text-right tabular-nums"
+                style={getColumnStyle('totalCost')}
+              >
+                {order.totalCost ? `$${formatDecimal(order.totalCost)}` : '-'}
               </td>
               <td className="px-2 py-2 text-right" style={getColumnStyle('status')}>
                 <OrderStatusPill status={order.status} />
@@ -425,18 +375,14 @@ function OrdersTable({
                 <div className="mb-2 flex flex-row items-start justify-between">
                   <div className="flex flex-row items-center gap-2">
                     <h2 className="text-h2-semibold text-foreground">{selectedOrder.symbol}</h2>
-                    <div
-                      className={`rounded px-2.5 py-1.5 ${selectedOrder.side === 0 ? 'bg-green-50 dark:bg-green-900' : 'bg-red-50 dark:bg-red-900'}`}
-                    >
                       <p
-                        className={`text-body-small-medium ${selectedOrder.side === 0 ? 'text-green-500 dark:text-green-200' : 'text-red-500 dark:text-red-200'}`}
+                        className={`text-body-small-medium ${selectedOrder.side === 'BUY' ? 'text-green-500 dark:text-green-200' : 'text-red-500 dark:text-red-200'}`}
                       >
-                        {selectedOrder.side === 0
+                        {selectedOrder.side === 'BUY'
                           ? t('position.filter.buy')
                           : t('position.filter.sell')}{' '}
                         {getOrderTypeLabel(selectedOrder.orderType)}
                       </p>
-                    </div>
                   </div>
                   <div className="flex flex-row items-center gap-1">
                     <p className="text-body-small-regular text-muted-foreground">
@@ -480,22 +426,18 @@ function OrdersTable({
                 </div>
                 <div className="flex flex-row justify-between">
                   <p className="text-body-small-medium text-muted-foreground">
-                    {t('position.modal.takeProfit')}:
+                    {t('position.modal.avgFillPrice', { defaultValue: 'Avg Fill Price' })}:
                   </p>
                   <p className="text-body-small-medium text-foreground font-medium tabular-nums">
-                    {selectedOrder.takeProfitPrice
-                      ? formatDecimal(selectedOrder.takeProfitPrice)
-                      : t('position.modal.unset')}
+                    {selectedOrder.executedPrice ? formatDecimal(selectedOrder.executedPrice) : '-'}
                   </p>
                 </div>
                 <div className="flex flex-row justify-between">
                   <p className="text-body-small-medium text-muted-foreground">
-                    {t('position.modal.stopLoss')}:
+                    {t('position.modal.totalCost', { defaultValue: 'Total Cost' })}:
                   </p>
                   <p className="text-body-small-medium text-foreground font-medium tabular-nums">
-                    {selectedOrder.stopLossPrice
-                      ? formatDecimal(selectedOrder.stopLossPrice)
-                      : t('position.modal.unset')}
+                    {selectedOrder.totalCost ? `$${formatDecimal(selectedOrder.totalCost)}` : '-'}
                   </p>
                 </div>
                 <div className="flex flex-row justify-between">
@@ -542,7 +484,7 @@ export default function OpenOrdersTabContent({ accountId }: { accountId: string 
     fetchNextPage,
     isFetchingNextPage,
   } = useInfiniteOrders(
-    { accountId, status: [OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED] },
+    { accountId, status: [OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED] },
     undefined,
     'active',
   );

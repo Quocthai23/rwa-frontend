@@ -1,66 +1,51 @@
 import { useMemo } from 'react';
 import { Decimal } from 'decimal.js';
 
-import type { Position } from '@/types';
-import type { Account } from '@/types/account';
-import {
-  calculateAccountBalance,
-  calculateAvailableBalance,
-  calculateTotalFee,
-  calculateTotalMargin,
-  calculateTotalUnrealizedPnL,
-  getEnrichedPositionsFromInfiniteData,
-} from '@/components/featured/position/utils/position.calculations';
-import { useGetData } from '@/context/GetdataContext';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useInfinitePositions } from './usePosition';
-import { useRealtimeStore } from '@/store/realtimeStore';
 
 const round2 = (val: Decimal.Value) => new Decimal(val).toDecimalPlaces(2);
 
+/**
+ * useAccountSummaryMetrics
+ *
+ * For Spot trading there are no open "positions" or margin requirements.
+ * Balance metrics are read directly from the account object returned by the backend.
+ *
+ * - balance          = lockedBalance + availableBalance  (total deposited)
+ * - availableBalance = account.availableBalance          (free to trade)
+ * - equity           = balance  (no unrealised PnL in Spot; gains come from sold assets)
+ * - marginPositions  = 0  (Spot has no margin/leverage)
+ * - marginLevel      = 0
+ * - currentUnrealizedPnl = 0 (handled via portfolio value change, not positions)
+ * - totalFee         = 0 (fees are deducted from balance server-side)
+ */
 export const useAccountSummaryMetrics = () => {
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
-  const activeAccount = selectedAccount;
-  const { assets } = useGetData();
-  const rtBySymbol = useRealtimeStore((s) => s.rtBySymbol);
-  const { data: apiData, isLoading: isLoadingPositions } = useInfinitePositions({
-    accountId: selectedAccount?.id || '',
-    status: [0, 1],
-  });
-
-  const positions = useMemo(() => {
-    return getEnrichedPositionsFromInfiniteData(apiData, assets);
-  }, [apiData, assets]);
-
-  const marginPositions = useMemo(() => {
-    return round2(calculateTotalMargin(positions));
-  }, [positions]);
 
   const balance = useMemo(() => {
-    return round2(
-      calculateAccountBalance(activeAccount?.lockedBalance, activeAccount?.availableBalance),
-    );
-  }, [activeAccount]);
-
-  const currentUnrealizedPnl = useMemo(() => {
-    return round2(calculateTotalUnrealizedPnL(positions, rtBySymbol));
-  }, [positions, rtBySymbol]);
-
-  const totalFee = useMemo(() => {
-    return round2(calculateTotalFee(positions));
-  }, [positions]);
-
-  const equity = useMemo(() => {
-    return round2(balance.plus(currentUnrealizedPnl).minus(totalFee));
-  }, [balance, currentUnrealizedPnl, totalFee]);
-
-  const marginLevel = useMemo(() => {
-    return marginPositions.gt(0) ? round2(equity.div(marginPositions).times(100)) : new Decimal(0);
-  }, [equity, marginPositions]);
+    const locked = Number(selectedAccount?.lockedBalance ?? 0);
+    const available = Number(selectedAccount?.availableBalance ?? 0);
+    return round2(locked + available);
+  }, [selectedAccount?.lockedBalance, selectedAccount?.availableBalance]);
 
   const availableBalance = useMemo(() => {
-    return round2(calculateAvailableBalance(equity.toNumber(), marginPositions.toNumber()));
-  }, [equity, marginPositions]);
+    return round2(Number(selectedAccount?.availableBalance ?? 0));
+  }, [selectedAccount?.availableBalance]);
+
+  // In Spot trading, equity equals the account balance (no leveraged positions)
+  const equity = balance;
+
+  // No open margin positions in Spot
+  const marginPositions = useMemo(() => new Decimal(0), []);
+
+  // No unrealised PnL from open positions (portfolio P&L is in PortfolioTabContent)
+  const currentUnrealizedPnl = useMemo(() => new Decimal(0), []);
+
+  // No swap/fee outstanding
+  const totalFee = useMemo(() => new Decimal(0), []);
+
+  // Margin level not applicable for Spot
+  const marginLevel = useMemo(() => new Decimal(0), []);
 
   return {
     availableBalance,

@@ -42,6 +42,7 @@ export type Asset = {
   isHot?: boolean;
   marginCurrency: string;
   marginMultiplier: string;
+  maxLeverage?: string | number;
   maxTradeSize: string;
   minTradeSize: string;
   name: string;
@@ -55,6 +56,13 @@ export type Asset = {
   swapLong?: string;
   swapShort?: string;
   swapRates?: SwapRates;
+  location?: string;
+  area?: number;
+  zoning?: string;
+  businessModel?: string;
+  monthlyBenefits?: string;
+  titleDeedImage?: string;
+  images?: any;
 };
 
 export type AssetMarketData = {

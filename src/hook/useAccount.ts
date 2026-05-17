@@ -7,7 +7,6 @@ import {
   getAccounts,
   getAccountTypes,
   updateAccountName,
-  updateAccountLeverage,
 } from '@/services/accountService';
 import { useAuthStore } from '@/store/authStore';
 import { useAccountStore } from '@/store/useAccountStore';
@@ -56,13 +55,9 @@ export const useUpdateAccountName = () => {
 };
 
 export const useUpdateAccountLeverage = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: ({ accountId, leverage }: { accountId: string; leverage: number }) =>
-      updateAccountLeverage(accountId, leverage),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    mutationFn: async ({ accountId, leverage }: { accountId: string; leverage: number }) => {
+      return { success: true };
     },
   });
 };

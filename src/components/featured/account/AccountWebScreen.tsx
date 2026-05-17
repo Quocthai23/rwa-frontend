@@ -30,13 +30,9 @@ import {
   SheetTitle,
 } from '@/components/shared/atoms/web/sheet';
 import SplashLogo from '@/components/shared/SplashLogo';
-import { RewardsCenterContent } from '@/components/featured/rewards/Reward';
+import SecurityWebScreen from '@/components/featured/security/web/SecurityWebScreen';
 import { LeverageWebContent } from '@/components/featured/settings/web/LeverageWebContent';
 import FeedbackWebContent from '@/components/featured/settings/web/FeedbackWebContent';
-import SecurityWebScreen from '@/components/featured/security/web/SecurityWebScreen';
-import Referral from '@/components/featured/referral/web/ReferralWebForm';
-import RewardStructure from '@/components/featured/referral/RewardStructure';
-import MyReferralWeb from '@/components/featured/referral/web/MyReferralWeb';
 import ChatSupportWebScreen from '@/components/featured/chat/web/ChatSupportWebScreen';
 import SupportScreenWeb from '@/components/featured/support-history/web/SupportScreenWeb';
 import TransactionHistoryWeb from '@/components/featured/transaction-history/web/TransactionHistoryWeb';
@@ -54,7 +50,6 @@ import { useAuthHydrated } from '@/hook/useAuthHydrated';
 import { useGetData } from '@/context/GetdataContext';
 import EditUserName from '@/components/featured/personal-info/web/components/EditUserName';
 import EditDisplayName from '@/components/featured/personal-info/web/components/EditDisplayName';
-import EditReferrer from '@/components/featured/personal-info/web/components/EditReferrer';
 import EditGender from '@/components/featured/personal-info/web/components/EditGender';
 import { SupportTicketStatus } from '@/types/support';
 import TransferFlowSheet from '@/components/featured/transfer/web/TransferFlowSheet';
@@ -68,8 +63,6 @@ const USER_PLACEHOLDER_ICON = '/assets/images/discover/filled.png';
 type SettingsMenuItemId =
   | 'account-information'
   | 'security'
-  | 'rewards'
-  | 'referral'
   | 'leverage'
   | 'transaction-history'
   | 'feedback'
@@ -78,8 +71,6 @@ type SettingsMenuItemId =
 const VALID_TABS: SettingsMenuItemId[] = [
   'account-information',
   'security',
-  'rewards',
-  'referral',
   'leverage',
   'feedback',
   'support',
@@ -94,8 +85,6 @@ type SupportChatState =
       requestedStatus?: SupportTicketStatus;
       ticketId: null | string;
     };
-
-type ReferralPanelView = 'overview' | 'history' | 'reward-structure';
 
 function maskEmail(email?: string | null): string {
   if (!email) return '-';
@@ -190,14 +179,12 @@ export default function WebScreen() {
   const [isLoggingOut, setLoggingOut] = useState(false);
   const [isNicknameSheetOpen, setNicknameSheetOpen] = useState(false);
   const [isDisplayNameSheetOpen, setDisplayNameSheetOpen] = useState(false);
-  const [isReferrerSheetOpen, setReferrerSheetOpen] = useState(false);
   const [isGenderSheetOpen, setGenderSheetOpen] = useState(false);
   const [isDepositSheetOpen, setDepositSheetOpen] = useState(false);
   const [isTopUpSheetOpen, setTopUpSheetOpen] = useState(false);
   const [isWithdrawSheetOpen, setWithdrawSheetOpen] = useState(false);
   const [isTransferSheetOpen, setTransferSheetOpen] = useState(false);
   const [supportChatState, setSupportChatState] = useState<SupportChatState>({ mode: 'history' });
-  const [referralPanelView, setReferralPanelView] = useState<ReferralPanelView>('overview');
   const [isUidCopied, setIsUidCopied] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -214,16 +201,6 @@ export default function WebScreen() {
         id: 'security' as const,
         icon: Settings01,
         label: t('settings.security'),
-      },
-      {
-        id: 'rewards' as const,
-        icon: Gift01,
-        label: t('settings.rewardsCenter'),
-      },
-      {
-        id: 'referral' as const,
-        icon: Share07,
-        label: t('settings.referrals', 'Referrals'),
       },
       {
         id: 'leverage' as const,
@@ -269,13 +246,6 @@ export default function WebScreen() {
 
       if (itemId === 'account-information') return;
       if (itemId === 'security') {
-        return;
-      }
-      if (itemId === 'rewards') {
-        return;
-      }
-      if (itemId === 'referral') {
-        setReferralPanelView('overview');
         return;
       }
       if (itemId === 'leverage') {
@@ -451,7 +421,6 @@ export default function WebScreen() {
 
       <EditUserName open={isNicknameSheetOpen} onOpenChange={setNicknameSheetOpen} />
       <EditDisplayName open={isDisplayNameSheetOpen} onOpenChange={setDisplayNameSheetOpen} />
-      <EditReferrer open={isReferrerSheetOpen} onOpenChange={setReferrerSheetOpen} />
       <EditGender open={isGenderSheetOpen} onOpenChange={setGenderSheetOpen} />
       <DepositFlowSheet isOpen={isDepositSheetOpen} onOpenChange={setDepositSheetOpen} />
       <TopUpFlowSheet isOpen={isTopUpSheetOpen} onOpenChange={setTopUpSheetOpen} />
@@ -546,19 +515,6 @@ export default function WebScreen() {
         <section className="bg-background min-h-0 overflow-y-auto rounded pr-1 no-scrollbar">
           {activeItem === 'security' ? (
             <SecurityWebScreen />
-          ) : activeItem === 'rewards' ? (
-            <RewardsCenterContent />
-          ) : activeItem === 'referral' ? (
-            referralPanelView === 'history' ? (
-              <MyReferralWeb onBack={() => setReferralPanelView('overview')} entryFromReferral />
-            ) : referralPanelView === 'reward-structure' ? (
-              <RewardStructure useSimpleHeader onBack={() => setReferralPanelView('overview')} />
-            ) : (
-              <Referral
-                onOpenHistory={() => setReferralPanelView('history')}
-                onOpenRewardStructure={() => setReferralPanelView('reward-structure')}
-              />
-            )
           ) : activeItem === 'leverage' ? (
             <LeverageWebContent />
           ) : activeItem === 'transaction-history' ? (
@@ -681,13 +637,6 @@ export default function WebScreen() {
               <SettingsDetailRow
                 label={t('personalInfo.linkEmail', 'Link Email')}
                 value={maskEmail(profileUser?.email)}
-              />
-              <SettingsDetailRow
-                label={t('personalInfo.referrerTitle', 'Referrer')}
-                value={
-                  profileUser?.referenceId ? profileUser.referenceId : t('personalInfo.notSet')
-                }
-                onClick={() => setReferrerSheetOpen(true)}
               />
             </>
           )}

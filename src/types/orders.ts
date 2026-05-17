@@ -1,53 +1,56 @@
 // types/order.ts
+/**
+ * UI Display Enums
+ */
 export enum OrderType {
   MARKET = 'Market Execution',
   LIMIT = 'Limit',
-  STOP = 'Stop',
-  MODIFY = 'Modify Position',
 }
 
 export enum OrderStatus {
-  NEW = 0,
-  PARTIALLY_FILLED = 1,
-  FILLED = 2,
-  CANCELLED = 3,
-  REJECTED = 4,
+  PENDING = 'PENDING',
+  OPEN = 'OPEN',
+  PARTIALLY_FILLED = 'PARTIALLY_FILLED',
+  FILLED = 'FILLED',
+  CANCELLED = 'CANCELLED',
+  REJECTED = 'REJECTED',
 }
 
-export enum OrderSide {
-  BUY = 0,
-  SELL = 1,
-}
-
-export enum OrderTypeCode {
-  MARKET = 0,
-  LIMIT = 1,
-  STOP = 2,
-}
-
-export enum ClosedBy {
-  MANUAL = 0,
-  TAKE_PROFIT = 1,
-  STOP_LOSS = 2,
-  LIQUIDATION = 3,
-}
-
+/**
+ * API String Enums (Used for backend communication)
+ */
 export const ORDER_TYPES = {
   LIMIT: 'LIMIT',
   MARKET: 'MARKET',
 } as const;
 
-export { OrderSide as ORDER_SIDES, OrderTypeCode as ORDER_TYPE_CODES, ClosedBy as CLOSED_BY };
+export const ORDER_SIDES_API = {
+  BUY: 'BUY',
+  SELL: 'SELL',
+} as const;
 
+export const ORDER_SIDES = ORDER_SIDES_API;
+
+/**
+ * Order submission payload sent to backend API
+ * Uses string enums and UUIDs for maximum precision and safety
+ */
 export type CreateOrderPayload = {
   accountId: string;
-  orderType: OrderTypeCode.MARKET | OrderTypeCode.LIMIT | OrderTypeCode.STOP;
-  quantity: number;
-  side: OrderSide;
-  stopLossPrice?: number;
-  symbol: string; // "XAUUSD"
-  takeProfitPrice?: number;
-  price?: number; // Required for limit orders
+  /** Asset UUID (not symbol) - uniquely identifies the trading asset */
+  assetId: string;
+  /** Order type: 'MARKET' or 'LIMIT' */
+  type: 'MARKET' | 'LIMIT';
+  /** Order side: 'BUY' or 'SELL' */
+  side: 'BUY' | 'SELL';
+  /** Quantity as string to maintain decimal precision (no floating point errors) */
+  quantity: string;
+  /** Entry price for LIMIT orders (required for LIMIT, optional for MARKET) */
+  price?: string;
+  /** Maximum total cost for Market BUY orders (to prevent slippage) */
+  maxTotalCost?: string;
+  /** Idempotency key to prevent duplicate submissions */
+  idempotencyKey?: string;
 };
 
 export type CreateOrderResponse = {
@@ -56,15 +59,15 @@ export type CreateOrderResponse = {
 };
 
 export type GetOrdersParams = {
-  accountId: string; // required
+  accountId?: string; // Optional, FE có thể bỏ qua
 
-  orderType?: OrderTypeCode;
-  side?: OrderSide;
+  orderType?: 'MARKET' | 'LIMIT';
+  side?: 'BUY' | 'SELL';
 
   skip?: number; // default 0
   sortBy?: OrdersSortBy; // default createdAt
   sortDir?: SortDir; // default desc
-  status?: number[]; // default [0, 1, 2, 3]
+  status?: ('PENDING' | 'OPEN' | 'PARTIALLY_FILLED' | 'FILLED' | 'CANCELLED' | 'REJECTED')[];
   symbol?: string;
   take?: number; // default 20
   cursor?: string;
@@ -82,25 +85,24 @@ export type GetOrdersResponse = {
 export type OrderItem = {
   accountId: string;
   createdAt: string;
-  filledQuantity: string;
-  id: string;
-  initialMargin: string;
-  orderType: number;
-  price: string | null;
-  quantity: string;
-  remainingQuantity: string;
-  side: number;
-  status: number;
-  symbol: string;
   updatedAt: string;
+  id: string;
+  assetId: string;
+  symbol: string;
+  symbolName?: string;
+  orderType: 'MARKET' | 'LIMIT';
+  side: 'BUY' | 'SELL';
+  status: string;
+  quantity: string;
+  filledQuantity: string;
+  remainingQuantity: string;
+  price: string | null;
+  executedPrice?: string; // Actual fill price (Spot)
+  totalCost?: string; // Filled qty * executedPrice
+  fee?: string; // Trading fee
   // Optional fields for UI
   currentPrice?: number;
-  realisedPL?: string;
-  stopLossPrice?: string;
-  takeProfitPrice?: string;
-  trailingStop?: string;
   value?: string;
-  symbolName?: string;
 };
 
 export type OrdersSortBy = 'createdAt' | 'orderType' | 'quantity' | 'side' | 'symbol';

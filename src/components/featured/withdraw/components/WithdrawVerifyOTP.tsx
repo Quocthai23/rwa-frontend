@@ -16,7 +16,8 @@ interface Props {
   onResend: () => void;
   resendCountdown: number;
   recipientEmail: string;
-  withdrawPayload: Omit<WithdrawPayload, 'idempotencyKey'> | null;
+  challengeId: string;
+  withdrawPayload: Omit<WithdrawPayload, 'idempotencyKey' | 'challengeId'> | null;
   onWithdrawSuccess: () => void;
   onWithdrawError: (error: unknown) => void;
 }
@@ -27,6 +28,7 @@ export default function WithdrawVerifyOTP({
   onResend,
   resendCountdown,
   recipientEmail,
+  challengeId,
   withdrawPayload,
   onWithdrawSuccess,
   onWithdrawError,
@@ -67,17 +69,24 @@ export default function WithdrawVerifyOTP({
 
   const handleSubmit = async () => {
     if (otpCode.trim().length !== 6 || isSubmitting) return;
-    if (!recipientEmail || !withdrawPayload) {
+    if (!withdrawPayload || !challengeId) {
       onWithdrawError(t('withdraw.verifyOtp.errors.missingWithdrawalData'));
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await authApi.verifyOTP(recipientEmail, otpCode.trim(), 'withdrawal');
+      // 1. Verify the challenge
+      await authApi.verifyAuthChallenge({
+        challengeId,
+        factor: 'EMAIL_OTP',
+        code: otpCode.trim(),
+      });
+
+      // 2. Submit the withdrawal
       const payload: WithdrawPayload = {
         ...withdrawPayload,
-        otpToken: response.token,
+        challengeId,
         idempotencyKey: generateUUID(),
       };
       await withdraw(payload);

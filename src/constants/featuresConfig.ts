@@ -20,16 +20,16 @@ export enum FeatureId {
   Ranking = 'ranking',
   Deposit = 'deposit',
   Withdraw = 'withdraw',
-  Referral = 'referral',
   Social = 'social',
   Copy = 'copy',
   Chat = 'chat',
   More = 'more',
   Transfer = 'transfer',
   History = 'history',
-  RewardsHub = 'rewards_hub',
   HelpCenter = 'help_center',
   Feedback = 'feedback',
+  Dao = 'dao',
+  Redemption = 'redemption',
 }
 
 export type UntitledIcon = FC<
@@ -129,13 +129,6 @@ export const FEATURES_CONFIG: Feature[] = [
     icon: MessageChatSquare,
   },
   {
-    id: FeatureId.RewardsHub,
-    label: 'Rewards',
-    labelKey: 'features.rewardsHub',
-    path: '/rewards-center',
-    icon: Award03,
-  },
-  {
     id: FeatureId.HelpCenter,
     label: 'Help Center',
     labelKey: 'features.helpCenter',
@@ -147,6 +140,20 @@ export const FEATURES_CONFIG: Feature[] = [
     label: 'Feedback',
     labelKey: 'features.feedback',
     path: '/settings/feedback',
+    icon: File02,
+  },
+  {
+    id: FeatureId.Dao,
+    label: 'DAO Governance',
+    labelKey: 'features.dao',
+    path: '/dao',
+    icon: Certificate01,
+  },
+  {
+    id: FeatureId.Redemption,
+    label: 'Asset Redemption',
+    labelKey: 'features.redemption',
+    path: '/redemption',
     icon: File02,
   },
   {
@@ -171,9 +178,14 @@ export const FEATURE_SECTIONS = [
     featureIds: [FeatureId.Social, FeatureId.Copy, FeatureId.Chat],
   },
   {
-    title: 'Event & Rewards',
-    titleKey: 'features.sections.eventRewards',
-    featureIds: [FeatureId.Ranking, FeatureId.RewardsHub, FeatureId.Referral],
+    title: 'Event',
+    titleKey: 'features.sections.event',
+    featureIds: [FeatureId.Ranking],
+  },
+  {
+    title: 'Governance & RWA',
+    titleKey: 'features.sections.governanceAndRwa',
+    featureIds: [FeatureId.Dao, FeatureId.Redemption],
   },
   {
     title: 'Help',
@@ -187,7 +199,6 @@ export const HOME_FEATURES_IDS: FeatureId[] = [
   FeatureId.Ranking,
   FeatureId.Deposit,
   FeatureId.Withdraw,
-  FeatureId.Referral,
   FeatureId.Social,
   FeatureId.Copy,
   FeatureId.Chat,

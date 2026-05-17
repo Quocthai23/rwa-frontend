@@ -7,9 +7,7 @@ export const HIDDEN_NAVBAR_ROUTES = [
   '/forgot-password',
   '/opening-order',
   '/top-up',
-  '/referral',
   '/personal-info',
   '/search',
   '/withdraw',
-  '/rewards',
 ];

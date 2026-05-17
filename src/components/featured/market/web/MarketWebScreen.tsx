@@ -384,7 +384,10 @@ export default function MarketWebScreen() {
     [resolvedActiveTab, vm],
   );
   const rtBySymbol = useMarketSocketStore((state) => state.rtBySymbol);
-  const visibleSymbols = useMemo(() => rows.map((row) => row.symbol).filter(Boolean), [rows]);
+  const visibleSymbols = useMemo(
+    () => rows.map((row) => ({ symbol: row.symbol, id: row.id })).filter((s) => Boolean(s.symbol)),
+    [rows],
+  );
   const visibleAssetIds = useMemo(
     () => rows.map((row) => row.id).filter((id): id is string => Boolean(id)),
     [rows],

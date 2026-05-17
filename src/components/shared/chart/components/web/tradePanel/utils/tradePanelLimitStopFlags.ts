@@ -16,8 +16,6 @@ export type TradePanelLimitStopFlagsInput = {
 export type TradePanelLimitStopFlagsResult = {
   isBuyLimitInvalid: boolean;
   isSellLimitInvalid: boolean;
-  isSellStopLimitInvalid: boolean;
-  isBuyStopLimitInvalid: boolean;
 };
 
 export function computeTradePanelLimitStopFlags(
@@ -58,34 +56,8 @@ export function computeTradePanelLimitStopFlags(
     }
   }
 
-  let isSellStopLimitInvalid = false;
-  if (activeTab === 'Stop') {
-    if (!limitPriceNumber || !Number.isFinite(limitPriceNumber)) isSellStopLimitInvalid = true;
-    else if (rtBidN > 0 && !(limitPriceNumber < rtBidN)) isSellStopLimitInvalid = true;
-    else if (triggerType === 'price') {
-      if (takeProfitNumber != null && !(takeProfitNumber < limitPriceNumber))
-        isSellStopLimitInvalid = true;
-      if (stopLossNumber != null && !(stopLossNumber > limitPriceNumber))
-        isSellStopLimitInvalid = true;
-    }
-  }
-
-  let isBuyStopLimitInvalid = false;
-  if (activeTab === 'Stop') {
-    if (!limitPriceNumber || !Number.isFinite(limitPriceNumber)) isBuyStopLimitInvalid = true;
-    else if (rtAskN > 0 && !(limitPriceNumber > rtAskN)) isBuyStopLimitInvalid = true;
-    else if (triggerType === 'price') {
-      if (takeProfitNumber != null && !(takeProfitNumber > limitPriceNumber))
-        isBuyStopLimitInvalid = true;
-      if (stopLossNumber != null && !(stopLossNumber < limitPriceNumber))
-        isBuyStopLimitInvalid = true;
-    }
-  }
-
   return {
     isBuyLimitInvalid,
     isSellLimitInvalid,
-    isSellStopLimitInvalid,
-    isBuyStopLimitInvalid,
   };
 }

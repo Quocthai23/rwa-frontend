@@ -96,7 +96,6 @@ export const useAppStore = create<AppState>()(
         FeatureId.History,
         FeatureId.Social,
         FeatureId.Copy,
-        FeatureId.RewardsHub,
       ],
       setQuickAccessKeys: (keys: string[]) => set({ quickAccessKeys: keys }),
     }),

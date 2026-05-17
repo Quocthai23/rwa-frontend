@@ -2,6 +2,8 @@ import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 
 import { cancelAllOrdersAPI, getOrdersListAPI } from '@/services/orderService';
 import type { GetOrdersParams, GetOrdersResponse, OrderItem } from '@/types/orders';
+import { OrderStatus } from '@/types/orders';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const useInfiniteOrders = (
   params: Omit<GetOrdersParams, 'take' | 'skip' | 'cursor'>,
@@ -25,38 +27,47 @@ export const useInfiniteOrders = (
       params.fromDate,
       params.toDate,
     ],
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }): Promise<GetOrdersResponse> => {
       const result = await getOrdersListAPI({
         ...params,
         cursor: pageParam || undefined,
         take: pageSize,
       });
+
       // Handle both array and object responses
       if (Array.isArray(result)) {
         return {
           data: result,
           nextCursor: undefined,
-          take: pageSize,
+          total: result.length,
         };
       }
 
       return result;
     },
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: GetOrdersResponse) => {
       // Use nextCursor from API response for pagination
-      if (Array.isArray(lastPage)) {
-        return undefined;
-      }
-      return (lastPage as GetOrdersResponse).nextCursor || undefined;
+      return lastPage.nextCursor || undefined;
     },
     staleTime: Infinity,
   });
 };
 
 export const useCancelOrders = (accountId: string) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (orders: OrderItem[]) => {
-      const cancellableOrders = orders.filter((order) => order.status === 0 || order.status === 1);
+      // Filter cancellable orders using string-based status enums
+      const cancellableOrders = orders.filter(
+        (order) =>
+          order.status === OrderStatus.PENDING ||
+          order.status === OrderStatus.OPEN ||
+          order.status === OrderStatus.PARTIALLY_FILLED ||
+          order.status === 'PENDING' ||
+          order.status === 'OPEN' ||
+          order.status === 'PARTIALLY_FILLED'
+      );
       const orderIds = cancellableOrders.map((order) => order.id);
       if (orderIds.length === 0) {
         return null;
@@ -64,6 +75,13 @@ export const useCancelOrders = (accountId: string) => {
 
       const result = await cancelAllOrdersAPI(accountId, undefined, orderIds);
       return result;
+    },
+    onSuccess: () => {
+      // Refresh orders and portfolio data after cancellation
+      queryClient.invalidateQueries({ queryKey: ['infinite-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['portfolio-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['infinite-portfolio-items'] });
     },
   });
 };

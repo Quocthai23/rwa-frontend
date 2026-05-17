@@ -75,6 +75,7 @@ export type User = {
   isFollowing?: boolean;
   isBlocking?: boolean;
   isBlockedBy?: boolean;
+  kycStatus?: 'NONE' | 'PENDING' | 'APPROVING' | 'APPROVED' | 'REJECTED';
 };
 
 /** Partial update: avatar only, username only, or gender + username */

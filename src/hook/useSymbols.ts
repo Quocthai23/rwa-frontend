@@ -2,27 +2,31 @@ import * as React from 'react';
 
 import { useRealtimeStore } from '@/store/realtimeStore';
 
-export function useSymbols(symbols: string[], enabled: boolean) {
+export type SymbolSubscription = string | { symbol: string; id: string };
+
+export function useSymbols(symbols: SymbolSubscription[], enabled: boolean) {
   const connect = useRealtimeStore((s) => s.connect);
   const subscribeSymbol = useRealtimeStore((s) => s.subscribeSymbol);
   const unsubscribeSymbol = useRealtimeStore((s) => s.unsubscribeSymbol);
 
-  // Stabilize based on symbol *content* (not the array identity).
-  // This prevents effect thrashing when callers pass `[symbol]` as a new array each render.
-  const symbolsKey = [...new Set(symbols)].filter(Boolean).sort().join('|');
+  const stableItems = React.useMemo(() => {
+    return symbols
+      .map((item) => (typeof item === 'string' ? { symbol: item, id: '' } : item))
+      .filter((item) => Boolean(item.symbol))
+      .sort((a, b) => a.symbol.localeCompare(b.symbol));
+  }, [symbols]);
 
-  const stableSymbols = React.useMemo(
-    () => (symbolsKey ? symbolsKey.split('|').filter(Boolean) : []),
-    [symbolsKey],
-  );
+  const itemsKey = React.useMemo(() => {
+    return stableItems.map((i) => `${i.symbol}:${i.id}`).join('|');
+  }, [stableItems]);
 
   React.useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || stableItems.length === 0) return;
     connect();
-    stableSymbols.forEach((symbol) => subscribeSymbol(symbol));
+    stableItems.forEach((item) => subscribeSymbol(item.symbol, item.id || undefined));
 
     return () => {
-      stableSymbols.forEach((symbol) => unsubscribeSymbol(symbol));
+      stableItems.forEach((item) => unsubscribeSymbol(item.symbol, item.id || undefined));
     };
-  }, [connect, enabled, subscribeSymbol, unsubscribeSymbol, stableSymbols]);
+  }, [connect, enabled, subscribeSymbol, unsubscribeSymbol, itemsKey, stableItems]);
 }

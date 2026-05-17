@@ -2,13 +2,8 @@
  * News API Endpoints
  */
 export const NEWS_ENDPOINTS = {
-  AGGREGATE: '/api/news/aggregate',
-  BLOOMBERG: '/api/news/bloomberg',
-  LIST: 'home/news',
-  REUTERS: '/api/news/reuters',
-  TOPICS: 'home/news/topics',
-  TRADING_ECONOMICS: '/api/news/tradingeconomics',
-  VN_WALLSTREET: '/api/news/external',
+  LIST: '/news',
+  SOURCES: '/news/sources',
 } as const;
 
 /**
@@ -52,6 +47,7 @@ export const ASSETS_ENDPOINTS = {
   CATEGORIES: '/asset-categories',
   LIST: '/assets',
   MARKET_DATA: (id: string) => `/assets/${id}/market-data`,
+  ONBOARDING: (id: string) => `/assets/${id}/onboarding/submit`,
 } as const;
 
 export const PAYMENT_ENDPOINTS = {
@@ -62,20 +58,12 @@ export const PAYMENT_ENDPOINTS = {
   TRANSFER: '/payment/transfer',
 } as const;
 
-/**
- * Positions Endpoints
- */
-export const POSITIONS_ENDPOINTS = {
-  BULK_CLOSE: '/positions/bulk-close',
-  LIST: '/positions',
-  STATS: '/positions/stats',
-  CLOSE: (id: string) => `/positions/${id}/close`,
-  UPDATE: (id: string) => `/positions/${id}`,
-} as const;
 
 export const ORDERS_ENDPOINTS = {
   CREATE: '/orders',
   LIST: '/orders',
+  BULK_CANCEL: '/orders/bulk-cancel',
+  UPDATE: (id: string) => `/orders/${id}`,
 } as const;
 
 export const ACCOUNTS_ENDPOINTS = {
@@ -85,6 +73,12 @@ export const ACCOUNTS_ENDPOINTS = {
   LIST: '/accounts',
   TYPES: '/accounts/types',
   UPDATE: (id: string) => `/accounts/${id}`,
+} as const;
+
+export const PORTFOLIO_ENDPOINTS = {
+  OVERVIEW: '/user/portfolio/overview',
+  ITEMS: '/user/portfolio/items',
+  HISTORY: '/user/portfolio/history',
 } as const;
 
 /**
@@ -146,11 +140,18 @@ export const COUNTRY_FLAGS: Record<string, string> = {
   US: '🇺🇸',
   ZA: '🇿🇦',
 };
-export const COMMISSION_ENDPOINTS = {
-  REBATE_STATS: '/commission/rebate-stats',
-  REBATE_DETAILS: '/commission/rebate-details',
-  COMMISSION_STATS: '/commission/stats',
-  CLAIM: '/commission/claim',
+/**
+ * Dividend API Endpoints
+ */
+export const DIVIDEND_ENDPOINTS = {
+  CLAIMABLE: '/dividends/claimable',
+  CLAIM: (distributionId: string) => `/dividends/claim/${distributionId}`,
+  PROOF: (distributionId: string) => `/dividends/claim-proof/${distributionId}`,
+} as const;
+
+export const KYC_ENDPOINTS = {
+  SUBMIT: '/kyc/submit',
+  ME: '/kyc/me',
 } as const;
 
 /**

@@ -7,9 +7,10 @@ import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
 import { HIDDEN_NAVBAR_ROUTES } from '@/constants/navigation';
-import { usePositionStats } from '@/hook/usePosition';
 import { cn } from '@/lib/utils';
 import { useAccountStore } from '@/store/useAccountStore';
+import { useInfiniteOrders } from '@/hook/useOrder';
+import { OrderStatus } from '@/types/orders';
 
 const VALID_NAVBAR_ROUTES = [
   '/home',
@@ -24,7 +25,6 @@ const VALID_NAVBAR_ROUTES = [
   '/notifications',
   '/personal-info',
   '/ranking',
-  '/referral',
   '/search',
   '/social',
   '/transfer',
@@ -48,8 +48,11 @@ export default function AppNavbar() {
   }, [pathname]);
 
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
-  const { data: positionStats } = usePositionStats({ accountId: selectedAccount?.id || '' });
-  const openPositionsCount = positionStats?.openPositions ?? 0;
+  const { data: openOrdersData } = useInfiniteOrders({
+    accountId: selectedAccount?.id || '',
+    status: [OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED],
+  });
+  const openOrdersCount = openOrdersData?.pages?.[0]?.total ?? openOrdersData?.pages?.[0]?.data?.length ?? 0;
 
   const navItems = [
     {
@@ -72,7 +75,7 @@ export default function AppNavbar() {
       activeIcon: '/assets/images/nav01/trade-active.svg',
     },
     {
-      label: t('nav.positions'),
+      label: t('nav.portfolio'),
       href: '/position',
       icon: '/assets/images/nav01/bar-chart-10.svg',
       activeIcon: '/assets/images/nav01/position-active.svg',
@@ -124,7 +127,7 @@ export default function AppNavbar() {
                 />
                 {item.href === '/position' && (
                   <div className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                    {openPositionsCount > 9 ? '9+' : openPositionsCount}
+                    {openOrdersCount > 9 ? '9+' : openOrdersCount}
                   </div>
                 )}
               </div>

@@ -4,16 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAssetById, useAssetCategories } from '@/hook/useAssets';
-import { useInfinitePositions } from '@/hook/usePosition';
 import { useSymbols } from '@/hook/useSymbols';
 import { useMarketViewModel } from '@/features/market/shared/hooks/useMarketViewModel';
 import { cn } from '@/lib/utils';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useAccountLeverageStore } from '@/store/useAccountLeverageStore';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
-import { normalizeLeverage } from '@/utils/leverage';
-import type { Position } from '@/types/position';
-import { useStrategyPage } from '@/hook/useStrategyPage';
 import { useAppHydrated } from '@/hook/useAppHydrated';
 import { useAppStore } from '@/store/useAppStore';
 import { ONE_CLICK_TRADING_ACCEPTED_KEY } from '../components/constants';
@@ -91,7 +86,6 @@ export default function TradeWebScreen() {
     typeof window !== 'undefined' &&
     localStorage.getItem(ONE_CLICK_TRADING_ACCEPTED_KEY) === 'true';
   const [currentSymbol, setCurrentSymbol] = useState<string>(symbolParam);
-  const [strategySymbol, setStrategySymbol] = useState<string>(symbolParam);
   const [showOneClickSheet, setShowOneClickSheet] = useState(
     !isOneClickAcceptedOnInit && searchParams.get('showOneClickSheet') === '1',
   );
@@ -122,20 +116,13 @@ export default function TradeWebScreen() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
   useEffect(() => {
     setCurrentSymbol(symbolParam);
-    setStrategySymbol(symbolParam);
   }, [symbolParam]);
 
   useEffect(() => {
     if (!currentSymbol || typeof window === 'undefined') return;
     window.localStorage.setItem('lastTradeSymbol', currentSymbol);
-  }, [currentSymbol]);
-
-  useEffect(() => {
-    if (!currentSymbol) return;
-    window.setTimeout(() => setStrategySymbol(currentSymbol), 0);
   }, [currentSymbol]);
 
   const vm = useMarketViewModel();
@@ -200,42 +187,6 @@ export default function TradeWebScreen() {
     );
   }, [isMarketPanelExpanded, isOrderPanelExpanded, isPositionPanelExpanded]);
 
-  const strategyLocale = useMemo(() => {
-    if (!appLanguage) return 'en-US';
-    const code = String(appLanguage);
-    const lower = code.toLowerCase();
-    if (lower === 'en' || lower.startsWith('en-')) return 'en-US';
-    if (lower === 'vi' || lower.startsWith('vi-')) return 'vi-VN';
-    if (lower.startsWith('zh-')) return code;
-    return code.replace(/-en$/i, '-US');
-  }, [appLanguage]);
-
-  const { data: strategyData } = useStrategyPage(
-    {
-      page: 1,
-      size: 20,
-      type: 'ALL',
-      locale: strategyLocale,
-      symbols: strategySymbol,
-    },
-    {
-      enabled: hasHydratedApp && Boolean(strategySymbol),
-    },
-  );
-  const strategyItems = useMemo(() => {
-    const rawItems = strategyData?.value?.resultList;
-    if (!Array.isArray(rawItems)) return [];
-    if (!strategySymbol) return rawItems;
-
-    const normalizedSymbol = strategySymbol.toUpperCase();
-    return rawItems.filter((item) => (item?.symbol ?? '').toUpperCase() === normalizedSymbol);
-  }, [strategyData?.value?.resultList, strategySymbol]);
-
-  const strategyItem = useMemo(() => {
-    if (strategyItems.length === 0) return undefined;
-    return [...strategyItems].sort((a, b) => (b?.time ?? 0) - (a?.time ?? 0))[0];
-  }, [strategyItems]);
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -255,9 +206,12 @@ export default function TradeWebScreen() {
     };
   }, []);
 
-  useSymbols(currentSymbol ? [currentSymbol] : [], Boolean(currentSymbol));
-
   const { data: symbolAsset } = useAssetById(currentSymbol ?? '');
+
+  useSymbols(
+    currentSymbol ? [{ symbol: currentSymbol, id: symbolAsset?.id ?? '' }] : [],
+    Boolean(currentSymbol),
+  );
   const minTradeSize = useMemo(
     () => Math.max(toPositiveAssetNumber(symbolAsset?.minTradeSize, 0.01), 0.01),
     [symbolAsset?.minTradeSize],
@@ -280,17 +234,6 @@ export default function TradeWebScreen() {
     useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.lastPrice) ?? 0,
   );
 
-  const selectedAccount = useAccountStore((s) => s.selectedAccount);
-  const preferredLeverage = useAccountLeverageStore((s) =>
-    selectedAccount?.id ? s.accountLeverageById[selectedAccount.id] : undefined,
-  );
-  const leverage = normalizeLeverage(preferredLeverage, symbolAsset?.maxLeverage, 200);
-
-  const { data: positionsData } = useInfinitePositions({
-    accountId: selectedAccount?.id || '',
-    status: [0, 1],
-  });
-
   const rows = useMemo(() => {
     if (effectiveLeftTab === 'all') {
       return vm.getRowsByTab('popular');
@@ -300,14 +243,10 @@ export default function TradeWebScreen() {
 
   const displayRows = useMemo(() => rows, [rows]);
   const leftPanelSymbols = useMemo(
-    () => displayRows.map((row) => row.symbol).filter(Boolean),
+    () => displayRows.map((row) => ({ symbol: row.symbol, id: row.id })),
     [displayRows],
   );
   useSymbols(leftPanelSymbols, leftPanelSymbols.length > 0);
-  const openPositions = useMemo(
-    () => positionsData?.pages.flatMap((page: { data: Position[] }) => page.data) ?? [],
-    [positionsData],
-  );
 
   const handleSymbolSelect = useCallback(
     (symbol: string) => {
@@ -447,9 +386,7 @@ export default function TradeWebScreen() {
           onOneClickHeaderPress={handleOneClickHeaderPress}
           currentSymbol={currentSymbol}
           onSymbolSelect={handleSymbolSelect}
-          strategyItem={strategyItem}
           symbolAssetId={symbolAsset?.id}
-          openPositionsCount={openPositions.length}
         />
 
         <TradeOrderPanelAside
@@ -464,9 +401,9 @@ export default function TradeWebScreen() {
           digit={digit}
           chg={chg}
           chgClass={chgClass}
-          leverage={leverage}
           limitPrice={limitPrice}
           setLimitPrice={setLimitPrice}
+          leverage={1}
           tradePanelRef={tradePanelRef}
           asideOrderFormRef={asideOrderFormRef}
           isOneClickEnabled={isOneClickEnabled}
@@ -496,16 +433,6 @@ export default function TradeWebScreen() {
             }}
           />
         ) : null}
-
-        {/* <TradePanelWeb
-          descSymbol={selectedAssetName ?? ''}
-          symbol={currentSymbol}
-          tradePanelRef={tradePanelRef}
-          limitPrice={limitPrice}
-          setLimitPrice={setLimitPrice}
-          leverage={leverage}
-          digit={digit}
-        /> */}
       </div>
 
       <OneClickTrading

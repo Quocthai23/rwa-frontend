@@ -4,21 +4,24 @@ import { getPaymentHistoryAPI } from '@/services/paymentService';
 import { type GetPaymentHistoryParams } from '@/types/payment';
 import { withServerTokenRefresh } from '@/app/api/_utils/auth';
 
-const parseNumericFilters = (searchParams: URLSearchParams, key: string): number[] => {
-  const rawValues = searchParams
-    .getAll(key)
-    .flatMap((value) => value.split(','))
-    .map((value) => value.trim())
-    .filter(Boolean);
+// Maps legacy numeric type/status string query params to BE string enum
+const TYPE_MAP: Record<string, GetPaymentHistoryParams['type']> = {
+  '0': 'DEPOSIT',
+  '1': 'WITHDRAW',
+  '2': 'TRANSFER',
+};
 
-  return rawValues.map(Number).filter((value) => Number.isFinite(value));
+const STATUS_MAP: Record<string, GetPaymentHistoryParams['status']> = {
+  '0': 'PENDING',
+  '3': 'COMPLETED',
+  '4': 'FAILED',
+  '6': 'CANCELLED',
 };
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
   const parameters: GetPaymentHistoryParams = {
-    accountId: searchParams.get('accountId') || '',
     take: Number(searchParams.get('take')) || 20,
     skip: Number(searchParams.get('skip')) || 0,
   };
@@ -29,11 +32,16 @@ export async function GET(request: NextRequest) {
   const endDate = searchParams.get('endDate');
   if (endDate) parameters.endDate = endDate;
 
-  const types = parseNumericFilters(searchParams, 'type');
-  if (types.length > 0) parameters.type = types;
+  // Support both string enum and legacy numeric values
+  const rawType = searchParams.get('type');
+  if (rawType) {
+    parameters.type = TYPE_MAP[rawType] ?? (rawType as GetPaymentHistoryParams['type']);
+  }
 
-  const statuses = parseNumericFilters(searchParams, 'status');
-  if (statuses.length > 0) parameters.status = statuses;
+  const rawStatus = searchParams.get('status');
+  if (rawStatus) {
+    parameters.status = STATUS_MAP[rawStatus] ?? (rawStatus as GetPaymentHistoryParams['status']);
+  }
 
   return withServerTokenRefresh(
     request,

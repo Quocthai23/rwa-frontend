@@ -143,7 +143,6 @@ export async function uploadMultipleImagesToPresignedUrl(
       ? undefined
       : {
           baseUrl: CLIENT_BASE_URL,
-          skipAuth: true,
         },
   );
 
@@ -210,7 +209,6 @@ export const imageApi = {
         ? undefined
         : {
             baseUrl: CLIENT_BASE_URL,
-            skipAuth: true,
           },
     );
   },

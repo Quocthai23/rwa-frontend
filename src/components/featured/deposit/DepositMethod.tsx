@@ -73,7 +73,7 @@ const DepositMethod = ({ onOpenQr }: { onOpenQr: (address: string, network: stri
 
     createWallet(
       {
-        accountId: String(selectedAccount.id),
+        address: '',  // Will be filled after wallet creation — address is returned by BE
         chainId: String(chainId),
         type: 'EVM',
       },

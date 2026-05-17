@@ -7,7 +7,7 @@ import {
   type WithdrawResponse,
   type GetPaymentHistoryParams,
   type GetPaymentHistoryResponse,
-  TransferPayload,
+  type TransferPayload,
 } from '../types/payment';
 
 import { apiClient } from './apiClient';
@@ -53,7 +53,6 @@ export const withdraw = (payload: WithdrawPayload, accessToken?: string) => {
     return apiClient.post<WithdrawResponse>(PAYMENT_ENDPOINTS.WITHDRAW, payload, {
       headers,
       skipAuth: !accessToken,
-      baseUrl: CLIENT_BASE_URL,
     });
   }
 
@@ -66,14 +65,13 @@ export const withdraw = (payload: WithdrawPayload, accessToken?: string) => {
 export const transferAPI = (payload: TransferPayload, accessToken?: string) => {
   if (isServer) {
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-    return apiClient.post<WithdrawResponse>(PAYMENT_ENDPOINTS.TRANSFER, payload, {
+    return apiClient.post<{ success: boolean }>(PAYMENT_ENDPOINTS.TRANSFER, payload, {
       headers,
       skipAuth: !accessToken,
-      baseUrl: CLIENT_BASE_URL,
     });
   }
 
-  return apiClient.post<WithdrawResponse>('/api/payment/transfer', payload, {
+  return apiClient.post<{ success: boolean }>('/api/payment/transfer', payload, {
     baseUrl: CLIENT_BASE_URL,
     skipAuth: false,
   });
@@ -85,8 +83,8 @@ function normalizePaymentHistoryParameters(parameters: GetPaymentHistoryParams) 
   return {
     skip,
     take,
-    ...(type && type.length > 0 ? { type: type.join(',') } : {}),
-    ...(status && status.length > 0 ? { status: status.join(',') } : {}),
+    ...(type ? { type } : {}),
+    ...(status ? { status } : {}),
     ...rest,
   };
 }
@@ -101,7 +99,7 @@ export const getPaymentHistoryAPI = async (
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     return apiClient.get<GetPaymentHistoryResponse>(
       PAYMENT_ENDPOINTS.HISTORY,
-      normalized,
+      normalized as Record<string, string | number>,
       {
         headers,
         skipAuth: !accessToken,

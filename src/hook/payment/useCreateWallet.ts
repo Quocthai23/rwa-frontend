@@ -22,7 +22,7 @@ export const useCreateWallet = () => {
     onSuccess: (data, variables) => {
       // Invalidate wallet queries
       queryClient.invalidateQueries({
-        queryKey: ['wallet', variables.accountId],
+        queryKey: ['wallet'],
       });
     },
   });

@@ -110,13 +110,11 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { NewsHeader } from '../../news/components/NewsHeader';
 import { HomeFeed } from '../../home/HomeFeed';
-import { HomeStrategy } from '../../home/HomeStrategy';
-import HomeCalendar from '../../home/HomeCalendar';
 import { HomeNews } from '../../home/HomeNews';
 import { CreatePostScreen } from './CreatePostScreen';
 
-type NewsTabId = 'feed' | 'strategy' | 'calendar' | 'news';
-const VALID_TABS: NewsTabId[] = ['feed', 'strategy', 'calendar', 'news'];
+type NewsTabId = 'feed' | 'news';
+const VALID_TABS: NewsTabId[] = ['feed', 'news'];
 
 export default function NewsAppScreen() {
   const { t } = useTranslation();
@@ -152,18 +150,6 @@ export default function NewsAppScreen() {
             <HomeFeed />
           </div>
         );
-      case 'strategy':
-        return (
-          <div className="mt-4 px-4 pb-8">
-            <HomeStrategy />
-          </div>
-        );
-      case 'calendar':
-        return (
-          <div className="mt-4 flex-1 px-4">
-            <HomeCalendar scrollableList />
-          </div>
-        );
       case 'news':
         return (
           <div className="mt-4 flex-1 px-4">
@@ -172,8 +158,8 @@ export default function NewsAppScreen() {
         );
       default:
         return (
-          <div className="mt-4 px-4 pb-8">
-            <HomeStrategy />
+          <div className="px-4 pb-4">
+            <HomeFeed />
           </div>
         );
     }
@@ -184,8 +170,6 @@ export default function NewsAppScreen() {
       <NewsHeader
         tabs={[
           { id: 'feed', label: t('home.feedTab') },
-          { id: 'strategy', label: t('home.strategyTab') },
-          { id: 'calendar', label: t('home.calendarTab') },
           { id: 'news', label: t('home.newsTab') },
         ]}
         activeTab={activeTab}

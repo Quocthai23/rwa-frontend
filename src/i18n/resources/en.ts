@@ -313,10 +313,13 @@ const en = {
     rewardsHub: 'Rewards',
     helpCenter: 'Help Center',
     feedback: 'Feedback',
+    dao: 'DAO Governance',
+    redemption: 'Asset Redemption',
     sections: {
       coreFeatures: 'Core Features',
       discover: 'Discover',
       eventRewards: 'Event & Rewards',
+      governanceAndRwa: 'Governance & RWA',
       help: 'Help',
     },
   },

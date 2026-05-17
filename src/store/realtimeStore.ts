@@ -57,6 +57,7 @@ export type RT = { ts?: number } & TickerMessage;
 
 /** Price update from /trading namespace */
 export type PriceUpdate = {
+    assetId?: string;
     symbol: string;
     lastPrice: number;
     bid: number;
@@ -121,8 +122,8 @@ export type RealtimeStoreState = {
     // Actions
     connect: () => void;
     disconnect: () => void;
-    subscribeSymbol: (symbol: string) => void;
-    unsubscribeSymbol: (symbol: string) => void;
+    subscribeSymbol: (symbol: string, assetId?: string) => void;
+    unsubscribeSymbol: (symbol: string, assetId?: string) => void;
 
     // Get current price for symbol (prefers trading namespace, fallback to ticker)
     getCurrentPrice: (symbol: string) => PriceUpdate | RT | null;
@@ -139,6 +140,34 @@ export const useRealtimeStore = create<RealtimeStoreState>((set, get) => {
     let flushTimer: NodeJS.Timeout | null = null;
     let marketSocket: Socket | null = null;
     let tradingSocket: Socket | null = null;
+
+    const upsertPriceUpdate = (data: PriceUpdate) => {
+        const keys = new Set<string>();
+
+        if (data.symbol) {
+            keys.add(data.symbol);
+        }
+
+        if (data.assetId) {
+            keys.add(data.assetId);
+        }
+
+        if (keys.size === 0) {
+            return;
+        }
+
+        set((state) => {
+            const nextPricesBySymbol = { ...state.pricesBySymbol };
+
+            for (const key of keys) {
+                nextPricesBySymbol[key] = data;
+            }
+
+            return {
+                pricesBySymbol: nextPricesBySymbol,
+            };
+        });
+    };
 
     const startFlushLoop = () => {
         if (flushTimer) return;
@@ -252,13 +281,17 @@ export const useRealtimeStore = create<RealtimeStoreState>((set, get) => {
                     });
                 });
 
-                tradingSocket.on('price_update', (data: PriceUpdate) => {
-                    set((state) => ({
-                        pricesBySymbol: {
-                            ...state.pricesBySymbol,
-                            [data.symbol]: data,
-                        },
-                    }));
+                tradingSocket.on('price_update', (data: PriceUpdate | { data?: PriceUpdate }) => {
+                    const payload =
+                        data && typeof data === 'object' && 'data' in data
+                            ? (data as { data?: PriceUpdate }).data
+                            : (data as PriceUpdate);
+
+                    if (!payload) {
+                        return;
+                    }
+
+                    upsertPriceUpdate(payload);
                 });
 
                 tradingSocket.on('order_book_update', (data: OrderBookSnapshot) => {
@@ -317,24 +350,24 @@ export const useRealtimeStore = create<RealtimeStoreState>((set, get) => {
             });
         },
 
-        subscribeSymbol: (symbol: string) => {
+        subscribeSymbol: (symbol: string, assetId?: string) => {
             const state = get();
             if (state.subscribedSymbols.has(symbol)) return;
 
             marketSocket?.emit('subscribe', { symbols: [symbol] });
-            tradingSocket?.emit('subscribe_market', { assetId: symbol });
+            tradingSocket?.emit('subscribe_market', { assetId: assetId ?? symbol });
 
             set((s) => ({
                 subscribedSymbols: new Set([...s.subscribedSymbols, symbol]),
             }));
         },
 
-        unsubscribeSymbol: (symbol: string) => {
+        unsubscribeSymbol: (symbol: string, assetId?: string) => {
             const state = get();
             if (!state.subscribedSymbols.has(symbol)) return;
 
             marketSocket?.emit('unsubscribe', { symbols: [symbol] });
-            tradingSocket?.emit('unsubscribe_market', { assetId: symbol });
+            tradingSocket?.emit('unsubscribe_market', { assetId: assetId ?? symbol });
 
             set((s) => {
                 const next = new Set(s.subscribedSymbols);

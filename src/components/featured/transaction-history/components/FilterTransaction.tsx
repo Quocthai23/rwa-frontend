@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/shared/atoms/button';
 import { Sheet, SheetContent } from '@/components/shared/atoms/sheet';
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
-import { STATUS_HISTORY_ID, TYPE_HISTORY_ID } from '@/constants/payment';
 import { cn } from '@/lib/utils';
 import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next';
@@ -19,40 +18,37 @@ type Props = {
 };
 
 type FilterState = {
-  type: number[];
-  status: number[];
+  type: string[];
+  status: string[];
   accountId: string;
 };
 
-const transactionTypes: Array<{ id: number | 'all'; translationKey: string }> = [
+const transactionTypes: Array<{ id: string | 'all'; translationKey: string }> = [
   { id: 'all', translationKey: 'transactionHistory.all' },
-  { id: TYPE_HISTORY_ID.DEPOSIT, translationKey: 'transactionHistory.deposit' },
-  { id: TYPE_HISTORY_ID.WITHDRAWAL, translationKey: 'transactionHistory.withdrawal' },
-  { id: 2, translationKey: 'transactionHistory.transfer' },
+  { id: 'DEPOSIT', translationKey: 'transactionHistory.deposit' },
+  { id: 'WITHDRAW', translationKey: 'transactionHistory.withdrawal' },
+  { id: 'TRANSFER', translationKey: 'transactionHistory.transfer' },
 ];
 
-const statuses: Array<{ id: number | 'all'; translationKey: string }> = [
+const statuses: Array<{ id: string | 'all'; translationKey: string }> = [
   { id: 'all', translationKey: 'transactionHistory.all' },
-  { id: STATUS_HISTORY_ID.PENDING, translationKey: 'transactionHistory.pending' },
-  { id: STATUS_HISTORY_ID.APPROVED, translationKey: 'transactionHistory.approved' },
-  { id: STATUS_HISTORY_ID.PROCESSING, translationKey: 'transactionHistory.processing' },
-  { id: STATUS_HISTORY_ID.COMPLETED, translationKey: 'transactionHistory.completed' },
-  { id: STATUS_HISTORY_ID.FAILED, translationKey: 'transactionHistory.failed' },
-  { id: STATUS_HISTORY_ID.REJECTED, translationKey: 'transactionHistory.rejected' },
-  { id: STATUS_HISTORY_ID.CANCELLED, translationKey: 'transactionHistory.cancelled' },
+  { id: 'PENDING', translationKey: 'transactionHistory.pending' },
+  { id: 'COMPLETED', translationKey: 'transactionHistory.completed' },
+  { id: 'FAILED', translationKey: 'transactionHistory.failed' },
+  { id: 'CANCELLED', translationKey: 'transactionHistory.cancelled' },
 ];
 
 const FilterTransaction = ({ onApply, accounts, selectedAccountId, isOpen, onClose }: Props) => {
   const { t } = useTranslation();
-  const [selectedTypes, setSelectedTypes] = useState<(number | 'all')[]>(['all']);
-  const [selectedStatuses, setSelectedStatuses] = useState<(number | 'all')[]>(['all']);
+  const [selectedTypes, setSelectedTypes] = useState<(string | 'all')[]>(['all']);
+  const [selectedStatuses, setSelectedStatuses] = useState<(string | 'all')[]>(['all']);
   const [selectedAccount, setSelectedAccount] = useState<string>(selectedAccountId);
 
   useEffect(() => {
     setSelectedAccount(selectedAccountId);
   }, [selectedAccountId]);
 
-  const handleSelectType = (typeId: number | 'all') => {
+  const handleSelectType = (typeId: string | 'all') => {
     if (typeId === 'all') {
       setSelectedTypes(['all']);
     } else {
@@ -63,7 +59,7 @@ const FilterTransaction = ({ onApply, accounts, selectedAccountId, isOpen, onClo
     }
   };
 
-  const handleSelectStatus = (statusId: number | 'all') => {
+  const handleSelectStatus = (statusId: string | 'all') => {
     if (statusId === 'all') {
       setSelectedStatuses(['all']);
     } else {
@@ -88,13 +84,12 @@ const FilterTransaction = ({ onApply, accounts, selectedAccountId, isOpen, onClo
   };
 
   const handleApply = () => {
-    // Convert selections to API format
     const typeFilter = selectedTypes.includes('all')
-      ? [] // Empty array means all
-      : (selectedTypes.filter((t) => t !== 'all') as number[]);
+      ? []
+      : (selectedTypes.filter((t) => t !== 'all') as string[]);
     const statusFilter = selectedStatuses.includes('all')
-      ? [] // Empty array means all
-      : (selectedStatuses.filter((s) => s !== 'all') as number[]);
+      ? []
+      : (selectedStatuses.filter((s) => s !== 'all') as string[]);
 
     onApply?.({
       type: typeFilter,
@@ -109,7 +104,7 @@ const FilterTransaction = ({ onApply, accounts, selectedAccountId, isOpen, onClo
       <SheetContent
         side="bottom"
         showCloseButton={false}
-        className="mx-auto h-[60vh] w-full max-w-192 p-0"
+        className="mx-auto h-[60vh] w-full max-w-3xl p-0"
       >
         <div className="bg-background flex h-full flex-col">
           {/* Header */}
@@ -134,7 +129,7 @@ const FilterTransaction = ({ onApply, accounts, selectedAccountId, isOpen, onClo
                       key={`${type.id}`}
                       variant={isSelected ? 'primary-ghost' : 'neutral-contained'}
                       className={cn(
-                        'h-auto rounded px-4 py-2 text-sm transition-colors',
+                         'h-auto rounded px-4 py-2 text-sm transition-colors',
                         isSelected ? 'font-medium' : '!text-muted-foreground font-normal',
                       )}
                       onClick={() => handleSelectType(type.id)}

@@ -62,6 +62,9 @@ function SecurityActionRow({ label, onClick, rightElement, destructive }: Securi
   );
 }
 
+import { KycFlowSheet } from '@/components/featured/kyc/web/KycFlowSheet';
+import { useKyc } from '@/hook/useKyc';
+
 export default function SecurityWebScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -69,6 +72,7 @@ export default function SecurityWebScreen() {
   const isAuthHydrated = useAuthHydrated();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
+  const { kycStatus } = useKyc();
 
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const [enabledMfa, setEnabledMfa] = useState<boolean | null>(null);
@@ -78,6 +82,7 @@ export default function SecurityWebScreen() {
   const [isAuthenticatorSheetOpen, setIsAuthenticatorSheetOpen] = useState(false);
   const [isDeleteSheetOpen, setIsDeleteSheetOpen] = useState(false);
   const [isDisableConfirmOpen, setIsDisableConfirmOpen] = useState(false);
+  const [isKycSheetOpen, setIsKycSheetOpen] = useState(false);
 
   const [changeOldPassword, setChangeOldPassword] = useState('');
   const [changeNewPassword, setChangeNewPassword] = useState('');
@@ -826,6 +831,8 @@ export default function SecurityWebScreen() {
         t={t}
       />
 
+      <KycFlowSheet open={isKycSheetOpen} onOpenChange={setIsKycSheetOpen} />
+
       <div className="grid gap-6">
         <section className="border-border bg-background rounded-2xl border p-6">
           <div className="flex items-center gap-4">
@@ -865,6 +872,32 @@ export default function SecurityWebScreen() {
           </div>
 
           <div className="flex flex-col">
+            <SecurityActionRow
+              label={t('security.kyc.title', { defaultValue: 'Identity Verification' })}
+              onClick={() => setIsKycSheetOpen(true)}
+              rightElement={
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      'text-sm font-medium',
+                      kycStatus?.status === 'APPROVED' && 'text-green-500',
+                      kycStatus?.status === 'PENDING' && 'text-yellow-500',
+                      kycStatus?.status === 'REJECTED' && 'text-red-500',
+                      !kycStatus?.status && 'text-muted-foreground',
+                    )}
+                  >
+                    {kycStatus?.status === 'APPROVED'
+                      ? t('security.kyc.verified', 'Verified')
+                      : kycStatus?.status === 'PENDING'
+                        ? t('security.kyc.pending', 'Pending')
+                        : kycStatus?.status === 'REJECTED'
+                          ? t('security.kyc.rejected', 'Rejected')
+                          : t('security.kyc.unverified', 'Unverified')}
+                  </span>
+                  <ChevronRight size={20} className="text-muted-foreground" />
+                </div>
+              }
+            />
             <SecurityActionRow
               label={
                 hasPassword === false

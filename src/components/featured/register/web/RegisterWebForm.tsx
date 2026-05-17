@@ -302,18 +302,6 @@ export default function RegisterWebForm() {
   const isPasswordValid =
     hasMinLength && hasSpecialChar && hasUpperCase && hasLowerCase && hasDigit && passwordsMatch;
 
-  const handlePasswordContinue = () => {
-    if (!data.email || !data.token) {
-      missingDataHandler();
-      return;
-    }
-    if (!isPasswordValid) return;
-    setData((prev) => ({ ...prev, password }));
-    setStep(RegisterStep.ReferralCode);
-  };
-
-  // ── Referral step ───────────────────────────────────────────────────────────
-  const [referralCode, setReferralCode] = useState('');
   const [isRegisterLoading, setIsRegisterLoading] = useState(false);
 
   const getErrorCode = (error: unknown): string | undefined => {
@@ -362,31 +350,18 @@ export default function RegisterWebForm() {
     );
   };
 
-  const handleRegister = async (useReferral: boolean) => {
+  const handleRegister = async () => {
+    if (!data.email || !data.token) {
+      missingDataHandler();
+      return;
+    }
+    if (!isPasswordValid) return;
+    
     setIsRegisterLoading(true);
     try {
-      if (useReferral && referralCode.trim()) {
-        const res = await authApi.checkReferenceCode(referralCode.trim());
-        if (!res.exists || !res.isValid) {
-          showError(
-            t('auth.register.registerFailedTitle', { defaultValue: 'Registration failed' }),
-            t('auth.register.invalidReferralCode', {
-              defaultValue: 'The referral code is invalid or expired.',
-            }),
-          );
-          setIsRegisterLoading(false);
-          return;
-        }
-      }
-      if (!data.password || !data.token) {
-        missingDataHandler();
-        setIsRegisterLoading(false);
-        return;
-      }
       const response = await authApi.register({
-        password: data.password,
+        password: password,
         registerToken: data.token,
-        referenceCode: useReferral && referralCode.trim() ? referralCode.trim() : undefined,
       });
       if (response.user) {
         showSuccess(
@@ -760,61 +735,11 @@ export default function RegisterWebForm() {
               <Button
                 variant="primary-contained"
                 className="shadow-primary-500/20 mt-auto w-full py-3 text-base font-semibold shadow-lg"
-                disabled={!isPasswordValid}
-                onClick={handlePasswordContinue}
+                disabled={!isPasswordValid || isRegisterLoading}
+                onClick={handleRegister}
               >
-                {t('transfer.verifyOtp.continue')}
+                {isRegisterLoading ? t('auth.login.loading') : t('transfer.verifyOtp.continue')}
               </Button>
-            </div>
-          )}
-
-          {/* ── Referral code step ───────────────────────────────────────── */}
-          {step === RegisterStep.ReferralCode && (
-            <div className="flex flex-1 flex-col">
-              <StepHeader
-                title={t('auth.register.referralTitle', { defaultValue: 'Have a Referral Code?' })}
-                onBack={() => setStep(RegisterStep.CreatePassword)}
-              />
-
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-neutral-700">
-                  {t('auth.register.referralLabel', { defaultValue: 'Referral Code' })}
-                </label>
-                <Input
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value)}
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  placeholder={t('auth.register.referralPlaceholder', {
-                    defaultValue: 'Enter referral code',
-                  })}
-                  className="focus:border-primary-500 h-12 border-neutral-200"
-                />
-                <p className="text-xs text-neutral-500">
-                  {t('auth.register.referralHint', {
-                    defaultValue: 'Enter a valid referral code to receive your bonus.',
-                  })}
-                </p>
-              </div>
-
-              <div className="mt-auto flex flex-col gap-3">
-                <Button
-                  variant="primary-contained"
-                  className="shadow-primary-500/20 w-full py-3 text-base font-semibold shadow-lg"
-                  disabled={isRegisterLoading}
-                  onClick={() => handleRegister(true)}
-                >
-                  {isRegisterLoading ? t('auth.login.loading') : t('auth.register.title')}
-                </Button>
-                <Button
-                  variant="white-contained"
-                  className="border-primary-100 bg-primary-100 text-primary-500 w-full border py-3 text-base font-semibold"
-                  disabled={isRegisterLoading}
-                  onClick={() => handleRegister(false)}
-                >
-                  {t('auth.register.skipReferral', { defaultValue: 'Skip' })}
-                </Button>
-              </div>
             </div>
           )}
         </div>

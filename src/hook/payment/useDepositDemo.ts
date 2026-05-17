@@ -9,7 +9,7 @@ export const useDepositDemo = () => {
 
   return useMutation<DepositDemoResponse, ApiError, DepositDemoPayload>({
     mutationFn: async (variables) => {
-      return depositDemo({ accountId: variables.accountId });
+      return depositDemo(variables);
     },
 
     onError: (error) => {
@@ -19,12 +19,12 @@ export const useDepositDemo = () => {
     onSuccess: (data, variables) => {
       // Invalidate balance queries
       queryClient.invalidateQueries({
-        queryKey: ['balance', variables.accountId],
+        queryKey: ['balance'],
       });
 
       // Invalidate account queries if needed
       queryClient.invalidateQueries({
-        queryKey: ['account', variables.accountId],
+        queryKey: ['accounts'],
       });
     },
   });
