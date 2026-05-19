@@ -297,9 +297,9 @@ export function TradeWebMainContent({
                   const getTabLabel = () => {
                     switch (tabId) {
                       case 'portfolio':
-                        return t('position.tabs.portfolio', { defaultValue: 'Portfolio' });
+                        return t('position.tabs.portfolio', { defaultValue: 'My Portfolio / Assets' });
                       case 'orders':
-                        return t('position.tabs.orders', { defaultValue: 'Orders' });
+                        return t('position.tabs.orders', { defaultValue: 'Open Orders' });
                       default:
                         return t('position.tabs.orderHistory', { defaultValue: 'Order History' });
                     }

@@ -5,6 +5,8 @@ type TradePanelActionBarProps = {
   isSubmitLocked: boolean;
   sellDisabled: boolean;
   buyDisabled: boolean;
+  availableBalanceLabel?: string;
+  availableBalanceValue?: string;
   onSell: () => void;
   onBuy: () => void;
 };
@@ -16,11 +18,19 @@ export function TradePanelActionBar({
   isSubmitLocked,
   sellDisabled,
   buyDisabled,
+  availableBalanceLabel,
+  availableBalanceValue,
   onSell,
   onBuy,
 }: TradePanelActionBarProps) {
   return (
     <div className="bg-background border-border border-t px-4 pt-4 pb-6">
+      {(availableBalanceLabel || availableBalanceValue) && (
+        <div className="mb-3 flex items-center justify-between text-body-small-medium">
+          <span className="text-muted-foreground">{availableBalanceLabel}</span>
+          <span className="text-foreground">{availableBalanceValue}</span>
+        </div>
+      )}
       <div className="flex gap-3">
         <button
           type="button"

@@ -1085,7 +1085,7 @@ const vi = {
         collapseOrderPanel: 'Thu gọn bảng đặt lệnh',
         expandOrderPanel: 'Mở rộng bảng đặt lệnh',
         toggleOrderPanel: 'Bật tắt bảng đặt lệnh',
-        expandPositionsPanel: 'Mở rộng bảng vị thế',
+        expandPositionsPanel: 'Mở rộng bảng danh mục tài sản',
       },
       orderForm: {
         quantity: 'Khối lượng',
@@ -1486,7 +1486,8 @@ const vi = {
   position: {
     tabs: {
       positions: 'Vị thế',
-      orders: 'Lệnh',
+      portfolio: 'Danh mục / Tài sản của tôi',
+      orders: 'Lệnh chờ khớp',
       positionHistory: 'Lịch sử vị thế',
       orderHistory: 'Lịch sử lệnh',
     },

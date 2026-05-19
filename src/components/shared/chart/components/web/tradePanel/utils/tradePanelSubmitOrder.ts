@@ -39,23 +39,12 @@ export type SubmitTradePanelOrderParams = {
   setQuantity: (value: string) => void;
   activeTab: TradePanelActiveTab;
   transactionType: 'buy' | 'sell';
-  buyTpSlError: string | null;
-  sellTpSlError: string | null;
-  leverage: number;
   symbol: string;
-  selectedAccountId: string;
   sellPrice: DecimalValue;
   buyPrice: DecimalValue;
   calculatedAvailableBalance: number;
-  contractSizeNumber: number;
-  rtBySymbol: any;
   limitPrice: string;
   rt: RT | undefined;
-  takeProfitTriggerType: string;
-  stopLossTriggerType: string;
-  takeProfitValue: string;
-  stopLossValue: string;
-  symbolAssetForConvert: Asset | undefined;
   createOrder: (
     payload: CreateOrderPayload,
     callbacks: {
@@ -91,7 +80,6 @@ export function submitTradePanelOrder(
     activeTab,
     transactionType,
     symbol,
-    selectedAccountId,
     sellPrice,
     buyPrice,
     calculatedAvailableBalance,
@@ -182,17 +170,22 @@ export function submitTradePanelOrder(
   const sideString = side === ORDER_SIDES.BUY ? 'BUY' : 'SELL';
   const orderTypeString = isMarket ? 'MARKET' : 'LIMIT';
 
-  const assetId = symbolAsset?.id;
-  if (!assetId) {
+  if (!symbol) {
     showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
     return;
   }
 
+  const referencePriceValue =
+    (symbolAsset as { referencePrice?: string } | undefined)?.referencePrice ?? '';
+  const priceBandValue =
+    (symbolAsset as { priceBandPercentage?: string } | undefined)?.priceBandPercentage ?? '';
+  const referencePriceNumber = Number(referencePriceValue);
+  const priceBandPercentage = Number(priceBandValue);
+
   const payload: CreateOrderPayload = {
-    accountId: selectedAccountId,
-    assetId,
+    symbol,
     type: orderTypeString,
-    quantity: qty.toString(), // Convert to string for decimal precision
+    quantity: qty,
     side: sideString,
   };
 
@@ -206,11 +199,6 @@ export function submitTradePanelOrder(
       return;
     }
 
-    // For Market BUY orders, calculate maxTotalCost to prevent slippage damage
-    if (sideString === 'BUY' && marketPrice > 0) {
-      // Add 1% slippage buffer to the total cost
-      payload.maxTotalCost = (qty * marketPrice * 1.01).toString();
-    }
   } else {
     // LIMIT orders
     if (!limitPrice) {
@@ -244,7 +232,26 @@ export function submitTradePanelOrder(
       return;
     }
 
-    payload.price = price.toString();
+    if (
+      Number.isFinite(referencePriceNumber) &&
+      referencePriceNumber > 0 &&
+      Number.isFinite(priceBandPercentage) &&
+      priceBandPercentage > 0
+    ) {
+      const minBandPrice = referencePriceNumber * (1 - priceBandPercentage);
+      const maxBandPrice = referencePriceNumber * (1 + priceBandPercentage);
+      if (price < minBandPrice || price > maxBandPrice) {
+        showError(
+          t('trade.errors.tradeFailedTitle'),
+          t('trade.errors.priceOutsideBand', {
+            defaultValue: 'Price is outside the allowed reference band.',
+          }),
+        );
+        return;
+      }
+    }
+
+    payload.price = price;
 
     const totalCost = qty * price;
     if (!isAvailableBalanceSufficient(calculatedAvailableBalance, totalCost)) {

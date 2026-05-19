@@ -42,7 +42,6 @@ export type TradeOrderPanelAsideProps = {
   digit: number;
   chg: number;
   chgClass: string;
-  leverage: number;
   limitPrice: string;
   setLimitPrice: (value: string) => void;
   tradePanelRef: React.MutableRefObject<TradePanelSheetHandle | null>;
@@ -68,7 +67,6 @@ export function TradeOrderPanelAside({
   digit,
   chg,
   chgClass,
-  leverage,
   limitPrice,
   setLimitPrice,
   tradePanelRef,
@@ -243,24 +241,22 @@ export function TradeOrderPanelAside({
             )}
           >
             <p
-              className={`${
-                isOneClickEnabled
+              className={`${isOneClickEnabled
                   ? 'text-body-small-medium text-white'
                   : orderSide === 'sell'
                     ? 'text-body-small-medium text-red-500 dark:text-white'
                     : 'text-body-small-medium text-red-500 dark:text-white'
-              }`}
+                }`}
             >
               {t('trade.sell')}
             </p>
             <p
-              className={`${
-                isOneClickEnabled
+              className={`${isOneClickEnabled
                   ? 'text-body-small-medium text-white'
                   : orderSide === 'sell'
                     ? 'text-body-small-medium text-red-500 dark:text-white'
                     : 'text-body-small-medium text-red-500 dark:text-white'
-              }`}
+                }`}
             >
               {bidText}
             </p>
@@ -282,24 +278,22 @@ export function TradeOrderPanelAside({
             )}
           >
             <p
-              className={`${
-                isOneClickEnabled
+              className={`${isOneClickEnabled
                   ? 'text-body-small-medium text-white'
                   : orderSide === 'buy'
                     ? 'text-body-small-medium text-green-500 dark:text-white'
                     : 'text-body-small-medium text-green-500 dark:text-white'
-              }`}
+                }`}
             >
               {t('trade.buy')}
             </p>
             <p
-              className={`${
-                isOneClickEnabled
+              className={`${isOneClickEnabled
                   ? 'text-body-small-medium text-white'
                   : orderSide === 'buy'
                     ? 'text-body-small-medium text-green-500 dark:text-white'
                     : 'text-body-small-medium text-green-500 dark:text-white'
-              }`}
+                }`}
             >
               {askText}
             </p>

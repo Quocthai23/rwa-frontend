@@ -6,7 +6,6 @@ import { useAuthHydrated } from '@/hook/useAuthHydrated';
 import { authApi } from '@/services/auth';
 import { getAssets } from '@/services/assetsService';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useAccountLeverageStore } from '@/store/useAccountLeverageStore';
 import { useAuthStore } from '@/store/authStore';
 import { Asset } from '@/types';
 import type { User } from '@/types/auth';
@@ -39,7 +38,6 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
   const hasHydratedAuth = useAuthHydrated();
   const { data: accounts } = useAccounts();
   const setAccounts = useAccountStore((state) => state.setAccounts);
-  const syncPreferredLeverages = useAccountLeverageStore((s) => s.syncPreferredLeverages);
   const selectAccount = useAccountStore((state) => state.selectAccount);
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const useAssets = () => {
@@ -99,7 +97,6 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
 
       // Sync leverage preferences for current account list only.
       // This prunes stale account ids from previous users/sessions.
-      syncPreferredLeverages(accounts as Array<{ id?: string; leverage?: unknown }>);
 
       const isSelectedValid = selectedAccount && accounts.some((a) => a.id === selectedAccount.id);
 
@@ -109,7 +106,7 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
         selectAccount(accountLive);
       }
     }
-  }, [accounts, selectedAccount, selectAccount, setAccounts, syncPreferredLeverages]);
+  }, [accounts, selectedAccount, selectAccount, setAccounts]);
 
   return (
     <GetdataContext.Provider

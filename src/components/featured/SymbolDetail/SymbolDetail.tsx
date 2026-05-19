@@ -332,17 +332,15 @@ function SymbolDetailScreen() {
                       key={t.id}
                       type="button"
                       onClick={() => scrollToSection(t.id)}
-                      className={`relative py-2 ${
-                        isActive
+                      className={`relative py-2 ${isActive
                           ? 'text-primary-500 text-body-large-semibold'
                           : 'text-body-large-regular text-muted-foreground'
-                      }`}
+                        }`}
                     >
                       {t.label}
                       <span
-                        className={`absolute bottom-0 left-0 h-0.5 w-full ${
-                          isActive ? 'bg-primary-500' : 'bg-transparent'
-                        }`}
+                        className={`absolute bottom-0 left-0 h-0.5 w-full ${isActive ? 'bg-primary-500' : 'bg-transparent'
+                          }`}
                       />
                     </button>
                   );
@@ -378,9 +376,8 @@ function SymbolDetailScreen() {
               )}
               {changePercent != null && (
                 <span
-                  className={`${isTinyPhone ? 'text-[12px]' : 'text-body-small-regular'} leading-none ${
-                    changePercent >= 0 ? 'text-green-500' : 'text-red-500'
-                  }`}
+                  className={`${isTinyPhone ? 'text-[12px]' : 'text-body-small-regular'} leading-none ${changePercent >= 0 ? 'text-green-500' : 'text-red-500'
+                    }`}
                 >
                   {lastPrice != null ? `${(lastPrice * (changePercent / 100)).toFixed(2)} ` : ''}(
                   {changePercent >= 0 ? '+' : ''}
@@ -458,7 +455,6 @@ function SymbolDetailScreen() {
           tradePanelRef={tradePanelRef}
           limitPrice={limitPrice}
           setLimitPrice={setLimitPrice}
-          leverage={leverage}
           digit={digit}
         />
         <ShareModal

@@ -36,21 +36,16 @@ export const ORDER_SIDES = ORDER_SIDES_API;
  * Uses string enums and UUIDs for maximum precision and safety
  */
 export type CreateOrderPayload = {
-  accountId: string;
-  /** Asset UUID (not symbol) - uniquely identifies the trading asset */
-  assetId: string;
-  /** Order type: 'MARKET' or 'LIMIT' */
-  type: 'MARKET' | 'LIMIT';
+  /** Asset symbol (e.g. PROPX) */
+  symbol: string;
   /** Order side: 'BUY' or 'SELL' */
   side: 'BUY' | 'SELL';
-  /** Quantity as string to maintain decimal precision (no floating point errors) */
-  quantity: string;
-  /** Entry price for LIMIT orders (required for LIMIT, optional for MARKET) */
-  price?: string;
-  /** Maximum total cost for Market BUY orders (to prevent slippage) */
-  maxTotalCost?: string;
-  /** Idempotency key to prevent duplicate submissions */
-  idempotencyKey?: string;
+  /** Order type: 'MARKET' or 'LIMIT' */
+  type: 'MARKET' | 'LIMIT';
+  /** Order quantity */
+  quantity: number;
+  /** Entry price for LIMIT orders (required for LIMIT, ignored for MARKET) */
+  price?: number;
 };
 
 export type CreateOrderResponse = {

@@ -8,13 +8,7 @@ import { createOrderAPI } from '@/services/orderService';
 type CreateOrderResult = CreateOrderResponse | unknown;
 
 async function createOrderRequest(payload: CreateOrderPayload): Promise<CreateOrderResult> {
-  // Generate idempotencyKey if not provided (prevents duplicate submissions)
-  const finalPayload = {
-    ...payload,
-    idempotencyKey: payload.idempotencyKey ?? (typeof crypto !== 'undefined' ? crypto.randomUUID() : undefined),
-  };
-
-  return createOrderAPI(finalPayload as CreateOrderPayload);
+  return createOrderAPI(payload as CreateOrderPayload);
 }
 
 export function useCreateOrder() {

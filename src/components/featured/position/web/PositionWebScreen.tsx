@@ -78,8 +78,8 @@ export default function PositionWebScreen({
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const accountId = selectedAccount?.id || '';
   const POSITION_WEB_TABS = [
-    { id: 'portfolio', label: t('position.tabs.portfolio', { defaultValue: 'Portfolio' }) },
-    { id: 'orders', label: t('position.tabs.orders', { defaultValue: 'Orders' }) },
+    { id: 'portfolio', label: t('position.tabs.portfolio', { defaultValue: 'My Portfolio / Assets' }) },
+    { id: 'orders', label: t('position.tabs.orders', { defaultValue: 'Open Orders' }) },
     {
       id: 'order-history',
       label: t('position.tabs.orderHistory', { defaultValue: 'Order History' }),
@@ -192,13 +192,13 @@ export default function PositionWebScreen({
                 <Button
                   variant="white-contained"
                   onClick={() => setIsPositionPanelExpanded(false)}
-                  aria-label="Collapse positions panel"
-                  title="Collapse positions panel"
+                  aria-label="Collapse portfolio panel"
+                  title="Collapse portfolio panel"
                   // className="text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 rounded p-1 transition-colors"
                 >
                   <Image
                     src="/web/svg/35962141.svg"
-                    alt="Collapse positions panel"
+                    alt="Collapse portfolio panel"
                     width={20}
                     height={20}
                   />

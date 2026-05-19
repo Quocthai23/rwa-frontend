@@ -719,6 +719,77 @@
         ]
       }
     },
+    "/user/portfolio/items": {
+      "get": {
+        "operationId": "UsersController_getPortfolioItems",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDir",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "summary": "Get paginated portfolio holdings (Spot)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/kyc/submit": {
       "post": {
         "operationId": "KycController_submit",
@@ -806,17 +877,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                }
-              }
-            }
+            "description": ""
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
@@ -1855,6 +1916,54 @@
         ]
       }
     },
+    "/assets/{id}/redemptions/me": {
+      "get": {
+        "operationId": "RedemptionController_getMyRedemptions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "summary": "Get current user redemption requests for a specific asset",
+        "tags": [
+          "Redemption",
+          "Asset Redemption"
+        ]
+      }
+    },
     "/admin/redemptions": {
       "get": {
         "operationId": "RedemptionController_list",
@@ -2016,14 +2125,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": ""
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
@@ -2603,6 +2705,54 @@
         ]
       }
     },
+    "/payment/withdraw": {
+      "post": {
+        "operationId": "PaymentController_withdraw",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawV2Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "summary": "Create Withdrawal Request (alias → v2/withdraw)",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
     "/payment/v2/transfer": {
       "post": {
         "operationId": "PaymentController_transferV2",
@@ -2646,6 +2796,54 @@
           }
         ],
         "summary": "Transfer Funds V2",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/payment/transfer": {
+      "post": {
+        "operationId": "PaymentController_transfer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferV2Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "summary": "Transfer Funds (alias → v2/transfer)",
         "tags": [
           "Payment"
         ]
@@ -6505,6 +6703,84 @@
           "Accounts"
         ]
       }
+    },
+    "/images/presigned-url": {
+      "get": {
+        "operationId": "ImagesController_getPresignedUrl",
+        "parameters": [
+          {
+            "name": "files",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "summary": "Get presigned URL for image upload",
+        "tags": [
+          "Images"
+        ]
+      }
+    },
+    "/images/upload": {
+      "post": {
+        "operationId": "ImagesController_uploadImage",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Direct image upload",
+        "tags": [
+          "Images"
+        ]
+      }
     }
   },
   "info": {
@@ -6832,6 +7108,35 @@
             "type": "boolean",
             "description": "Whether this asset is highlighted as hot"
           },
+          "location": {
+            "type": "string",
+            "description": "Asset location/address"
+          },
+          "images": {
+            "type": "object",
+            "description": "Array of image URLs"
+          },
+          "area": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Total area"
+          },
+          "zoning": {
+            "type": "string",
+            "description": "Zoning / Planning information"
+          },
+          "businessModel": {
+            "type": "string",
+            "description": "Business model / What it does"
+          },
+          "monthlyBenefits": {
+            "type": "string",
+            "description": "Monthly benefits / Cashflow"
+          },
+          "titleDeedImage": {
+            "type": "string",
+            "description": "Title deed / Sổ đỏ image URL"
+          },
           "marketData": {
             "description": "Optional latest market data snapshot",
             "allOf": [
@@ -7099,7 +7404,6 @@
         "type": "object",
         "properties": {
           "rewardIds": {
-            "minItems": 1,
             "description": "Array of commission reward IDs to claim in a single batch operation.",
             "example": [
               "reward_01J2XABCDEF",
@@ -7110,10 +7414,7 @@
               "type": "string"
             }
           }
-        },
-        "required": [
-          "rewardIds"
-        ]
+        }
       },
       "DepositDemoDto": {
         "type": "object",
@@ -7363,18 +7664,6 @@
             "type": "string",
             "pattern": "^\\d+(\\.\\d+)?$",
             "description": "New limit/stop price. Only applicable for non-MARKET orders"
-          },
-          "stopLossPrice": {
-            "type": "string",
-            "nullable": true,
-            "pattern": "^\\d+(\\.\\d+)?$",
-            "description": "New stop loss price. Optional, set to null to remove"
-          },
-          "takeProfitPrice": {
-            "type": "string",
-            "nullable": true,
-            "pattern": "^\\d+(\\.\\d+)?$",
-            "description": "New take profit price. Optional, set to null to remove"
           }
         }
       },
@@ -7424,16 +7713,6 @@
           "accountId": {
             "type": "string",
             "description": "Trading account identifier"
-          },
-          "stopLoss": {
-            "type": "string",
-            "pattern": "^\\d+(\\.\\d+)?$",
-            "description": "Stop loss price"
-          },
-          "takeProfit": {
-            "type": "string",
-            "pattern": "^\\d+(\\.\\d+)?$",
-            "description": "Take profit price"
           }
         },
         "required": [
@@ -8000,6 +8279,30 @@
           "location": {
             "type": "string",
             "example": "Hanoi - Nam Tu Liem"
+          },
+          "images": {
+            "type": "object",
+            "description": "Array of image URLs"
+          },
+          "area": {
+            "type": "number",
+            "description": "Total area"
+          },
+          "zoning": {
+            "type": "string",
+            "description": "Zoning / Planning information"
+          },
+          "businessModel": {
+            "type": "string",
+            "description": "Business model / What it does"
+          },
+          "monthlyBenefits": {
+            "type": "string",
+            "description": "Monthly benefits / Cashflow"
+          },
+          "titleDeedImage": {
+            "type": "string",
+            "description": "Title deed / Sổ đỏ image URL"
           },
           "estimatedValue": {
             "type": "string",

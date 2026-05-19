@@ -17,7 +17,6 @@ import {
   toFiniteNumberFromNumberish,
 } from './tradePanelInputHelpers';
 import { TABS } from './tradePanelUtils';
-import type { TriggerType } from '../components/TradePanelTriggerSelect';
 
 type RT = { ask?: DecimalValue; bid?: DecimalValue };
 
@@ -40,23 +39,12 @@ export type SubmitTradePanelOrderParams = {
   setQuantity: (value: string) => void;
   activeTab: TradePanelActiveTab;
   transactionType: 'buy' | 'sell';
-  buyTpSlError: string | null;
-  sellTpSlError: string | null;
-  leverage: number;
   symbol: string;
-  selectedAccountId: string;
   sellPrice: DecimalValue;
   buyPrice: DecimalValue;
   calculatedAvailableBalance: number;
-  contractSizeNumber: number;
-  rtBySymbol: any;
   limitPrice: string;
   rt: RT | undefined;
-  takeProfitTriggerType: TriggerType;
-  stopLossTriggerType: TriggerType;
-  takeProfitValue: string;
-  stopLossValue: string;
-  symbolAssetForConvert: Asset | undefined;
   createOrder: (
     payload: CreateOrderPayload,
     callbacks: {
@@ -91,23 +79,12 @@ export function submitTradePanelOrder(
     setQuantity,
     activeTab,
     transactionType,
-    buyTpSlError,
-    sellTpSlError,
-    leverage,
     symbol,
-    selectedAccountId,
     sellPrice,
     buyPrice,
     calculatedAvailableBalance,
-    contractSizeNumber,
-    rtBySymbol,
     limitPrice,
     rt,
-    takeProfitTriggerType,
-    stopLossTriggerType,
-    takeProfitValue,
-    stopLossValue,
-    symbolAssetForConvert,
     createOrder,
     refetchOrders,
     tradePanelRef,
@@ -190,18 +167,21 @@ export function submitTradePanelOrder(
 
   const isMarket = activeTab === 'Market';
   const side = sideOverride ?? (transactionType === 'sell' ? ORDER_SIDES.SELL : ORDER_SIDES.BUY);
-  const tpSlError = side === ORDER_SIDES.BUY ? buyTpSlError : sellTpSlError;
-  if (tpSlError) return;
-
   // Map numeric enums to string enums for backend API
   const sideString = side === ORDER_SIDES.BUY ? 'BUY' : 'SELL';
   const orderTypeString = isMarket ? 'MARKET' : 'LIMIT';
 
-  const assetId = symbolAsset?.id;
-  if (!assetId) {
+  if (!symbol) {
     showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
     return;
   }
+
+  const referencePriceValue =
+    (symbolAsset as { referencePrice?: string } | undefined)?.referencePrice ?? '';
+  const priceBandValue =
+    (symbolAsset as { priceBandPercentage?: string } | undefined)?.priceBandPercentage ?? '';
+  const referencePriceNumber = Number(referencePriceValue);
+  const priceBandPercentage = Number(priceBandValue);
 
   const calculateTotalCostRequired = (q: number, price: number): number => {
     if (!q || q <= 0 || !price || price <= 0) return 0;
@@ -209,10 +189,9 @@ export function submitTradePanelOrder(
   };
 
   const payload: CreateOrderPayload = {
-    accountId: selectedAccountId,
-    assetId,
+    symbol,
     type: orderTypeString,
-    quantity: qty.toString(), // Convert to string for decimal precision
+    quantity: qty,
     side: sideString,
   };
 
@@ -225,13 +204,6 @@ export function submitTradePanelOrder(
       showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.insufficientAvailableBalance'));
       return;
     }
-
-    // For Market BUY orders, calculate maxTotalCost to prevent slippage damage
-    if (sideString === 'BUY' && marketPrice > 0) {
-      // Add 1% slippage buffer to the total cost
-      payload.maxTotalCost = (qty * marketPrice * 1.01).toString();
-    }
-
 
   } else {
     // LIMIT orders
@@ -253,20 +225,39 @@ export function submitTradePanelOrder(
     // LIMIT order price validation
     if (isBuy && !new Decimal(price).lt(ask)) {
       showError(
-          t('trade.errors.tradeFailedTitle'),
-          t('trade.errors.buyLimitPriceBelowAsk', { price, ask }),
+        t('trade.errors.tradeFailedTitle'),
+        t('trade.errors.buyLimitPriceBelowAsk', { price, ask }),
       );
       return;
     }
     if (!isBuy && !new Decimal(price).gt(bid)) {
       showError(
-          t('trade.errors.tradeFailedTitle'),
-          t('trade.errors.sellLimitPriceAboveBid', { price, bid }),
+        t('trade.errors.tradeFailedTitle'),
+        t('trade.errors.sellLimitPriceAboveBid', { price, bid }),
       );
       return;
     }
 
-    payload.price = price.toString();
+    if (
+      Number.isFinite(referencePriceNumber) &&
+      referencePriceNumber > 0 &&
+      Number.isFinite(priceBandPercentage) &&
+      priceBandPercentage > 0
+    ) {
+      const minBandPrice = referencePriceNumber * (1 - priceBandPercentage);
+      const maxBandPrice = referencePriceNumber * (1 + priceBandPercentage);
+      if (price < minBandPrice || price > maxBandPrice) {
+        showError(
+          t('trade.errors.tradeFailedTitle'),
+          t('trade.errors.priceOutsideBand', {
+            defaultValue: 'Price is outside the allowed reference band.',
+          }),
+        );
+        return;
+      }
+    }
+
+    payload.price = price;
 
     const totalCost = calculateTotalCostRequired(qty, price);
     if (!isAvailableBalanceSufficient(calculatedAvailableBalance, totalCost)) {

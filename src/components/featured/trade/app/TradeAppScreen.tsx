@@ -520,7 +520,6 @@ function TradeAppScreen() {
         tradePanelRef={tradePanelRef}
         limitPrice={limitPrice}
         setLimitPrice={setLimitPrice}
-        leverage={leverage}
         digit={digit}
       />
 

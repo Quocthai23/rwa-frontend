@@ -5,7 +5,6 @@ import {
   applyQuantityBlur,
   applyQuantityChange,
 } from '../utils/tradePanelInputHelpers';
-import { formatBalance } from '@/utils/currency';
 import { t } from 'i18next';
 
 type TradePanelVolumeControlProps = {
@@ -15,7 +14,6 @@ type TradePanelVolumeControlProps = {
   minTradeSize: number;
   maxTradeSize: number;
   volumeStep: number;
-  requiredMarginForPosition: number;
 };
 
 export function TradePanelVolumeControl({
@@ -25,7 +23,6 @@ export function TradePanelVolumeControl({
   minTradeSize,
   maxTradeSize,
   volumeStep,
-  requiredMarginForPosition,
 }: TradePanelVolumeControlProps) {
   const quantityStep = useMemo(() => {
     const parsed = Number(volumeStep);
@@ -103,20 +100,6 @@ export function TradePanelVolumeControl({
         </button>
       </div>
 
-      {
-        <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <p className="text-caption-regular text-center">
-                {t('market.accountDropdown.margin')}
-              </p>
-              <p className="text-caption-regular text-neutral-primary text-center">
-                ≈ {formatBalance(requiredMarginForPosition)}
-              </p>
-            </div>
-          </div>
-        </div>
-      }
     </div>
   );
 }

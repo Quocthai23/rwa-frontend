@@ -4,10 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
-import Decimal from 'decimal.js';
 import type { DecimalValue } from '@/types/decimal';
 
-import { Switch } from '@/components/shared/atoms/switch';
 
 export type { TradePanelSheetHandle } from './tradePanel/utils/tradePanelTypes';
 
@@ -22,14 +20,8 @@ import { useInfiniteOrders } from '@/hook/useOrder';
 import { TradePanelActionBar } from './tradePanel/components/TradePanelActionBar';
 import { TradePanelLimitPriceField } from './tradePanel/components/TradePanelLimitPriceField';
 import { TradePanelOrderTypeTabs } from './tradePanel/components/TradePanelOrderTypeTabs';
-import { TradePanelStopLossPreview } from './tradePanel/components/TradePanelStopLossPreview';
 import { TradePanelSymbolHeader } from './tradePanel/components/TradePanelSymbolHeader';
-import { TradePanelTakeProfitPreview } from './tradePanel/components/TradePanelTakeProfitPreview';
-import type { TriggerType } from './tradePanel/components/TradePanelTriggerSelect';
-import { TradePanelTriggerSelect } from './tradePanel/components/TradePanelTriggerSelect';
-import { TradePanelTpSlInputRow } from './tradePanel/components/TradePanelTpSlInputRow';
 import { TradePanelVolumeControl } from './tradePanel/components/TradePanelVolumeControl';
-import { useTradePanelTpSlFormatEffect } from './tradePanel/hooks/useTradePanelTpSlFormatEffect';
 import { computeTradePanelLimitStopFlags } from './tradePanel/utils/tradePanelLimitStopFlags';
 import {
   normalizeDecimalInput,
@@ -37,14 +29,13 @@ import {
   toPositiveAssetNumber,
 } from './tradePanel/utils/tradePanelInputHelpers';
 import { submitTradePanelOrder } from './tradePanel/utils/tradePanelSubmitOrder';
-import { computeTradePanelTpSlOrderValidation } from './tradePanel/utils/tradePanelTpSlOrderValidation';
-import { computeTradePanelTpSlPreview } from './tradePanel/utils/tradePanelTpSlPreview';
 import { TABS } from './tradePanel/utils/tradePanelUtils';
 import { useGetData } from '@/context/GetdataContext';
 import SplashLogo from '../../../SplashLogo';
-import { calculateOrderMargin } from '@/components/featured/position/utils/position.calculations';
 import { Dialog, DialogContent, DialogTitle } from '@/components/shared/atoms/dialog';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
+import { useAccountBalance } from '@/hook/useAccountBalance';
+import { formatBalance } from '@/utils/currency';
 
 const MiniBidAskChart = dynamic(() => import('../MiniBidAskChart'), {
   ssr: false,
@@ -63,7 +54,6 @@ function TradePanel({
   tradePanelRef,
   limitPrice,
   setLimitPrice,
-  leverage,
   digit,
 }: {
   readonly limitPrice: string;
@@ -71,7 +61,6 @@ function TradePanel({
   readonly descSymbol: string;
   readonly symbol: string;
   readonly tradePanelRef: React.MutableRefObject<TradePanelSheetHandle | null>;
-  readonly leverage: number;
   readonly digit: number;
 }) {
   const { isConnected, isReconnecting } = useMarketSocketStore();
@@ -104,8 +93,6 @@ function TradePanel({
     switch (tab) {
       case 'Market':
         return t('trade.tabs.market');
-      case 'Limit':
-        return t('trade.tabs.limit');
       case 'Limit':
         return t('trade.tabs.limit');
     }
@@ -179,70 +166,8 @@ function TradePanel({
   const [isQuantityTouched, setIsQuantityTouched] = useState(false);
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const submitLockRef = useRef(false);
-  const [takeProfitValue, setTakeProfitValue] = useState('');
-  const [stopLossValue, setStopLossValue] = useState('');
-  const [isTakeProfitEnabled, setIsTakeProfitEnabled] = useState(false);
-  const [isStopLossEnabled, setIsStopLossEnabled] = useState(false);
-  const [takeProfitTriggerType, setTakeProfitTriggerType] = useState<TriggerType>('price');
-  const [stopLossTriggerType, setStopLossTriggerType] = useState<TriggerType>('price');
-
-  const marginPrice = useMemo(() => {
-    const ask = toFiniteNumberFromNumberish(rt?.ask);
-    const bid = toFiniteNumberFromNumberish(rt?.bid);
-    if (ask != null && bid != null && ask > 0 && bid > 0) {
-      return new Decimal(ask).add(bid).div(2).toNumber();
-    }
-
-    const parsedLimitPrice = Number.parseFloat(normalizeDecimalInput(limitPrice));
-    return Number.isFinite(parsedLimitPrice) && parsedLimitPrice > 0 ? parsedLimitPrice : 0;
-  }, [rt?.ask, rt?.bid, limitPrice]);
-
-  const requiredMarginForPosition = useMemo(() => {
-    const qty = Number(quantity);
-    if (!Number.isFinite(qty) || qty <= 0 || marginPrice <= 0) return 0;
-
-    return calculateOrderMargin(
-      qty,
-      marginPrice,
-      symbol,
-      leverage,
-      contractSizeNumber,
-      rtBySymbol,
-      symbolAsset?.profitCurrency as string,
-    );
-  }, [
-    quantity,
-    marginPrice,
-    symbol,
-    leverage,
-    contractSizeNumber,
-    rtBySymbol,
-    symbolAsset?.profitCurrency,
-  ]);
-
-  const getTriggerTypeOptionLabel = (type: TriggerType) => {
-    switch (type) {
-      case 'price':
-        return t('trade.triggerTypes.price');
-      case 'pips':
-        return t('trade.triggerTypes.pips');
-      case 'changePercent':
-        return t('trade.triggerTypes.changePercent');
-    }
-  };
-
-  const getTriggerTypeUnitSuffix = (type: TriggerType) => {
-    switch (type) {
-      case 'changePercent':
-        return t('trade.units.percent');
-      case 'pips':
-        return t('trade.units.pips');
-      case 'price':
-      default:
-        return '';
-    }
-  };
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
+  const { data: accountBalance } = useAccountBalance(selectedAccount?.id || '');
   const sellPrice = rt?.bid ?? 0;
   const buyPrice = rt?.ask ?? 0;
   const { availableBalance } = useAccountSummaryMetrics();
@@ -252,203 +177,27 @@ function TradePanel({
   });
 
   const limitPriceNumber = Number.parseFloat(normalizeDecimalInput(limitPrice)) || 0;
-  const takeProfitNumber =
-    isTakeProfitEnabled && takeProfitValue && takeProfitValue !== '0.00'
-      ? Number.parseFloat(normalizeDecimalInput(takeProfitValue))
-      : null;
-  const stopLossNumber =
-    isStopLossEnabled && stopLossValue && stopLossValue !== '0.00'
-      ? Number.parseFloat(normalizeDecimalInput(stopLossValue))
-      : null;
   const rtAsk = toFiniteNumberFromNumberish(rt?.ask ?? buyPrice) ?? 0;
   const rtBid = toFiniteNumberFromNumberish(rt?.bid ?? sellPrice) ?? 0;
-  const takeProfitPreview = useMemo(
-    () =>
-      computeTradePanelTpSlPreview({
-        activeTab,
-        limitPriceNumber,
-        takeProfitNumber,
-        stopLossNumber: null,
-        quantity,
-        triggerType: takeProfitTriggerType,
-        transactionType,
-        buyPrice,
-        sellPrice,
-        rtAsk,
-        rtBid,
-        symbol,
-        symbolAsset,
-        rtBySymbol,
-        contractSizeNumber,
-      }),
-    [
-      activeTab,
-      limitPriceNumber,
-      takeProfitNumber,
-      quantity,
-      takeProfitTriggerType,
-      transactionType,
-      buyPrice,
-      sellPrice,
-      rtAsk,
-      rtBid,
-      symbol,
-      symbolAsset,
-      rtBySymbol,
-      contractSizeNumber,
-    ],
-  );
 
-  const stopLossPreview = useMemo(
-    () =>
-      computeTradePanelTpSlPreview({
-        activeTab,
-        limitPriceNumber,
-        takeProfitNumber: null,
-        stopLossNumber,
-        quantity,
-        triggerType: stopLossTriggerType,
-        transactionType,
-        buyPrice,
-        sellPrice,
-        rtAsk,
-        rtBid,
-        symbol,
-        symbolAsset,
-        rtBySymbol,
-        contractSizeNumber,
-      }),
-    [
-      activeTab,
-      limitPriceNumber,
-      stopLossNumber,
-      quantity,
-      stopLossTriggerType,
-      transactionType,
-      buyPrice,
-      sellPrice,
-      rtAsk,
-      rtBid,
-      symbol,
-      symbolAsset,
-      rtBySymbol,
-      contractSizeNumber,
-    ],
-  );
-
-  const {
-    takeProfitTriggerPrice,
-    buyTakeProfitPricePips,
-    sellTakeProfitPricePips,
-    buyTakeProfitPnLUsdPips,
-    sellTakeProfitPnLUsdPips,
-    buyTakeProfitPriceChange,
-    sellTakeProfitPriceChange,
-    buyTakeProfitPnLUsdChange,
-    sellTakeProfitPnLUsdChange,
-    buyTakeProfitPnLUsdPrice,
-    sellTakeProfitPnLUsdPrice,
-  } = takeProfitPreview;
-
-  const {
-    stopLossTriggerPrice,
-    buyStopLossPricePips,
-    sellStopLossPricePips,
-    buyStopLossPnLUsdPips,
-    sellStopLossPnLUsdPips,
-    buyStopLossPriceChange,
-    sellStopLossPriceChange,
-    buyStopLossPnLUsdChange,
-    sellStopLossPnLUsdChange,
-    buyStopLossPnLUsdPrice,
-    sellStopLossPnLUsdPrice,
-  } = stopLossPreview;
-
-  const { isBuyLimitInvalid, isSellLimitInvalid } =
-    useMemo(() => {
-      const tpLimitFlags = computeTradePanelLimitStopFlags({
-        activeTab,
-        limitPriceNumber,
-        rtAsk,
-        rtBid,
-        takeProfitNumber,
-        stopLossNumber: null,
-        triggerType: takeProfitTriggerType,
-      });
-      const slLimitFlags = computeTradePanelLimitStopFlags({
-        activeTab,
-        limitPriceNumber,
-        rtAsk,
-        rtBid,
-        takeProfitNumber: null,
-        stopLossNumber,
-        triggerType: stopLossTriggerType,
-      });
-
-      return {
-        isBuyLimitInvalid: tpLimitFlags.isBuyLimitInvalid || slLimitFlags.isBuyLimitInvalid,
-        isSellLimitInvalid: tpLimitFlags.isSellLimitInvalid || slLimitFlags.isSellLimitInvalid,
-      };
-    }, [
+  const { isBuyLimitInvalid, isSellLimitInvalid } = useMemo(() => {
+    const limitFlags = computeTradePanelLimitStopFlags({
       activeTab,
       limitPriceNumber,
       rtAsk,
       rtBid,
-      takeProfitNumber,
-      stopLossNumber,
-      takeProfitTriggerType,
-      stopLossTriggerType,
-    ]);
-
-  const { buyTpSlError, sellTpSlError } = useMemo(() => {
-    const tpValidation = computeTradePanelTpSlOrderValidation({
-      activeTab,
-      buyPrice,
-      sellPrice,
-      limitPriceNumber,
-      takeProfitNumber,
-      stopLossNumber: null,
-      triggerType: takeProfitTriggerType,
-      symbolAsset,
-    });
-    const slValidation = computeTradePanelTpSlOrderValidation({
-      activeTab,
-      buyPrice,
-      sellPrice,
-      limitPriceNumber,
       takeProfitNumber: null,
-      stopLossNumber,
-      triggerType: stopLossTriggerType,
-      symbolAsset,
+      stopLossNumber: null,
+      triggerType: 'price',
     });
 
     return {
-      buyTpSlError: tpValidation.buyTpSlError ?? slValidation.buyTpSlError,
-      sellTpSlError: tpValidation.sellTpSlError ?? slValidation.sellTpSlError,
+      isBuyLimitInvalid: limitFlags.isBuyLimitInvalid,
+      isSellLimitInvalid: limitFlags.isSellLimitInvalid,
     };
-  }, [
-    activeTab,
-    buyPrice,
-    sellPrice,
-    limitPriceNumber,
-    takeProfitNumber,
-    stopLossNumber,
-    takeProfitTriggerType,
-    stopLossTriggerType,
-    symbolAsset,
-  ]);
+  }, [activeTab, limitPriceNumber, rtAsk, rtBid]);
 
   const symbolDigit = symbolAsset?.digit ?? 2;
-
-  useTradePanelTpSlFormatEffect(
-    takeProfitTriggerType,
-    takeProfitValue,
-    stopLossTriggerType,
-    stopLossValue,
-    symbolDigit,
-    setTakeProfitValue,
-    setStopLossValue,
-  );
 
   const minTradeSize = Math.max(toPositiveAssetNumber(symbolAsset?.minTradeSize, 0.01), 0.01);
   const maxTradeSize = Math.max(
@@ -512,23 +261,12 @@ function TradePanel({
         setQuantity,
         activeTab,
         transactionType,
-        buyTpSlError,
-        sellTpSlError,
-        leverage,
         symbol,
-        selectedAccountId: selectedAccount?.id || '',
         sellPrice,
         buyPrice,
         calculatedAvailableBalance: availableBalance.toNumber(),
-        contractSizeNumber,
-        rtBySymbol,
         limitPrice,
         rt,
-        takeProfitTriggerType,
-        stopLossTriggerType,
-        takeProfitValue,
-        stopLossValue,
-        symbolAssetForConvert: symbolAsset,
         createOrder,
         refetchOrders,
         tradePanelRef,
@@ -551,22 +289,12 @@ function TradePanel({
       setQuantity,
       activeTab,
       transactionType,
-      buyTpSlError,
-      sellTpSlError,
-      leverage,
       symbol,
-      selectedAccount?.id,
       sellPrice,
       buyPrice,
       availableBalance,
-      contractSizeNumber,
-      rtBySymbol,
       limitPrice,
       rt,
-      takeProfitTriggerType,
-      stopLossTriggerType,
-      takeProfitValue,
-      stopLossValue,
       createOrder,
       refetchOrders,
       tradePanelRef,
@@ -596,9 +324,8 @@ function TradePanel({
           onInteractOutside={(e) => {
             if (!isModal) e.preventDefault();
           }}
-          className={`text-foreground flex flex-col border-none bg-white p-0 dark:bg-neutral-900 ${sheetHeightClass} ${
-            variant === 'full' ? 'rounded-t' : 'rounded-t'
-          }`}
+          className={`text-foreground flex flex-col border-none bg-white p-0 dark:bg-neutral-900 ${sheetHeightClass} ${variant === 'full' ? 'rounded-t' : 'rounded-t'
+            }`}
         >
           <DialogTitle className="sr-only">{t('trade.sheetTitle', { symbol })}</DialogTitle>
           <div className="border-border flex h-full flex-col overflow-hidden border-b shadow-[0_2px_10px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
@@ -631,7 +358,6 @@ function TradePanel({
               <TradePanelSymbolHeader
                 symbol={displaySymbol}
                 descSymbol={descSymbol}
-                leverage={leverage}
                 sellPrice={sellPrice}
                 buyPrice={buyPrice}
                 formatQuote={formatQuote}
@@ -650,19 +376,8 @@ function TradePanel({
                 minTradeSize={minTradeSize}
                 maxTradeSize={maxTradeSize}
                 volumeStep={volumeStepNum}
-                requiredMarginForPosition={requiredMarginForPosition}
               />
 
-              <div className="px-4 py-2">
-                <div className="flex items-center justify-between rounded border border-border bg-muted/50 p-3">
-                  <span className="text-body-small-medium text-muted-foreground">
-                    {t('trade.availableBalance', { defaultValue: 'Available' })}
-                  </span>
-                  <span className="text-body-small-semibold text-foreground">
-                    {availableBalance.toFixed(2)} {symbolAsset?.marginCurrency ?? 'USD'}
-                  </span>
-                </div>
-              </div>
 
               <div className="px-4">
                 {activeTab !== 'Market' && (
@@ -678,117 +393,6 @@ function TradePanel({
                   />
                 )}
 
-                <div className="py-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-body-large-medium text-foreground">
-                      {t('trade.takeProfit')}
-                    </span>
-                    <Switch
-                      checked={isTakeProfitEnabled}
-                      onCheckedChange={(checked) => {
-                        setIsTakeProfitEnabled(checked);
-                        if (!checked) setTakeProfitValue('');
-                      }}
-                      aria-label={t('trade.takeProfit')}
-                    />
-                  </div>
-                  {isTakeProfitEnabled && (
-                    <>
-                      <TradePanelTriggerSelect
-                        triggerType={takeProfitTriggerType}
-                        setTriggerType={setTakeProfitTriggerType}
-                        onBeforeTriggerTypeChange={() => setTakeProfitValue('')}
-                        triggerLabel={`${t('trade.trigger')} ${getTriggerTypeUnitSuffix(takeProfitTriggerType)}`.trim()}
-                        getTriggerTypeOptionLabel={getTriggerTypeOptionLabel}
-                        className="mx-0"
-                      />
-                      <TradePanelTpSlInputRow
-                        notSetLabel={t('trade.notSet')}
-                        value={takeProfitValue}
-                        setValue={setTakeProfitValue}
-                        triggerType={takeProfitTriggerType}
-                        symbolDigit={symbolDigit}
-                        transactionType={transactionType}
-                        sellPrice={sellPrice}
-                        buyPrice={buyPrice}
-                        className="pt-2"
-                      />
-                      <TradePanelTakeProfitPreview
-                        t={t}
-                        triggerType={takeProfitTriggerType}
-                        formatAssetPrice={formatAssetPrice}
-                        formatUsdPnL={formatUsdPnL}
-                        takeProfitTriggerPrice={takeProfitTriggerPrice}
-                        buyTakeProfitPnLUsdPrice={buyTakeProfitPnLUsdPrice}
-                        sellTakeProfitPnLUsdPrice={sellTakeProfitPnLUsdPrice}
-                        buyTakeProfitPricePips={buyTakeProfitPricePips}
-                        sellTakeProfitPricePips={sellTakeProfitPricePips}
-                        buyTakeProfitPnLUsdPips={buyTakeProfitPnLUsdPips}
-                        sellTakeProfitPnLUsdPips={sellTakeProfitPnLUsdPips}
-                        buyTakeProfitPnLUsdChange={buyTakeProfitPnLUsdChange}
-                        sellTakeProfitPnLUsdChange={sellTakeProfitPnLUsdChange}
-                        buyTakeProfitPriceChange={buyTakeProfitPriceChange}
-                        sellTakeProfitPriceChange={sellTakeProfitPriceChange}
-                      />
-                    </>
-                  )}
-                </div>
-
-                <div className="pb-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-body-large-medium text-foreground">
-                      {t('trade.stopLoss')}
-                    </span>
-                    <Switch
-                      checked={isStopLossEnabled}
-                      onCheckedChange={(checked) => {
-                        setIsStopLossEnabled(checked);
-                        if (!checked) setStopLossValue('');
-                      }}
-                      aria-label={t('trade.stopLoss')}
-                    />
-                  </div>
-                  {isStopLossEnabled && (
-                    <>
-                      <TradePanelTriggerSelect
-                        triggerType={stopLossTriggerType}
-                        setTriggerType={setStopLossTriggerType}
-                        onBeforeTriggerTypeChange={() => setStopLossValue('')}
-                        triggerLabel={`${t('trade.trigger')} ${getTriggerTypeUnitSuffix(stopLossTriggerType)}`.trim()}
-                        getTriggerTypeOptionLabel={getTriggerTypeOptionLabel}
-                        className="mx-0"
-                      />
-                      <TradePanelTpSlInputRow
-                        notSetLabel={t('trade.notSet')}
-                        value={stopLossValue}
-                        setValue={setStopLossValue}
-                        triggerType={stopLossTriggerType}
-                        symbolDigit={symbolDigit}
-                        transactionType={transactionType}
-                        sellPrice={sellPrice}
-                        buyPrice={buyPrice}
-                        className="pt-2"
-                      />
-                      <TradePanelStopLossPreview
-                        t={t}
-                        triggerType={stopLossTriggerType}
-                        formatAssetPrice={formatAssetPrice}
-                        formatUsdPnL={formatUsdPnL}
-                        stopLossTriggerPrice={stopLossTriggerPrice}
-                        buyStopLossPnLUsdPrice={buyStopLossPnLUsdPrice}
-                        sellStopLossPnLUsdPrice={sellStopLossPnLUsdPrice}
-                        buyStopLossPricePips={buyStopLossPricePips}
-                        sellStopLossPricePips={sellStopLossPricePips}
-                        buyStopLossPnLUsdPips={buyStopLossPnLUsdPips}
-                        sellStopLossPnLUsdPips={sellStopLossPnLUsdPips}
-                        buyStopLossPnLUsdChange={buyStopLossPnLUsdChange}
-                        sellStopLossPnLUsdChange={sellStopLossPnLUsdChange}
-                        buyStopLossPriceChange={buyStopLossPriceChange}
-                        sellStopLossPriceChange={sellStopLossPriceChange}
-                      />
-                    </>
-                  )}
-                </div>
               </div>
 
               {showMiniChart ? (
@@ -801,18 +405,21 @@ function TradePanel({
             </div>
             {variant === 'full' && (
               <TradePanelActionBar
-                sellLabel={t('trade.sell')}
-                buyLabel={t('trade.buy')}
+                sellLabel={`${t('trade.sell')} ${displaySymbol}`}
+                buyLabel={`${t('trade.buy')} ${displaySymbol}`}
                 isCreatingOrder={isCreatingOrder}
                 isSubmitLocked={isSubmitLocked}
                 sellDisabled={
-                  sellTpSlError !== null ||
-                  (activeTab === 'Limit' && isSellLimitInvalid)
+                  activeTab === 'Limit' && isSellLimitInvalid
                 }
                 buyDisabled={
-                  buyTpSlError !== null ||
-                  (activeTab === 'Limit' && isBuyLimitInvalid)
+                  activeTab === 'Limit' && isBuyLimitInvalid
                 }
+                availableBalanceLabel={t('trade.availableBalance', {
+                  defaultValue: 'Available',
+                })}
+                availableBalanceValue={`${formatBalance(accountBalance?.currentBalance ?? '0')} ${symbolAsset?.marginCurrency ?? 'USD'
+                  }`}
                 onSell={() => {
                   setTransactionType('sell');
                   handleSubmitOrder(ORDER_SIDES.SELL);

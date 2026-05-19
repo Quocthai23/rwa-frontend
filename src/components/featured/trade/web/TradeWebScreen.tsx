@@ -403,7 +403,6 @@ export default function TradeWebScreen() {
           chgClass={chgClass}
           limitPrice={limitPrice}
           setLimitPrice={setLimitPrice}
-          leverage={1}
           tradePanelRef={tradePanelRef}
           asideOrderFormRef={asideOrderFormRef}
           isOneClickEnabled={isOneClickEnabled}

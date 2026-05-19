@@ -1084,7 +1084,7 @@ const en = {
         collapseOrderPanel: 'Collapse order panel',
         expandOrderPanel: 'Expand order panel',
         toggleOrderPanel: 'Toggle order panel',
-        expandPositionsPanel: 'Expand positions panel',
+        expandPositionsPanel: 'Expand portfolio panel',
       },
       orderForm: {
         quantity: 'Quantity',
@@ -1482,7 +1482,8 @@ const en = {
   position: {
     tabs: {
       positions: 'Positions',
-      orders: 'Orders',
+      portfolio: 'My Portfolio / Assets',
+      orders: 'Open Orders',
       positionHistory: 'Position History',
       orderHistory: 'Order History',
     },

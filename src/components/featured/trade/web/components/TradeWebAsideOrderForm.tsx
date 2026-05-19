@@ -44,8 +44,8 @@ import type { TradePanelSheetHandle } from '@/components/shared/chart/components
 import { useAssetById } from '@/hook/useAssets';
 import { formatBalance } from '@/utils/currency';
 import { Minus, Plus } from '@untitledui/icons';
-import type { NullableDecimalValue } from '@/types/decimal';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
+import { useAccountBalance } from '@/hook/useAccountBalance';
 import { computeTradePanelLimitStopFlags } from '@/components/shared/chart/components/web/tradePanel/utils/tradePanelLimitStopFlags';
 
 export type TradeWebAsideOrderFormHandle = {
@@ -143,13 +143,15 @@ export const TradeWebAsideOrderForm = forwardRef<
     return Number.isFinite(parsedLimitPrice) && parsedLimitPrice > 0 ? parsedLimitPrice : 0;
   }, [rt?.ask, rt?.bid, limitPrice]);
 
-  const totalCost = useMemo(() => {
-    const qty = Number(quantity);
-    if (!Number.isFinite(qty) || qty <= 0 || currentPrice <= 0) return 0;
-    return qty * currentPrice;
-  }, [quantity, currentPrice]);
+  const referencePriceNumber = useMemo(() => {
+    const referencePriceValue =
+      (symbolAsset as { referencePrice?: string } | undefined)?.referencePrice ?? '';
+    const parsed = Number(referencePriceValue);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }, [symbolAsset]);
 
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
+  const { data: accountBalance } = useAccountBalance(selectedAccount?.id || '');
   const sellPrice = toFiniteNumberFromNumberish(rt?.bid) ?? 0;
   const buyPrice = toFiniteNumberFromNumberish(rt?.ask) ?? 0;
 
@@ -250,23 +252,12 @@ export const TradeWebAsideOrderForm = forwardRef<
         setQuantity,
         activeTab,
         transactionType,
-        buyTpSlError: null,
-        sellTpSlError: null,
-        leverage: 1,
         symbol,
-        selectedAccountId: selectedAccount?.id || '',
         sellPrice,
         buyPrice,
         calculatedAvailableBalance: availableBalance.toNumber(),
-        contractSizeNumber,
-        rtBySymbol,
         limitPrice,
         rt,
-        takeProfitTriggerType: 'price',
-        stopLossTriggerType: 'price',
-        takeProfitValue: '',
-        stopLossValue: '',
-        symbolAssetForConvert: symbolAsset,
         createOrder,
         refetchOrders,
         tradePanelRef,
@@ -289,12 +280,9 @@ export const TradeWebAsideOrderForm = forwardRef<
       activeTab,
       transactionType,
       symbol,
-      selectedAccount?.id,
       sellPrice,
       buyPrice,
       availableBalance,
-      contractSizeNumber,
-      rtBySymbol,
       limitPrice,
       rt,
       createOrder,
@@ -351,13 +339,15 @@ export const TradeWebAsideOrderForm = forwardRef<
   const sellDisabled = activeTab === 'Limit' && isSellLimitInvalid;
   const buyDisabled = activeTab === 'Limit' && isBuyLimitInvalid;
 
-  const formatQuote = useMemo(() => {
-    const safeDigit = Number.isFinite(digit) ? Math.min(12, Math.max(0, Math.trunc(digit))) : 2;
-    return (value: NullableDecimalValue) => {
-      const parsed = toFiniteNumberFromNumberish(value);
-      return parsed != null && parsed > 0 ? parsed.toFixed(safeDigit) : '--';
-    };
-  }, [digit]);
+  const totalCost = useMemo(() => {
+    const qty = Number(quantity);
+    const priceForTotal =
+      activeTab === 'Market'
+        ? referencePriceNumber || currentPrice
+        : limitPriceNumber;
+    if (!Number.isFinite(qty) || qty <= 0 || priceForTotal <= 0) return 0;
+    return qty * priceForTotal;
+  }, [activeTab, quantity, referencePriceNumber, currentPrice, limitPriceNumber]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -457,6 +447,12 @@ export const TradeWebAsideOrderForm = forwardRef<
               {t('trade.totalCost', { defaultValue: 'Total Cost' })}:{' '}
               <span className="text-foreground">≈{formatBalance(totalCost)}</span>
             </p>
+            {activeTab === 'Market' && referencePriceNumber > 0 && (
+              <p className="text-caption-regular text-muted-foreground">
+                {t('trade.referencePrice', { defaultValue: 'Reference' })}:{' '}
+                {formatBalance(referencePriceNumber)}
+              </p>
+            )}
           </div>
         </div>
 
@@ -477,25 +473,19 @@ export const TradeWebAsideOrderForm = forwardRef<
           </div>
         )}
 
-        <div className="border-border border-t pt-3">
-          <p className="text-body-large-medium text-foreground mb-3">
-            {t('trade.web.orderForm.orderInfo')}
-          </p>
-          <div className="text-body-small-medium text-foreground space-y-2">
-            <div className="flex justify-between">
-              <span className="text-body-small-medium text-muted-foreground">
-                {t('trade.web.orderForm.available')}
-              </span>
-              <span className="text-body-small-semibold text-foreground">
-                {formatBalance(availableBalance.toNumber())} {t('common.usd')}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {!oneClickMode && (
         <div className="bg-background shrink-0 pt-5">
+          <div className="mb-3 flex items-center justify-between text-body-small-medium">
+            <span className="text-muted-foreground">
+              {t('trade.web.orderForm.available', { defaultValue: 'Available' })}
+            </span>
+            <span className="text-foreground">
+              {formatBalance(accountBalance?.currentBalance ?? '0')}{' '}
+              {symbolAsset?.marginCurrency ?? t('common.usd')}
+            </span>
+          </div>
           {transactionType === 'sell' ? (
             <Button
               variant="red-contained"
@@ -503,8 +493,7 @@ export const TradeWebAsideOrderForm = forwardRef<
               className="text-body-small-semibold! w-full rounded px-2 py-2.5 text-white disabled:opacity-50"
               onClick={() => handleSubmitOrder(ORDER_SIDES.SELL)}
             >
-              {t('trade.sell')}
-              {activeTab === 'Market' ? ` ${formatQuote(sellPrice)}` : ''}
+              {t('trade.sell')} {symbol}
             </Button>
           ) : (
             <Button
@@ -513,8 +502,7 @@ export const TradeWebAsideOrderForm = forwardRef<
               className="text-body-small-semibold! w-full rounded px-2 py-2.5 text-white disabled:opacity-50"
               onClick={() => handleSubmitOrder(ORDER_SIDES.BUY)}
             >
-              {t('trade.buy')}
-              {activeTab === 'Market' ? ` ${formatQuote(buyPrice)}` : ''}
+              {t('trade.buy')} {symbol}
             </Button>
           )}
         </div>
