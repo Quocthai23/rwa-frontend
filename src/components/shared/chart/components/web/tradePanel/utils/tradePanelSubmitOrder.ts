@@ -170,7 +170,7 @@ export function submitTradePanelOrder(
   const sideString = side === ORDER_SIDES.BUY ? 'BUY' : 'SELL';
   const orderTypeString = isMarket ? 'MARKET' : 'LIMIT';
 
-  if (!symbol) {
+  if (!symbol || !symbolAsset?.id) {
     showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
     return;
   }
@@ -183,9 +183,10 @@ export function submitTradePanelOrder(
   const priceBandPercentage = Number(priceBandValue);
 
   const payload: CreateOrderPayload = {
+    assetId: symbolAsset.id,
     symbol,
     type: orderTypeString,
-    quantity: qty,
+    quantity: String(qty),
     side: sideString,
   };
 
@@ -251,7 +252,7 @@ export function submitTradePanelOrder(
       }
     }
 
-    payload.price = price;
+    payload.price = String(price);
 
     const totalCost = qty * price;
     if (!isAvailableBalanceSufficient(calculatedAvailableBalance, totalCost)) {

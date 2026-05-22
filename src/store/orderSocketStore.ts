@@ -116,6 +116,9 @@ export const useOrderSocketStore = create<OrderSocketState>((set, get) => {
                     // Invalidate affected queries
                     queryClient.invalidateQueries({ queryKey: ['infinite-orders'] });
                     queryClient.invalidateQueries({ queryKey: ['infinite-positions'] });
+                    queryClient.invalidateQueries({ queryKey: ['accounts'] });
+                    queryClient.invalidateQueries({ queryKey: ['account-summary'] });
+                    queryClient.invalidateQueries({ queryKey: ['account-balance'] });
                 });
 
                 socket.on('connect_error', (error: Error) => {

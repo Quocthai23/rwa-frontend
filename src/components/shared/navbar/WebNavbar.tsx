@@ -21,7 +21,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import NotificationWebScreen from '@/components/featured/notification/web/NotificationWebScreen';
 import SettingWebScreen from '@/components/featured/settings/web/SettingWebScreen';
-import { useUnreadNotificationCount } from '@/hook/useNotifications';
+import { useUnreadNotificationCount, useReadAllNotifications } from '@/hook/useNotifications';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/shared/atoms/button';
 import { Sheet, SheetContent } from '@/components/shared/atoms/web/sheet';
@@ -47,6 +47,7 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
   const [isNotificationSheetOpen, setNotificationSheetOpen] = useState(false);
   const [isSettingsSheetOpen, setSettingsSheetOpen] = useState(false);
   const unreadCountQuery = useUnreadNotificationCount();
+  const readAllMutation = useReadAllNotifications();
   const { data: unreadCountData } = unreadCountQuery;
   const { showError } = useToast();
   const unreadCount = unreadCountQuery.data ?? 0;
@@ -212,7 +213,10 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
                   variant="white-contained"
                   aria-label={t('notifications.title', 'Notifications')}
                   className="rounded p-1 text-xl transition-colors hover:bg-neutral-100 2xl:p-2 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
-                  onClick={() => setNotificationSheetOpen(true)}
+                  onClick={() => {
+                    setNotificationSheetOpen(true);
+                    readAllMutation.mutate();
+                  }}
                 >
                   <div className="relative origin-center scale-[0.8] transition-transform duration-300 2xl:scale-100">
                     {isNotificationSheetOpen ? (

@@ -10,7 +10,6 @@ import {
   LogOut01,
   MessageChatCircle,
   MessageTextSquare01,
-  Scales01,
   Settings01,
   ClockRewind,
   Share07,
@@ -31,7 +30,6 @@ import {
 } from '@/components/shared/atoms/web/sheet';
 import SplashLogo from '@/components/shared/SplashLogo';
 import SecurityWebScreen from '@/components/featured/security/web/SecurityWebScreen';
-import { LeverageWebContent } from '@/components/featured/settings/web/LeverageWebContent';
 import FeedbackWebContent from '@/components/featured/settings/web/FeedbackWebContent';
 import ChatSupportWebScreen from '@/components/featured/chat/web/ChatSupportWebScreen';
 import SupportScreenWeb from '@/components/featured/support-history/web/SupportScreenWeb';
@@ -63,7 +61,6 @@ const USER_PLACEHOLDER_ICON = '/assets/images/discover/filled.png';
 type SettingsMenuItemId =
   | 'account-information'
   | 'security'
-  | 'leverage'
   | 'transaction-history'
   | 'feedback'
   | 'support';
@@ -71,7 +68,6 @@ type SettingsMenuItemId =
 const VALID_TABS: SettingsMenuItemId[] = [
   'account-information',
   'security',
-  'leverage',
   'feedback',
   'support',
   'transaction-history',
@@ -203,11 +199,6 @@ export default function WebScreen() {
         label: t('settings.security'),
       },
       {
-        id: 'leverage' as const,
-        icon: Scales01,
-        label: t('settings.accountLeverage', 'Leverage'),
-      },
-      {
         id: 'feedback' as const,
         icon: MessageTextSquare01,
         label: t('settings.feedback'),
@@ -246,9 +237,6 @@ export default function WebScreen() {
 
       if (itemId === 'account-information') return;
       if (itemId === 'security') {
-        return;
-      }
-      if (itemId === 'leverage') {
         return;
       }
       if (itemId === 'transaction-history') {
@@ -515,8 +503,6 @@ export default function WebScreen() {
         <section className="bg-background min-h-0 overflow-y-auto rounded pr-1 no-scrollbar">
           {activeItem === 'security' ? (
             <SecurityWebScreen />
-          ) : activeItem === 'leverage' ? (
-            <LeverageWebContent />
           ) : activeItem === 'transaction-history' ? (
             <TransactionHistoryWeb />
           ) : activeItem === 'feedback' ? (

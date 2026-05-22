@@ -171,14 +171,41 @@ function TradePanel({
   const sellPrice = rt?.bid ?? 0;
   const buyPrice = rt?.ask ?? 0;
   const { availableBalance } = useAccountSummaryMetrics();
+  const limitPriceNumber = Number.parseFloat(normalizeDecimalInput(limitPrice)) || 0;
+  const rtAsk = toFiniteNumberFromNumberish(rt?.ask ?? buyPrice) ?? 0;
+  const rtBid = toFiniteNumberFromNumberish(rt?.bid ?? sellPrice) ?? 0;
+
+  const referencePriceNumber = useMemo(() => {
+    const referencePriceValue =
+      (symbolAsset as { referencePrice?: string } | undefined)?.referencePrice ?? '';
+    const parsed = Number(referencePriceValue);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }, [symbolAsset]);
+
+  const currentPrice = useMemo(() => {
+    const askPrice = Number(rt?.ask);
+    const bidPrice = Number(rt?.bid);
+    if (Number.isFinite(askPrice) && Number.isFinite(bidPrice) && askPrice > 0 && bidPrice > 0) {
+      return (askPrice + bidPrice) / 2;
+    }
+
+    const parsedLimitPrice = Number.parseFloat(normalizeDecimalInput(limitPrice));
+    return Number.isFinite(parsedLimitPrice) && parsedLimitPrice > 0 ? parsedLimitPrice : 0;
+  }, [rt?.ask, rt?.bid, limitPrice]);
+
+  const totalCost = useMemo(() => {
+    const qty = Number(quantity);
+    const priceForTotal =
+      activeTab === 'Market'
+        ? referencePriceNumber || currentPrice
+        : limitPriceNumber;
+    if (!Number.isFinite(qty) || qty <= 0 || priceForTotal <= 0) return 0;
+    return qty * priceForTotal;
+  }, [activeTab, quantity, referencePriceNumber, currentPrice, limitPriceNumber]);
   const { refetch: refetchOrders } = useInfiniteOrders({
     accountId: selectedAccount?.id || '',
     status: [OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED],
   });
-
-  const limitPriceNumber = Number.parseFloat(normalizeDecimalInput(limitPrice)) || 0;
-  const rtAsk = toFiniteNumberFromNumberish(rt?.ask ?? buyPrice) ?? 0;
-  const rtBid = toFiniteNumberFromNumberish(rt?.bid ?? sellPrice) ?? 0;
 
   const { isBuyLimitInvalid, isSellLimitInvalid } = useMemo(() => {
     const limitFlags = computeTradePanelLimitStopFlags({
@@ -392,7 +419,19 @@ function TradePanel({
                     buyPrice={buyPrice}
                   />
                 )}
+              </div>
 
+              <div className="mt-3 px-4 flex items-center justify-between">
+                <p className="text-body-small-regular text-[#0158ff]">
+                  {t('trade.totalCost', { defaultValue: 'Total Cost' })}:{' '}
+                  <span className="text-foreground font-semibold">≈{formatBalance(totalCost)}</span>
+                </p>
+                {activeTab === 'Market' && referencePriceNumber > 0 && (
+                  <p className="text-body-small-regular text-muted-foreground">
+                    {t('trade.referencePrice', { defaultValue: 'Reference' })}:{' '}
+                    {formatBalance(referencePriceNumber)}
+                  </p>
+                )}
               </div>
 
               {showMiniChart ? (

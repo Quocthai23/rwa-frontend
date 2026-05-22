@@ -14,6 +14,8 @@ import { Sheet, SheetContent } from '@/components/shared/atoms/sheet';
 import { Button } from '@/components/shared/atoms/button';
 import { useTranslation } from 'react-i18next';
 import { useGetData } from '@/context/GetdataContext';
+import { useCommissionStats, useCommissionRewards, useClaimCommissions } from '@/hook/useCommissions';
+import { localizeApiError } from '@/i18n/apiErrors';
 
 const PROFILE_PLACEHOLDER = '/assets/images/discover/profile-picture.png';
 const COPY_ICON = '/assets/images/discover/copy-icon.png';
@@ -71,6 +73,36 @@ export default function PersonalInfo() {
   const { me, refetchMe, isFetchingMe } = useGetData();
   const user = me ?? authUser;
   const { showSuccess, showError } = useToast();
+
+  const { data: commStats } = useCommissionStats();
+  const { data: commRewards } = useCommissionRewards({ skip: 0, take: 5 });
+  const claimCommMutation = useClaimCommissions();
+
+  const [inlineReferrerInput, setInlineReferrerInput] = useState('');
+  const [isSavingReferrer, setIsSavingReferrer] = useState(false);
+
+  const handleSaveInlineReferrer = useCallback(async () => {
+    if (!inlineReferrerInput.trim()) return;
+    setIsSavingReferrer(true);
+    try {
+      await authApi.updateReferral({ referenceCode: inlineReferrerInput.trim() });
+      const latestUser = await authApi.getMe();
+      updateUser(latestUser);
+      await refetchMe();
+      showSuccess(
+        t('personalInfo.referrerTitle', { defaultValue: 'Referrer Linked' }),
+        t('personalInfo.referrerLinkSuccess', { defaultValue: 'Referral code successfully applied!' }),
+      );
+      setInlineReferrerInput('');
+    } catch (e) {
+      showError(
+        t('personalInfo.referrerTitle', { defaultValue: 'Referrer Link Failed' }),
+        localizeApiError(e, t),
+      );
+    } finally {
+      setIsSavingReferrer(false);
+    }
+  }, [inlineReferrerInput, updateUser, refetchMe, showSuccess, showError, t]);
 
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -258,6 +290,186 @@ export default function PersonalInfo() {
               canEditReferrer ? () => router.push('/personal-info/edit-referrer') : undefined
             }
           />
+        </div>
+
+        {/* Referral & Commissions Dashboard */}
+        <div className="border-border bg-card mt-6 rounded-xl border p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-primary-500/10 p-1.5 rounded-lg">
+              <span className="text-primary-500 font-semibold text-lg">📢</span>
+            </div>
+            <div>
+              <h3 className="text-body-large-semibold text-foreground">
+                {t('commissions.referralTitle', { defaultValue: 'Referral & Commissions' })}
+              </h3>
+              <p className="text-body-small-regular text-muted-foreground">
+                {t('commissions.referralDescription', { defaultValue: 'Invite friends and earn real estate commissions' })}
+              </p>
+            </div>
+          </div>
+
+          {/* Inline Referrer Input (if not set yet) */}
+          {canEditReferrer && (
+            <div className="bg-muted/30 border-primary-500/10 mb-4 rounded-lg border p-3.5">
+              <div className="text-body-medium-semibold text-foreground mb-1.5 flex items-center gap-1.5">
+                <span>🎁</span>
+                <span>{t('personalInfo.enterReferrerTitle', { defaultValue: 'Enter Referral Code' })}</span>
+              </div>
+              <p className="text-body-small-regular text-muted-foreground mb-3 text-xs">
+                {t('personalInfo.enterReferrerDesc', { defaultValue: "Enter your friend's referral code to link accounts and earn real estate rewards." })}
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inlineReferrerInput}
+                  onChange={(e) => setInlineReferrerInput(e.target.value)}
+                  disabled={isSavingReferrer}
+                  placeholder={t('personalInfo.editReferrerPlaceholder', { defaultValue: 'Please enter the referral code' })}
+                  className="bg-background border-border text-foreground flex-1 rounded-lg border px-3 py-1.5 text-xs outline-none focus:border-primary-500 transition-colors"
+                />
+                <Button
+                  variant="primary-contained"
+                  disabled={isSavingReferrer || !inlineReferrerInput.trim()}
+                  onClick={handleSaveInlineReferrer}
+                  className="px-4 py-1.5 text-xs font-semibold text-white dark:text-black shrink-0"
+                >
+                  {isSavingReferrer ? t('personalInfoEditNickname.saving', { defaultValue: 'Saving...' }) : t('common.apply', { defaultValue: 'Apply' })}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-muted/40 rounded-lg p-3 text-center">
+              <div className="text-body-small-regular text-muted-foreground text-xs truncate">
+                {t('commissions.totalFriends', { defaultValue: 'Invited' })}
+              </div>
+              <div className="text-body-large-semibold text-foreground mt-1 text-base">
+                {commStats?.totalReferees ?? 0}
+              </div>
+            </div>
+            <div className="bg-muted/40 rounded-lg p-3 text-center">
+              <div className="text-body-small-regular text-muted-foreground text-xs truncate">
+                {t('commissions.activeFriends', { defaultValue: 'Active' })}
+              </div>
+              <div className="text-body-large-semibold text-foreground mt-1 text-base">
+                {commStats?.activeReferees ?? 0}
+              </div>
+            </div>
+            <div className="bg-muted/40 rounded-lg p-3 text-center">
+              <div className="text-body-small-regular text-muted-foreground text-xs truncate">
+                {t('commissions.totalEarned', { defaultValue: 'Earned' })}
+              </div>
+              <div className="text-primary-500 text-body-large-semibold mt-1 text-base truncate">
+                ${Number(commStats?.totalCommissions ?? 0).toFixed(2)}
+              </div>
+            </div>
+          </div>
+
+          {/* SVG Visual Chart */}
+          {commStats && Number(commStats.totalCommissions) > 0 && (
+            <div className="bg-muted/20 rounded-lg p-3.5 mb-4 flex items-center gap-4">
+              {/* Circular progress SVG */}
+              <div className="relative w-16 h-16 shrink-0">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="26"
+                    className="stroke-muted-foreground/10"
+                    strokeWidth="5"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="26"
+                    className="stroke-primary-500"
+                    strokeWidth="5"
+                    fill="transparent"
+                    strokeDasharray={163.36}
+                    strokeDashoffset={
+                      163.36 - (163.36 * Number(commStats.claimedCommissions)) / (Number(commStats.totalCommissions) || 1)
+                    }
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-foreground">
+                  {Math.round(
+                    (Number(commStats.claimedCommissions) / (Number(commStats.totalCommissions) || 1)) * 100
+                  )}%
+                </div>
+              </div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex justify-between text-body-small-regular">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-primary-500" />
+                    {t('commissions.claimed', { defaultValue: 'Claimed' })}
+                  </span>
+                  <span className="text-foreground font-semibold">
+                    ${Number(commStats.claimedCommissions).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-body-small-regular">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" />
+                    {t('commissions.unclaimed', { defaultValue: 'Unclaimed' })}
+                  </span>
+                  <span className="text-foreground font-semibold">
+                    ${Number(commStats.unclaimedCommissions).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Claim Rewards Panel */}
+          <div className="border-t border-border pt-4 flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-body-small-regular text-muted-foreground text-xs">
+                {t('commissions.unclaimedBalance', { defaultValue: 'Unclaimed' })}
+              </div>
+              <div className="text-body-large-semibold text-foreground mt-0.5">
+                ${Number(commStats?.unclaimedCommissions ?? 0).toFixed(2)} <span className="text-xs text-muted-foreground font-normal">USDT</span>
+              </div>
+            </div>
+            <Button
+              variant="primary-contained"
+              disabled={claimCommMutation.isPending || !commStats || Number(commStats.unclaimedCommissions) <= 0}
+              onClick={() => claimCommMutation.mutate()}
+              className="px-3 py-2 text-xs font-semibold text-white dark:text-black shrink-0"
+            >
+              {claimCommMutation.isPending
+                ? t('commissions.claiming', { defaultValue: 'Claiming...' })
+                : t('commissions.claimButton', { defaultValue: 'Claim Rewards' })}
+            </Button>
+          </div>
+
+          {/* Recent Rewards History List */}
+          {commRewards && commRewards.length > 0 && (
+            <div className="border-t border-border mt-4 pt-4">
+              <h4 className="text-body-medium-semibold text-foreground mb-2">
+                {t('commissions.recentRewards', { defaultValue: 'Recent Rewards' })}
+              </h4>
+              <div className="space-y-2">
+                {commRewards.map((reward) => (
+                  <div key={reward.id} className="flex justify-between items-center text-body-small-regular">
+                    <div className="min-w-0">
+                      <div className="text-foreground font-medium truncate">
+                        {reward.refereeName || t('commissions.friendJoined', { defaultValue: 'Invited Friend' })}
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        {new Date(reward.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="text-success-500 font-semibold shrink-0">
+                      +${Number(reward.amount).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

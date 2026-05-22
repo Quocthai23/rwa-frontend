@@ -2,7 +2,7 @@
 
 import { Bell01, CheckCircle, ChevronLeft } from '@untitledui/icons';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import NotificationCard from '@/components/featured/notification/components/NotificationCard';
@@ -26,6 +26,11 @@ export default function NotificationAppScreen() {
   const readAllMutation = useReadAllNotifications();
   const readMutation = useReadNotification();
   const notifications = useMemo(() => data?.notifications ?? [], [data?.notifications]);
+
+  useEffect(() => {
+    // Automatically mark all notifications as read when panel is opened
+    readAllMutation.mutate();
+  }, []);
 
   const filteredNotifications = useMemo(() => {
     if (activeTab === 'all') return notifications;

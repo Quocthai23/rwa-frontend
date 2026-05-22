@@ -136,56 +136,22 @@ export const userApi = {
     payload: UpsertUserRelationRequest,
     accessToken?: string,
   ): Promise<UpsertUserRelationResponse> => {
-    const encodedUserId = encodePathSegment(userId);
-
-    if (isServer) {
-      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-
-      return apiClient.put<UpsertUserRelationResponse>(`user/${encodedUserId}/relation`, payload, {
-        headers,
-        skipAuth: !accessToken,
-      });
-    }
-
-    return apiClient.put<UpsertUserRelationResponse>(
-      `/api/user/${encodedUserId}/relation`,
-      payload,
-      {
-        baseUrl: CLIENT_BASE_URL,
-        skipAuth: false,
-      },
-    );
+    // Temporarily disabled/mocked relation API calls to avoid backend errors
+    return {
+      isBlockedBy: false,
+      isBlocking: false,
+      isFollowing: payload.action === 'follow',
+    };
   },
 
   listMyRelations: async (
     params: ListMyRelationsRequest,
     accessToken?: string,
   ): Promise<ListMyRelationsResponse> => {
-    const query = toMyRelationsQuery(params);
-    const encodedTargetUserId = encodePathSegment(params.userId);
-
-    if (isServer) {
-      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-
-      return apiClient.get<ListMyRelationsResponse>(
-        `user/${encodedTargetUserId}/relations`,
-        query,
-        {
-          headers,
-          skipAuth: !accessToken,
-        },
-        true,
-      );
-    }
-
-    return apiClient.get<ListMyRelationsResponse>(
-      `/api/user/${encodedTargetUserId}/relations`,
-      query,
-      {
-        baseUrl: CLIENT_BASE_URL,
-        skipAuth: false,
-      },
-      true,
-    );
+    // Temporarily disabled/mocked relations list API
+    return {
+      data: [],
+      total: 0,
+    };
   },
 };

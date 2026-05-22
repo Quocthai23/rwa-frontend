@@ -1,5 +1,5 @@
 import { TABS } from './tradePanelUtils';
-import type { TriggerType } from '../components/TradePanelTriggerSelect';
+import { TriggerType } from './tradePanelInputHelpers';
 
 export type TradePanelLimitStopFlagsInput = {
   activeTab: (typeof TABS)[number];

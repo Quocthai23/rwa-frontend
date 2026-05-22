@@ -50,11 +50,13 @@ export const updateOrderAPI = async (
   authHeader?: string,
 ): Promise<any> => {
   const { cancel = false, price } = payload;
-  const updatePayload = {
-    accountId,
+  const updatePayload: any = {
     cancel,
-    ...(price !== undefined ? { price } : {}),
   };
+  
+  if (price !== undefined && price !== null) {
+    updatePayload.price = { price: String(price) };
+  }
 
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
   

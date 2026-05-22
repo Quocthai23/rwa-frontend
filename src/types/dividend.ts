@@ -1,5 +1,3 @@
-// src/types/dividend.ts
-
 export type DividendClaim = {
   id: string;
   distributionId: string;

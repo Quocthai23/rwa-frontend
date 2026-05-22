@@ -36,6 +36,8 @@ export const ORDER_SIDES = ORDER_SIDES_API;
  * Uses string enums and UUIDs for maximum precision and safety
  */
 export type CreateOrderPayload = {
+  /** Asset UUID (required) */
+  assetId: string;
   /** Asset symbol (e.g. PROPX) */
   symbol: string;
   /** Order side: 'BUY' or 'SELL' */
@@ -43,9 +45,9 @@ export type CreateOrderPayload = {
   /** Order type: 'MARKET' or 'LIMIT' */
   type: 'MARKET' | 'LIMIT';
   /** Order quantity */
-  quantity: number;
+  quantity: string;
   /** Entry price for LIMIT orders (required for LIMIT, ignored for MARKET) */
-  price?: number;
+  price?: string;
 };
 
 export type CreateOrderResponse = {

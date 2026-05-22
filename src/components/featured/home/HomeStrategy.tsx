@@ -8,11 +8,10 @@ import { useMemo, useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useStrategyPage } from '@/hook/useStrategyPage';
 import type { StrategyResultItem } from '@/types/strategy';
-import { Sheet, SheetContent } from '@/components/shared/atoms/sheet';
 import Image from 'next/image';
 import { useTheme } from '@/theme';
-import Header from '@/components/shared/Header';
 import { useAppHydrated } from '@/hook/useAppHydrated';
+import { useGetData } from '@/context/GetdataContext';
 
 dayjs.extend(relativeTime);
 
@@ -30,6 +29,8 @@ export const HomeStrategy = ({
   const { mode } = useTheme();
   const hasHydratedApp = useAppHydrated();
   const appLanguage = useAppStore((s) => s.language);
+  const { assets } = useGetData();
+
   const strategyLocale = useMemo(() => {
     if (!appLanguage) return 'en-US';
     const code = String(appLanguage);
@@ -118,9 +119,6 @@ export const HomeStrategy = ({
     return dayjs(normalizeTimeMs(time)).fromNow();
   };
 
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedStrategy, setSelectedStrategy] = useState<StrategyResultItem | null>(null);
-
   const handleLoadMore = () => {
     if (!isLoadingMore && hasMore) {
       setIsLoadingMore(true);
@@ -163,8 +161,9 @@ export const HomeStrategy = ({
         <div className={webLayout ? 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3' : ''}>
           {visibleStrategies.map((strategy) => {
             const handleOpenDetail = () => {
-              setSelectedStrategy(strategy);
-              setIsDetailOpen(true);
+              const asset = assets?.find((a) => a.symbol === strategy.symbol);
+              const assetId = asset?.id || '';
+              router.push(`/market/${encodeURIComponent(strategy.symbol)}${assetId ? `?assetId=${assetId}` : ''}`);
             };
 
             const thumbnailSrc = getStrategyImage(strategy);
@@ -243,134 +242,6 @@ export const HomeStrategy = ({
           })}
         </div>
       )}
-
-      <Sheet
-        open={isDetailOpen}
-        onOpenChange={(open) => {
-          setIsDetailOpen(open);
-          if (!open) {
-            setTimeout(() => setSelectedStrategy(null), 300);
-          }
-        }}
-      >
-        <SheetContent
-          side="bottom"
-          showCloseButton={false}
-          title=""
-          className="bg-background mx-auto flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none border-0 p-0"
-        >
-          <div className="flex min-h-0 flex-1 flex-col">
-            <Header
-              label={t('home.strategyTab', 'Strategy')}
-              onBack={() => setIsDetailOpen(false)}
-            />
-
-            <div className="border-border border-b px-4 py-3">
-              <h2 className="text-h3-semibold text-foreground line-clamp-2">
-                {selectedStrategy?.title ?? t('home.strategyTab', 'Strategy')}
-              </h2>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {selectedStrategy?.symbolName ? (
-                  <span className="text-body-small-medium text-foreground bg-muted rounded px-2 py-1 dark:bg-neutral-800">
-                    {selectedStrategy.symbolName}
-                  </span>
-                ) : null}
-
-                {selectedStrategy?.period ? (
-                  <span className="text-body-small-medium text-muted-foreground bg-muted rounded px-2 py-1 dark:bg-neutral-800">
-                    {selectedStrategy.period}
-                  </span>
-                ) : null}
-
-                {selectedStrategy?.direction ? (
-                  <span
-                    className={`text-body-small-medium rounded px-2 py-1 ${
-                      selectedStrategy.direction === 'down'
-                        ? 'bg-red-50 text-red-500 dark:bg-red-900/30 dark:text-red-300'
-                        : 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-300'
-                    }`}
-                  >
-                    {selectedStrategy.direction === 'down'
-                      ? t('symbolDetail.sell', 'Sell')
-                      : t('symbolDetail.buy', 'Buy')}
-                  </span>
-                ) : null}
-
-                {Number.isFinite(selectedStrategy?.time) ? (
-                  <span className="text-body-small-medium text-muted-foreground">
-                    {dayjs(normalizeTimeMs(selectedStrategy?.time)).format('DD MMM YYYY, HH:mm')}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                <div className="min-w-0 flex-1 space-y-4">
-                  {selectedStrategy?.description ? (
-                    <p className="text-body-small-regular text-muted-foreground whitespace-pre-line">
-                      {selectedStrategy.description}
-                    </p>
-                  ) : null}
-
-                  {selectedStrategy?.preference ? (
-                    <div>
-                      <div className="text-body-small-semibold text-foreground">
-                        {t('symbolDetail.analysis.ourPreference', 'Our preference')}
-                      </div>
-                      <p className="text-body-small-regular text-muted-foreground mt-1 whitespace-pre-line">
-                        {selectedStrategy.preference}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {selectedStrategy?.technology ? (
-                    <div>
-                      <div className="text-body-small-semibold text-foreground">
-                        {t('symbolDetail.analysis.comment', 'Comment')}
-                      </div>
-                      <p className="text-body-small-regular text-muted-foreground mt-1 whitespace-pre-line">
-                        {selectedStrategy.technology}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {selectedStrategy?.alternative ? (
-                    <div>
-                      <div className="text-body-small-semibold text-foreground">
-                        {t('symbolDetail.analysis.alternativeScenario', 'Alternative scenario')}
-                      </div>
-                      <p className="text-body-small-regular text-muted-foreground mt-1 whitespace-pre-line">
-                        {selectedStrategy.alternative}
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="order-first shrink-0 lg:order-last lg:w-[320px]">
-                  {(() => {
-                    const src = getStrategyImage(selectedStrategy);
-
-                    if (!src) return null;
-
-                    return (
-                      <div className="bg-muted border-border overflow-hidden rounded border dark:border-neutral-700 dark:bg-neutral-900">
-                        <Image
-                          src={src}
-                          alt={selectedStrategy?.title ?? 'Strategy image'}
-                          width={900}
-                          height={500}
-                          className="h-auto w-full"
-                        />
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
 
       {/* View All */}
       {hasResults && shouldShowButton && (

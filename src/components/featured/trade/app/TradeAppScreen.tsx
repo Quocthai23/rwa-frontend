@@ -14,13 +14,11 @@ import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useInfiniteOrders } from '@/hook/useOrder';
 import {
-  calculateOrderMargin,
   isAvailableBalanceSufficient,
 } from '@/components/featured/position/utils/position.calculations';
 import { useAssetById } from '@/hook/useAssets';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
-import { useAccountLeverageStore } from '@/store/useAccountLeverageStore';
 import { normalizeLeverage } from '@/utils/leverage';
 import { isForexMarketOpen } from '@/utils/forexMarketHours';
 import { useTransactionStore } from '@/store/transactionStore';
@@ -238,10 +236,7 @@ function TradeAppScreen() {
   const initialAsk = Number.parseFloat(data?.ask || '0');
   const initialBid = Number.parseFloat(data?.bid || '0');
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
-  const preferredLeverage = useAccountLeverageStore((s) =>
-    selectedAccount?.id ? s.accountLeverageById[selectedAccount.id] : undefined,
-  );
-  const leverage = normalizeLeverage(preferredLeverage, data?.maxLeverage, 100);
+  const leverage = normalizeLeverage(undefined, data?.maxLeverage, 100);
   const digit = data?.digit ?? 2;
 
   const ask = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.ask) ?? initialAsk;
@@ -347,16 +342,8 @@ function TradeAppScreen() {
 
     if (orderType === ORDER_TYPES.MARKET) {
       const price = side === ORDER_SIDES.BUY ? ask : bid;
-      const requiredMargin = calculateOrderMargin(
-        qty,
-        price,
-        currentSymbol,
-        leverage,
-        contractSize,
-        rtBySymbol,
-        data?.profitCurrency as string,
-      );
-      if (!isAvailableBalanceSufficient(availableBalance.toNumber(), requiredMargin)) {
+      const totalCost = qty * price;
+      if (side === ORDER_SIDES.BUY && !isAvailableBalanceSufficient(availableBalance.toNumber(), totalCost)) {
         showError(
           t('trade.errors.tradeFailedTitle'),
           t('trade.errors.insufficientAvailableBalance'),
@@ -364,12 +351,16 @@ function TradeAppScreen() {
         return;
       }
     }
+    if (!data?.id) {
+      showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
+      return;
+    }
     try {
       const response = await createOrder({
-        accountId: selectedAccount?.id || '',
-        assetId: data?.id || '',
+        assetId: data.id,
+        symbol: currentSymbol || '',
         type: orderType === ORDER_TYPES.LIMIT ? 'LIMIT' : 'MARKET',
-        quantity: qty.toString(),
+        quantity: String(qty),
         side: side === ORDER_SIDES.BUY ? 'BUY' : 'SELL',
         price: orderType === ORDER_TYPES.LIMIT ? limitPrice : undefined,
       });

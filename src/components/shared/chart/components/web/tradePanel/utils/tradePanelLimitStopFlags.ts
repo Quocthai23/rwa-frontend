@@ -1,6 +1,6 @@
 import { TABS } from './tradePanelUtils';
 import { toFiniteNumberFromNumberish } from './tradePanelInputHelpers';
-import type { TriggerType } from '../components/TradePanelTriggerSelect';
+import { TriggerType } from './tradePanelInputHelpers';
 import type { DecimalValue } from '@/types/decimal';
 
 export type TradePanelLimitStopFlagsInput = {

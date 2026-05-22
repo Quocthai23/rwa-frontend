@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 
 import type { User } from '../types/auth';
-import { useAccountLeverageStore } from './useAccountLeverageStore';
 
 const zustandStorage: StateStorage = {
   getItem: (name) => {
@@ -40,7 +39,6 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('authenticator-app-data');
         localStorage.removeItem('authenticator-app-verified');
         localStorage.removeItem('mfa-setup-totp');
-        useAccountLeverageStore.getState().clearPreferredLeverages();
         set({ isAuthenticated: false, user: undefined });
       },
       updateUser: (partial) =>

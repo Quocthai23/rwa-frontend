@@ -8,7 +8,6 @@ import {
   MessageTextSquare01,
   MessageChatCircle,
   CloudMoon,
-  Scales01,
 } from '@untitledui/icons';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -279,13 +278,6 @@ function SettingsPage() {
           {renderMenuItem(Gift01, t('settings.rewardsCenter'), () => router.push('/rewards'))}
         </div>
 
-        {/* Accounts */}
-        {renderSectionHeader(t('settings.accounts', 'Accounts'))}
-        <div className="bg-background border-border overflow-hidden rounded">
-          {renderMenuItem(Scales01, t('settings.accountLeverage', 'Leverage'), () =>
-            router.push('/settings/accounts'),
-          )}
-        </div>
 
         {/* Support */}
         {renderSectionHeader(t('settings.sectionSupport'))}

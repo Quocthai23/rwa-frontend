@@ -1,7 +1,8 @@
 import Decimal from 'decimal.js';
 
-import type { TriggerType } from '../components/TradePanelTriggerSelect';
 import type { DecimalValue, NullableDecimalValue } from '@/types/decimal';
+
+export type TriggerType = 'price' | 'pips' | 'changePercent';
 
 export const normalizeDecimalInput = (text: string) => text.replace(',', '.');
 
