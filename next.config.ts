@@ -22,17 +22,26 @@ const socketProxyTarget = resolveSocketProxyTarget();
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
+    unoptimized: true,
     // Allow all remote image URLs for next/image.
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
-        pathname: '/**',
       },
       {
         protocol: 'http',
         hostname: '**',
-        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3001',
+      },
+      {
+        protocol: 'http',
+        hostname: '192.168.56.1',
+        port: '3001',
       },
     ],
   },

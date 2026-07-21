@@ -12,7 +12,8 @@ import {
   X,
   User01,
   File02,
-  AlertCircle
+  AlertCircle,
+  VideoRecorder
 } from '@untitledui/icons';
 import { 
   Sheet, 
@@ -23,11 +24,12 @@ import { Button } from '@/components/shared/atoms/button';
 import { Input } from '@/components/shared/atoms/input';
 import { useKyc } from '@/hook/useKyc';
 import kycService from '@/services/kycService';
+import { fptKycService } from '@/services/fptKycService';
 import { useToast } from '@/hook/useToast';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-type KycStep = 'overview' | 'form' | 'upload-id' | 'upload-selfie' | 'success';
+type KycStep = 'overview' | 'upload-id' | 'form' | 'upload-selfie' | 'success';
 
 interface KycFlowSheetProps {
   open: boolean;
@@ -51,8 +53,15 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
     idBackImg: '',
     selfieImg: '',
   });
+
+  const [files, setFiles] = useState({
+    idFrontFile: null as File | null,
+    idBackFile: null as File | null,
+    selfieFile: null as File | null,
+  });
   
   const [isUploading, setIsUploading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
@@ -60,15 +69,18 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
 
   useEffect(() => {
     if (!open) {
-      setTimeout(() => setStep('overview'), 300);
+      setTimeout(() => {
+        setStep('overview');
+      }, 300);
     }
   }, [open]);
 
-  const handleImageUpload = async (file: File, type: keyof typeof images) => {
+  const handleImageUpload = async (file: File, type: keyof typeof images, fileType: keyof typeof files) => {
     setIsUploading(true);
     try {
       const url = await kycService.uploadKycImage(file);
       setImages(prev => ({ ...prev, [type]: url }));
+      setFiles(prev => ({ ...prev, [fileType]: file }));
       showSuccess(t('common.success'), t('kyc.uploadSuccess', 'Image uploaded successfully'));
     } catch (error) {
       showError(t('common.error'), t('kyc.uploadFailed', 'Could not upload image. Please try again.'));
@@ -77,26 +89,60 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
     }
   };
 
-  const handleFinish = async () => {
-    if (!formData.fullName || !formData.dob || !formData.idNumber) {
-      showError(t('common.error'), t('kyc.error.missingInfo', 'Please fill in all personal information.'));
-      return;
-    }
-    if (!images.idFrontImg || !images.idBackImg || !images.selfieImg) {
-      showError(t('common.error'), t('kyc.error.missingDocs', 'Please upload all required photos.'));
-      return;
-    }
-
+  const handleUploadIdNext = async () => {
+    if (!files.idFrontFile) return;
+    
+    setIsVerifying(true);
     try {
-      await submitKyc({
-        ...formData,
-        ...images
-      });
-      setStep('success');
-    } catch (error) {
-      showError(t('common.error'), t('kyc.error.submitFailed', 'Failed to submit KYC documents.'));
+      const res = await fptKycService.extractIdInfo(files.idFrontFile);
+      if (res.errorCode === 0 && res.data && res.data.length > 0) {
+        const info = res.data[0];
+        let dobStr = info.dob;
+        if (dobStr && dobStr.includes('/')) {
+           const [d, m, y] = dobStr.split('/');
+           dobStr = `${y}-${m}-${d}`;
+        }
+        setFormData({
+          fullName: info.name || '',
+          dob: dobStr || '',
+          idNumber: info.id || '',
+        });
+        showSuccess(t('common.success'), t('kyc.idrSuccess', 'Information extracted automatically'));
+      }
+    } catch (err) {
+      console.error(err);
+      // Don't block if OCR fails, let them type
+    } finally {
+      setIsVerifying(false);
+      setStep('form');
     }
   };
+
+  const handleSelfieNext = async () => {
+    if (!files.idFrontFile || !files.selfieFile) return;
+    
+    setIsVerifying(true);
+    try {
+      const res = await fptKycService.checkFace(files.idFrontFile, files.selfieFile);
+      if ((res.code === "200" || res.code === "0") && res.data?.isMatch) {
+        showSuccess(t('common.success'), t('kyc.faceMatchSuccess', 'Face verified successfully'));
+        await submitKyc({
+          ...formData,
+          ...images
+        });
+        setStep('success');
+      } else {
+        showError(t('common.error'), t('kyc.faceMatchFailed', 'Face does not match ID. Please try again.'));
+      }
+    } catch (err) {
+      console.error(err);
+      showError(t('common.error'), t('kyc.faceApiError', 'Error verifying face. Please try again.'));
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+
 
   const renderHeader = (title: string, description?: string) => (
     <div className="mb-6">
@@ -104,9 +150,9 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
         {step !== 'overview' && step !== 'success' && (
           <button 
             onClick={() => {
-              if (step === 'form') setStep('overview');
-              else if (step === 'upload-id') setStep('form');
-              else if (step === 'upload-selfie') setStep('upload-id');
+              if (step === 'upload-id') setStep('overview');
+              else if (step === 'form') setStep('upload-id');
+              else if (step === 'upload-selfie') setStep('form');
             }} 
             className="p-1.5 hover:bg-muted rounded-full transition-colors"
           >
@@ -169,7 +215,7 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
           <p className="text-muted-foreground mt-4 text-sm">
             {t('kyc.status.tryAgainDesc', 'Please ensure all information matches your ID and photos are clear.')}
           </p>
-          <Button className="mt-8 w-full h-12 text-base font-semibold" variant="primary-contained" onClick={() => setStep('form')}>
+          <Button className="mt-8 w-full h-12 text-base font-semibold" variant="primary-contained" onClick={() => setStep('upload-id')}>
             {t('kyc.tryAgain', 'Try Again')}
           </Button>
         </div>
@@ -212,16 +258,95 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
           </div>
         </div>
 
-        <Button className="w-full h-12 text-base font-semibold" variant="primary-contained" onClick={() => setStep('form')}>
+        <Button className="w-full h-12 text-base font-semibold" variant="primary-contained" onClick={() => setStep('upload-id')}>
           {t('kyc.start', 'Start Verification')}
         </Button>
       </div>
     );
   };
 
+  const renderUploadId = () => (
+    <div className="py-2">
+      {renderHeader(t('kyc.step.documents', 'Upload Documents'), t('kyc.step.documentsDesc', 'Clear photos help us verify your account faster.'))}
+      
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-foreground ml-1">{t('kyc.form.idFront', 'Front Side')}</label>
+          <div 
+            className={cn(
+              "border-2 border-dashed rounded-2xl h-44 flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden group",
+              images.idFrontImg ? "border-primary-500" : "border-border hover:border-primary-400 hover:bg-muted/50"
+            )}
+            onClick={() => frontInputRef.current?.click()}
+          >
+            {images.idFrontImg ? (
+              <Image src={images.idFrontImg} alt="ID Front" fill className="object-cover" />
+            ) : (
+              <>
+                <div className="bg-primary-50 dark:bg-primary-900/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                  <UploadCloud02 size={24} className="text-primary-500" />
+                </div>
+                <span className="text-sm font-medium text-foreground">{t('kyc.upload.front', 'Upload Front Side')}</span>
+                <span className="text-xs text-muted-foreground mt-1">PNG, JPG up to 10MB</span>
+              </>
+            )}
+            <input 
+              type="file" 
+              ref={frontInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'idFrontImg', 'idFrontFile')}
+            />
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-foreground ml-1">{t('kyc.form.idBack', 'Back Side')}</label>
+          <div 
+            className={cn(
+              "border-2 border-dashed rounded-2xl h-44 flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden group",
+              images.idBackImg ? "border-primary-500" : "border-border hover:border-primary-400 hover:bg-muted/50"
+            )}
+            onClick={() => backInputRef.current?.click()}
+          >
+            {images.idBackImg ? (
+              <Image src={images.idBackImg} alt="ID Back" fill className="object-cover" />
+            ) : (
+              <>
+                <div className="bg-primary-50 dark:bg-primary-900/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                  <UploadCloud02 size={24} className="text-primary-500" />
+                </div>
+                <span className="text-sm font-medium text-foreground">{t('kyc.upload.back', 'Upload Back Side')}</span>
+                <span className="text-xs text-muted-foreground mt-1">PNG, JPG up to 10MB</span>
+              </>
+            )}
+            <input 
+              type="file" 
+              ref={backInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'idBackImg', 'idBackFile')}
+            />
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-10">
+        <Button 
+          variant="primary-contained" 
+          className="w-full h-12 text-base font-semibold" 
+          onClick={handleUploadIdNext}
+          disabled={!images.idFrontImg || !images.idBackImg || isUploading || isVerifying}
+        >
+          {isVerifying ? t('common.verifying', 'Extracting Data...') : isUploading ? t('common.uploading', 'Uploading...') : t('common.next', 'Next: Review Info')}
+        </Button>
+      </div>
+    </div>
+  );
+
   const renderForm = () => (
     <div className="py-2">
-      {renderHeader(t('kyc.step.personal', 'Personal Information'), t('kyc.step.personalDesc', 'Enter your legal information exactly as it appears on your ID.'))}
+      {renderHeader(t('kyc.step.personal', 'Personal Information'), t('kyc.step.personalDesc', 'Review and confirm your legal information exactly as it appears on your ID.'))}
       
       <div className="space-y-5">
         <div className="space-y-1.5">
@@ -259,89 +384,10 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
         <Button 
           className="w-full h-12 text-base font-semibold" 
           variant="primary-contained" 
-          onClick={() => setStep('upload-id')}
+          onClick={() => setStep('upload-selfie')}
           disabled={!formData.fullName || !formData.dob || !formData.idNumber}
         >
-          {t('common.next', 'Next: Upload Documents')}
-        </Button>
-      </div>
-    </div>
-  );
-
-  const renderUploadId = () => (
-    <div className="py-2">
-      {renderHeader(t('kyc.step.documents', 'Upload Documents'), t('kyc.step.documentsDesc', 'Clear photos help us verify your account faster.'))}
-      
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-foreground ml-1">{t('kyc.form.idFront', 'Front Side')}</label>
-          <div 
-            className={cn(
-              "border-2 border-dashed rounded-2xl h-44 flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden group",
-              images.idFrontImg ? "border-primary-500" : "border-border hover:border-primary-400 hover:bg-muted/50"
-            )}
-            onClick={() => frontInputRef.current?.click()}
-          >
-            {images.idFrontImg ? (
-              <Image src={images.idFrontImg} alt="ID Front" fill className="object-cover" />
-            ) : (
-              <>
-                <div className="bg-primary-50 dark:bg-primary-900/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                  <UploadCloud02 size={24} className="text-primary-500" />
-                </div>
-                <span className="text-sm font-medium text-foreground">{t('kyc.upload.front', 'Upload Front Side')}</span>
-                <span className="text-xs text-muted-foreground mt-1">PNG, JPG up to 10MB</span>
-              </>
-            )}
-            <input 
-              type="file" 
-              ref={frontInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'idFrontImg')}
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-foreground ml-1">{t('kyc.form.idBack', 'Back Side')}</label>
-          <div 
-            className={cn(
-              "border-2 border-dashed rounded-2xl h-44 flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden group",
-              images.idBackImg ? "border-primary-500" : "border-border hover:border-primary-400 hover:bg-muted/50"
-            )}
-            onClick={() => backInputRef.current?.click()}
-          >
-            {images.idBackImg ? (
-              <Image src={images.idBackImg} alt="ID Back" fill className="object-cover" />
-            ) : (
-              <>
-                <div className="bg-primary-50 dark:bg-primary-900/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                  <UploadCloud02 size={24} className="text-primary-500" />
-                </div>
-                <span className="text-sm font-medium text-foreground">{t('kyc.upload.back', 'Upload Back Side')}</span>
-                <span className="text-xs text-muted-foreground mt-1">PNG, JPG up to 10MB</span>
-              </>
-            )}
-            <input 
-              type="file" 
-              ref={backInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'idBackImg')}
-            />
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-10">
-        <Button 
-          variant="primary-contained" 
-          className="w-full h-12 text-base font-semibold" 
-          onClick={() => setStep('upload-selfie')}
-          disabled={!images.idFrontImg || !images.idBackImg || isUploading}
-        >
-          {isUploading ? t('common.uploading', 'Uploading...') : t('common.next', 'Next: Take Selfie')}
+          {t('common.next', 'Next: Face Verification')}
         </Button>
       </div>
     </div>
@@ -376,7 +422,7 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
           ref={selfieInputRef} 
           className="hidden" 
           accept="image/*" 
-          onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'selfieImg')}
+          onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], 'selfieImg', 'selfieFile')}
         />
       </div>
       
@@ -384,14 +430,16 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
         <Button 
           variant="primary-contained" 
           className="w-full h-12 text-base font-semibold" 
-          onClick={handleFinish}
-          disabled={!images.selfieImg || isUploading || isSubmitting}
+          onClick={handleSelfieNext}
+          disabled={!images.selfieImg || isUploading || isVerifying || isSubmitting}
         >
-          {isSubmitting ? t('common.submitting', 'Submitting...') : t('kyc.finish', 'Finish Verification')}
+          {isVerifying || isSubmitting ? t('common.submitting', 'Verifying & Submitting...') : t('kyc.finish', 'Submit Verification')}
         </Button>
       </div>
     </div>
   );
+
+
 
   const renderSuccess = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -423,8 +471,8 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
         
         <div className="h-full overflow-y-auto no-scrollbar px-6 pt-4 pb-12">
           {step === 'overview' && renderOverview()}
-          {step === 'form' && renderForm()}
           {step === 'upload-id' && renderUploadId()}
+          {step === 'form' && renderForm()}
           {step === 'upload-selfie' && renderUploadSelfie()}
           {step === 'success' && renderSuccess()}
         </div>
