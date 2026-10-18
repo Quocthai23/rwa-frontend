@@ -1,14 +1,17 @@
 import { DIVIDEND_ENDPOINTS } from '../constants/api';
-import type { DividendClaim } from '../types/dividend';
+import type { DividendClaim, RentalIncomeDistribution } from '../types/dividend';
 import { apiClient } from './apiClient';
 
 /**
  * Dividend Service for RWA System
  */
-export const getClaimableDividends = async (authHeader?: string): Promise<DividendClaim[]> => {
+export const getClaimableDividends = async (
+  authHeader?: string,
+  type?: 'DIVIDEND' | 'RENTAL_INCOME',
+): Promise<DividendClaim[]> => {
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
   return apiClient.get<DividendClaim[]>(
-    DIVIDEND_ENDPOINTS.CLAIMABLE,
+    `${DIVIDEND_ENDPOINTS.CLAIMABLE}${type ? `?type=${type}` : ''}`,
     undefined,
     {
       headers,
@@ -16,6 +19,20 @@ export const getClaimableDividends = async (authHeader?: string): Promise<Divide
     true, // useAuth
   );
 };
+
+export const payRentalIncome = async (
+  assetId: string,
+  period?: string,
+): Promise<DividendClaim['distribution'] & { id: string; status: string }> =>
+  apiClient.post(
+    `/dividends/rental-income/${assetId}/pay`,
+    period ? { period } : {},
+  );
+
+export const getRentalIncomeDistributions = async (
+  assetId: string,
+): Promise<RentalIncomeDistribution[]> =>
+  apiClient.get(`/dividends/rental-income/${assetId}/distributions`);
 
 export const claimDividend = async (
   distributionId: string,
@@ -30,3 +47,4 @@ export const claimDividend = async (
     },
   );
 };
+

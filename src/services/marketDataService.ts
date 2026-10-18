@@ -1,4 +1,4 @@
-import { MARKET_DATA_ENDPOINTS } from '@/constants/api';
+﻿import { MARKET_DATA_ENDPOINTS } from '@/constants/api';
 import type {
   SwaggerCandle,
   SwaggerCandlesResponse,
@@ -19,7 +19,7 @@ export type GetCandlesRequest = {
   to: string;
 };
 
-/** @deprecated Use `SwaggerCandle` — kept for existing imports */
+/** @deprecated Use `SwaggerCandle` â€” kept for existing imports */
 export type CandleData = SwaggerCandle;
 
 export type GetCandlesResponse = SwaggerCandle[];
@@ -136,3 +136,4 @@ export const marketDataApi = {
     );
   },
 };
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -34,7 +34,7 @@ import { useGetData } from '@/context/GetdataContext';
 import SplashLogo from '../../../SplashLogo';
 import { Dialog, DialogContent, DialogTitle } from '@/components/shared/atoms/dialog';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
-import { useAccountBalance } from '@/hook/useAccountBalance';
+import { usePortfolioItem } from '@/hook/usePortfolio';
 import { formatBalance } from '@/utils/currency';
 
 const MiniBidAskChart = dynamic(() => import('../MiniBidAskChart'), {
@@ -66,22 +66,9 @@ function TradePanel({
   const { isConnected, isReconnecting } = useMarketSocketStore();
   const canTrade = navigator.onLine && isConnected && !isReconnecting;
   const rt = useMarketSocketStore((s) => s.rtBySymbol?.[symbol]);
-  const rtBySymbol = useMarketSocketStore((s) => s.rtBySymbol);
   const { assets: assetsData } = useGetData();
   const symbolAsset = assetsData?.find((a) => a.symbol === symbol);
-  const displaySymbol =
-    symbolAsset?.marginCurrency && symbolAsset?.profitCurrency
-      ? `${symbolAsset.marginCurrency}/${symbolAsset.profitCurrency}`
-      : symbol;
-  const contractSizeNumber = toPositiveAssetNumber(symbolAsset?.contractSize, 100);
-  const assetDigits = Math.min(Math.max(symbolAsset?.digit ?? 2, 0), 8);
-  const roundToDigits = (value: number, digits: number) => {
-    const factor = 10 ** digits;
-    return Math.round((value + Number.EPSILON) * factor) / factor;
-  };
-  const formatAssetPrice = (value: number) =>
-    roundToDigits(value, assetDigits).toFixed(assetDigits);
-  const formatUsdPnL = (value: number) => roundToDigits(value, 2).toFixed(2);
+  const displaySymbol = symbol;
 
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -167,7 +154,13 @@ function TradePanel({
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const submitLockRef = useRef(false);
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
-  const { data: accountBalance } = useAccountBalance(selectedAccount?.id || '');
+  const { data: portfolioItem } = usePortfolioItem({
+    accountId: selectedAccount?.id || '',
+    assetId: symbolAsset?.id,
+  });
+  const baseAvailableQuantity = Number(
+    portfolioItem?.availableQuantity ?? portfolioItem?.quantity ?? 0,
+  );
   const sellPrice = rt?.bid ?? 0;
   const buyPrice = rt?.ask ?? 0;
   const { availableBalance } = useAccountSummaryMetrics();
@@ -197,7 +190,7 @@ function TradePanel({
     const qty = Number(quantity);
     const priceForTotal =
       activeTab === 'Market'
-        ? referencePriceNumber || currentPrice
+        ? currentPrice || referencePriceNumber
         : limitPriceNumber;
     if (!Number.isFinite(qty) || qty <= 0 || priceForTotal <= 0) return 0;
     return qty * priceForTotal;
@@ -291,9 +284,10 @@ function TradePanel({
         symbol,
         sellPrice,
         buyPrice,
-        calculatedAvailableBalance: availableBalance.toNumber(),
+        quoteAvailableBalance: availableBalance.toNumber(),
+        baseAvailableQuantity,
+        accountId: selectedAccount?.id,
         limitPrice,
-        rt,
         createOrder,
         refetchOrders,
         tradePanelRef,
@@ -320,8 +314,9 @@ function TradePanel({
       sellPrice,
       buyPrice,
       availableBalance,
+      baseAvailableQuantity,
+      selectedAccount?.id,
       limitPrice,
-      rt,
       createOrder,
       refetchOrders,
       tradePanelRef,
@@ -424,7 +419,7 @@ function TradePanel({
               <div className="mt-3 px-4 flex items-center justify-between">
                 <p className="text-body-small-regular text-[#0158ff]">
                   {t('trade.totalCost', { defaultValue: 'Total Cost' })}:{' '}
-                  <span className="text-foreground font-semibold">≈{formatBalance(totalCost)}</span>
+                  <span className="text-foreground font-semibold">â‰ˆ{formatBalance(totalCost)}</span>
                 </p>
                 {activeTab === 'Market' && referencePriceNumber > 0 && (
                   <p className="text-body-small-regular text-muted-foreground">
@@ -457,8 +452,11 @@ function TradePanel({
                 availableBalanceLabel={t('trade.availableBalance', {
                   defaultValue: 'Available',
                 })}
-                availableBalanceValue={`${formatBalance(accountBalance?.currentBalance ?? '0')} ${symbolAsset?.marginCurrency ?? 'USD'
-                  }`}
+                availableBalanceValue={
+                  transactionType === 'sell'
+                    ? `${formatBalance(baseAvailableQuantity)} ${symbol}`
+                    : `${formatBalance(availableBalance.toNumber())} VNDT`
+                }
                 onSell={() => {
                   setTransactionType('sell');
                   handleSubmitOrder(ORDER_SIDES.SELL);

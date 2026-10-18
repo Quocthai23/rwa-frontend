@@ -16,6 +16,7 @@ export const useCreateWallet = () => {
     mutationFn: (payload) => createWallet(payload),
 
     onError: (error) => {
+      console.error('CREATE WALLET ERROR:', error);
       showError(t('apiErrors.generic'), localizeApiError(error, t));
     },
 

@@ -1,4 +1,4 @@
-export interface FptIdrResponse {
+﻿export interface FptIdrResponse {
   errorCode: number;
   errorMessage: string;
   data: Array<{
@@ -28,7 +28,7 @@ export interface FptCheckFaceResponse {
 
 export const fptKycService = {
   /**
-   * Trích xuất thông tin từ ảnh mặt trước CCCD
+   * TrĂ­ch xuáº¥t thĂ´ng tin tá»« áº£nh máº·t trÆ°á»›c CCCD
    */
   async extractIdInfo(image: File): Promise<FptIdrResponse> {
     const formData = new FormData();
@@ -47,7 +47,7 @@ export const fptKycService = {
   },
 
   /**
-   * So khớp khuôn mặt giữa CCCD và ảnh Selfie
+   * So khá»›p khuĂ´n máº·t giá»¯a CCCD vĂ  áº£nh Selfie
    */
   async checkFace(idImage: File, selfieImage: File): Promise<FptCheckFaceResponse> {
     const formData = new FormData();
@@ -66,3 +66,4 @@ export const fptKycService = {
     return response.json();
   }
 };
+

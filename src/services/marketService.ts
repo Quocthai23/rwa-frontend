@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Market API Service
  * Fetches market data including klines (candlestick) data
  */
@@ -197,3 +197,4 @@ export const marketService = {
   getTrendingMarket,
   getTrendingData,
 };
+

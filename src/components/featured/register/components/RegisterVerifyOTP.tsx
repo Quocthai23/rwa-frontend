@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
@@ -273,3 +273,4 @@ export default function RegisterVerifyOTP({
     </div>
   );
 }
+

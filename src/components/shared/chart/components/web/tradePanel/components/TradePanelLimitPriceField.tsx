@@ -1,4 +1,4 @@
-import { Minus, Plus } from '@untitledui/icons';
+﻿import { Minus, Plus } from '@untitledui/icons';
 
 import {
   adjustLimitPriceByStep,
@@ -16,6 +16,7 @@ type TradePanelLimitPriceFieldProps = {
   transactionType: 'buy' | 'sell';
   sellPrice: DecimalValue;
   buyPrice: DecimalValue;
+  priceStep?: DecimalValue;
 };
 
 export function TradePanelLimitPriceField({
@@ -27,6 +28,7 @@ export function TradePanelLimitPriceField({
   transactionType,
   sellPrice,
   buyPrice,
+  priceStep,
 }: TradePanelLimitPriceFieldProps) {
   return (
     <div className="flex flex-col items-start justify-between py-3">
@@ -44,6 +46,7 @@ export function TradePanelLimitPriceField({
               transactionType,
               sellPrice,
               buyPrice,
+              priceStep,
             )
           }
         >
@@ -71,6 +74,7 @@ export function TradePanelLimitPriceField({
               transactionType,
               sellPrice,
               buyPrice,
+              priceStep,
             )
           }
         >

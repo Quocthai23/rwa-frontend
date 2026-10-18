@@ -1,4 +1,4 @@
-const LEGACY_ACCESS_TOKEN_KEY = 'access_token';
+﻿const LEGACY_ACCESS_TOKEN_KEY = 'access_token';
 
 const clearCookie = (name: string): void => {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
@@ -66,3 +66,4 @@ export const tokenStorage = {
     void token;
   },
 };
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -214,3 +214,4 @@ const FilterTransaction = ({ onApply, accounts, selectedAccountId, isOpen, onClo
 };
 
 export default FilterTransaction;
+

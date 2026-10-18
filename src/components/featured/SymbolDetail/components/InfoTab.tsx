@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 import { useAssetById } from '@/hook/useAssets';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +36,7 @@ function InfoTab({ assetId }: InfoTabProps) {
   }
 
   // Format area
-  const areaDisplay = asset.area ? `${asset.area} sqm` : '-';
+  const areaDisplay = asset.totalArea ? `${asset.totalArea} sqm` : '-';
 
   return (
     <div className="bg-background flex-1 overflow-y-auto">
@@ -118,3 +118,4 @@ function InfoRow({
     </div>
   );
 }
+

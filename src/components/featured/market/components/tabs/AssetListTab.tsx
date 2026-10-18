@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowDown, ArrowUp, Check, ChevronSelectorVertical } from '@untitledui/icons';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
@@ -19,12 +19,25 @@ import { useGetData } from '@/context/GetdataContext';
 import { useTranslation } from 'react-i18next';
 import { useIsTinyPhone } from '@/hook/useMediaQuery';
 import { useMiniChartData } from '@/hook/useMinichartData';
+import { useRouter } from 'next/navigation';
 
 type AssetListTabProps = {
   readonly categoryCode?: string;
   readonly defaultSearch?: string;
   readonly favoriteOnly?: boolean;
   readonly isHotOnly?: boolean;
+  readonly buyoutOnly?: boolean;
+};
+
+const CATEGORY_CODE_MAP: Record<string, string | null> = {
+  all: null,
+  forex: 'FOREX',
+  commodities: 'COMMODITIES',
+  share: 'SHARE',
+  indices: 'INDICES',
+  crypto: 'CRYPTO',
+  etfs: 'ETFS',
+  bonds: 'BONDS',
 };
 
 function AssetListTab({
@@ -32,8 +45,10 @@ function AssetListTab({
   defaultSearch = '',
   favoriteOnly = false,
   isHotOnly = false,
+  buyoutOnly = false,
 }: AssetListTabProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   const { assets: contextAssets, isLoadingAssets: isAssetsLoading } = useGetData();
   const setFavoriteByAssetId = useFavoriteAssetsStore((s) => s.setFavoriteByAssetId);
   const favoritesByAssetId = useFavoriteAssetsStore((s) => s.favoritesByAssetId);
@@ -56,42 +71,29 @@ function AssetListTab({
     return sortByOptions.find((o) => o.id === sortById) ?? sortByOptions[0];
   }, [sortById]);
 
-  const [categoryFilter, setCategoryFilter] = useState<string[]>([filterCategoryOptions[0].id]);
+  const initialPreferences = useMarketListPreferencesStore.getState();
+  const [categoryFilter, setCategoryFilter] = useState<string[]>(
+    () => initialPreferences.getFilterCategories(sortKey) ?? [filterCategoryOptions[0].id],
+  );
   const [categoryStatus, setCategoryStatus] = useState<{
     id: string;
     option: string;
     optionKey?: string;
-  }>(filterCategoryStatus[0]);
-  const [onlyFavorite, setOnlyFavorite] = useState(favoriteOnly);
+  }>(() => {
+    const storedStatusId = initialPreferences.getFilterStatus(sortKey);
+    return (
+      filterCategoryStatus.find((status) => status.id === storedStatusId) ?? filterCategoryStatus[0]
+    );
+  });
+  const [onlyFavorite, setOnlyFavorite] = useState(
+    () => initialPreferences.getFilterOnlyFavorite(sortKey) ?? favoriteOnly,
+  );
 
   const isTinyPhone = useIsTinyPhone();
 
-  useEffect(() => {
-    const state = useMarketListPreferencesStore.getState();
-
-    const storedOnlyFav = state.getFilterOnlyFavorite(sortKey);
-    const storedCategories = state.getFilterCategories(sortKey);
-    const storedStatusId = state.getFilterStatus(sortKey);
-
-    setOnlyFavorite(storedOnlyFav ?? favoriteOnly);
-    setCategoryFilter(storedCategories ?? [filterCategoryOptions[0].id]);
-    setCategoryStatus(
-      filterCategoryStatus.find((c) => c.id === (storedStatusId ?? filterCategoryStatus[0].id)) ??
-        filterCategoryStatus[0],
-    );
-  }, [favoriteOnly, sortKey]);
   const [isSortOpen, setIsSortOpen] = React.useState(false);
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [isLayoutOpen, setIsLayoutOpen] = React.useState(false);
-
-  const parameters = useMemo(
-    () => ({
-      categoryCode,
-      search: defaultSearch,
-      take: 20,
-    }),
-    [categoryCode, defaultSearch],
-  );
 
   const shouldUseContextAssets = true;
 
@@ -110,7 +112,7 @@ function AssetListTab({
       if (!q) return true;
 
       const symbol = a.symbol?.toLowerCase?.() ?? '';
-      const name = (a as any)?.name?.toLowerCase?.() ?? '';
+      const name = a.name?.toLowerCase?.() ?? '';
       return symbol.includes(q) || name.includes(q);
     });
   }, [categoryCode, contextAssets, defaultSearch, shouldUseContextAssets]);
@@ -162,23 +164,12 @@ function AssetListTab({
     }
   }, [listPopular, favoritesByAssetId, setFavoriteByAssetId]);
 
-  const categoryCodeMap: Record<string, string | null> = {
-    all: null,
-    forex: 'FOREX',
-    commodities: 'COMMODITIES',
-    share: 'SHARE',
-    indices: 'INDICES',
-    crypto: 'CRYPTO',
-    etfs: 'ETFS',
-    bonds: 'BONDS',
-  };
-
   const filteredList = useMemo(() => {
     let result = listWithFavoriteState;
 
     if (categoryFilter && !categoryFilter.includes('all')) {
       const allowedCodes = categoryFilter
-        .map((id) => categoryCodeMap[id])
+        .map((id) => CATEGORY_CODE_MAP[id])
         .filter((code): code is string => Boolean(code))
         .map((code) => code.toUpperCase());
 
@@ -191,8 +182,12 @@ function AssetListTab({
       result = result?.filter((item) => item.isActive);
     }
 
+    if (buyoutOnly) {
+      result = result?.filter((item) => item.tradingStatus === 'BUYOUT_ACTIVE');
+    }
+
     return result;
-  }, [categoryFilter, categoryStatus, listWithFavoriteState]);
+  }, [buyoutOnly, categoryFilter, categoryStatus, listWithFavoriteState]);
 
   const { sortedList } = useRealtimeSortedListByRT({
     list: filteredList ?? [],
@@ -320,6 +315,53 @@ function AssetListTab({
 
   const renderItem = React.useCallback(
     (item: (typeof sortedList)[0]) => {
+      if (buyoutOnly) {
+        const summary = item.buyoutSummary;
+        return (
+          <Button
+            type="button"
+            variant="white-contained"
+            onClick={() => router.push(`/buyout-trading/${encodeURIComponent(item.symbol)}`)}
+            className="border-border h-auto w-full rounded-none border-b bg-transparent px-0 py-3 text-left shadow-none"
+          >
+            <span className="block min-w-0 flex-1">
+              <span className="text-foreground block truncate text-sm font-semibold">
+                {item.symbol} · {item.name}
+              </span>
+              <span className="text-muted-foreground mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                <span>
+                  {t('market.buyout.monthlyReturn')}:{' '}
+                  <strong className="text-foreground font-medium">
+                    +{Number(summary?.monthlyWaitingRatePercent ?? 0).toFixed(2)}%
+                  </strong>
+                </span>
+                <span>
+                  {t('market.buyout.totalPremium')}:{' '}
+                  <strong className="text-foreground font-medium">
+                    {Number(summary?.premiumPercent ?? 0).toFixed(2)}%
+                  </strong>
+                </span>
+                <span>
+                  {t('market.buyout.progress')}:{' '}
+                  <strong className="text-foreground font-medium">
+                    {summary?.monthsCompleted ?? 0}/{summary?.totalMonths ?? 0}
+                  </strong>
+                </span>
+                <span>
+                  {t('market.buyout.lockedPrice')}:{' '}
+                  <strong className="text-foreground font-medium">
+                    {Number(summary?.principalUnitPrice ?? item.tokenPrice ?? 0).toLocaleString(
+                      'vi-VN',
+                    )}{' '}
+                    VND
+                  </strong>
+                </span>
+              </span>
+            </span>
+          </Button>
+        );
+      }
+
       const commonProps = {
         accessId: item.id || '',
         symbol: item.symbol,
@@ -344,7 +386,7 @@ function AssetListTab({
         />
       );
     },
-    [viewType, isTinyPhone, miniChartBySymbol],
+    [buyoutOnly, isTinyPhone, miniChartBySymbol, router, t, viewType],
   );
 
   const renderFooter = React.useCallback(() => {

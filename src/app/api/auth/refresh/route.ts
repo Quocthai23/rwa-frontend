@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+﻿import { NextRequest } from 'next/server';
 
 import { API_BASE_URL } from '@/constants/env';
 import { apiClient } from '@/services/apiClient';
@@ -27,14 +27,19 @@ export async function POST(request: NextRequest) {
     }
 
     const backendUrl = API_BASE_URL || 'http://localhost:3001';
-    
-    const { data: response, response: backendResponse } = await apiClient.postWithResponse<RefreshApiResponse>('auth/refresh', { refreshToken }, {
-      baseUrl: backendUrl,
-      skipAuth: true,
-      headers: {
-        'Cookie': `refresh_token=${refreshToken}`,
-      },
-    });
+
+    const { data: response, response: backendResponse } =
+      await apiClient.postWithResponse<RefreshApiResponse>(
+        'auth/refresh',
+        { refreshToken },
+        {
+          baseUrl: backendUrl,
+          skipAuth: true,
+          headers: {
+            Cookie: `refresh_token=${refreshToken}`,
+          },
+        },
+      );
     const accessToken = response?.accessToken;
 
     if (!accessToken) {
@@ -50,7 +55,10 @@ export async function POST(request: NextRequest) {
       nextResponse.headers.append('Set-Cookie', cookie);
     });
 
-    setAuthCookies(nextResponse, { accessToken });
+    setAuthCookies(nextResponse, {
+      accessToken,
+      refreshToken: response?.refreshToken,
+    });
 
     return nextResponse;
   } catch (error) {

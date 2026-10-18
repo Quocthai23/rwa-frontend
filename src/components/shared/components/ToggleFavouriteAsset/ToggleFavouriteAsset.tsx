@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Star01 } from '@untitledui/icons';
 import { useRouter } from 'next/navigation';
@@ -67,3 +67,4 @@ export function ToggleFavouriteAsset({
     </Button>
   );
 }
+

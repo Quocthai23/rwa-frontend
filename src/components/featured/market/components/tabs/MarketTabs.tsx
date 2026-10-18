@@ -1,4 +1,4 @@
-import { Sheet, SheetContent } from '@/components/shared/atoms/sheet';
+﻿import { Sheet, SheetContent } from '@/components/shared/atoms/sheet';
 import { Check } from '@untitledui/icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Fav from './Fav';
@@ -13,10 +13,21 @@ import { useTranslation } from 'react-i18next';
 const STATIC_TABS = [
   { id: 'fav', labelKey: 'market.tabs.fav' },
   { id: 'popular', labelKey: 'market.tabs.popular' },
+  { id: 'rental', labelKey: 'market.tabs.rental' },
+  { id: 'buyout', labelKey: 'market.tabs.buyout' },
 ] as const;
 const DEFAULT_INDEX = STATIC_TABS.findIndex((tab) => tab.id === 'popular');
 type TabLayout = { x: number; width: number };
 type AssetCategory = { name: string; code?: string };
+
+const isRealEstateCategory = (category: AssetCategory) => {
+  const normalized = `${category.code ?? ''} ${category.name ?? ''}`
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .toLowerCase();
+  return normalized.includes('real estate') || normalized.includes('bat dong san');
+};
 
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
@@ -45,24 +56,31 @@ const TabHeaderSkeleton = () => (
 
 export default function MarketTabs() {
   const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const { data: categories } = useAssetCategories();
   const categoryList = useMemo(
-    () => (Array.isArray(categories) ? (categories as AssetCategory[]) : []),
+    () =>
+      Array.isArray(categories)
+        ? (categories as AssetCategory[]).filter((category) => !isRealEstateCategory(category))
+        : [],
     [categories],
   );
 
   const tabs = useMemo(
-    () => [
-      ...STATIC_TABS.map((tab) => ({ id: tab.id, label: t(tab.labelKey) })),
-      ...categoryList.map((category) => {
-        const key = (category.code ?? category.name ?? '').toString().toLowerCase();
-        const label = t(`market.categoryOptions.${key}`, { defaultValue: category.name });
-        return { id: category.name, label };
-      }),
-    ],
+    () => {
+      void language;
+      return [
+        ...STATIC_TABS.map((tab) => ({ id: tab.id, label: t(tab.labelKey) })),
+        ...categoryList.map((category) => {
+          const key = (category.code ?? category.name ?? '').toString().toLowerCase();
+          const label = t(`market.categoryOptions.${key}`, { defaultValue: category.name });
+          return { id: category.name, label };
+        }),
+      ];
+    },
     // Important: `t` reference can stay stable across language changes,
     // so we must explicitly include `i18n.language` to refresh tab labels.
-    [categoryList, t, i18n.language],
+    [categoryList, language, t],
   );
 
   const [activeTab, setActiveTab] = useState<string>(STATIC_TABS[DEFAULT_INDEX].id);
@@ -178,6 +196,8 @@ export default function MarketTabs() {
   const renderTabContent = (tabId: string) => {
     if (tabId === 'fav') return <Fav />;
     if (tabId === 'popular') return <Popular />;
+    if (tabId === 'rental') return <AssetListTab />;
+    if (tabId === 'buyout') return <AssetListTab buyoutOnly />;
 
     const category = categoryList.find((c) => c.name === tabId);
     if (!category)

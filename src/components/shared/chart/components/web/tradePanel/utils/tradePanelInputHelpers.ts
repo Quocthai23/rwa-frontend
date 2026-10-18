@@ -1,4 +1,4 @@
-import Decimal from 'decimal.js';
+﻿import Decimal from 'decimal.js';
 
 import type { DecimalValue, NullableDecimalValue } from '@/types/decimal';
 
@@ -167,8 +167,8 @@ export const adjustLimitPriceByStep = (
   transactionType: 'buy' | 'sell',
   sellPrice: DecimalValue,
   buyPrice: DecimalValue,
+  priceStep?: DecimalValue,
 ) => {
-  const factor = 10 ** symbolDigit;
   const currentMarketPrice = transactionType === 'sell' ? sellPrice : buyPrice;
   const normalized = normalizeDecimalInput(limitPrice);
   const parsed = Number.parseFloat(normalized);
@@ -177,14 +177,16 @@ export const adjustLimitPriceByStep = (
 
   if (!Number.isFinite(basePrice) || basePrice <= 0) return;
 
-  const baseTicks = Math.round(basePrice * factor);
+  const parsedStep = toFiniteNumberFromNumberish(priceStep);
+  const step = parsedStep && parsedStep > 0 ? parsedStep : 1 / 10 ** symbolDigit;
+  const baseTicks = Math.round(basePrice / step);
   const nextTicks = baseTicks + direction;
   if (nextTicks <= 0) {
     setLimitPrice('');
     return;
   }
 
-  const nextPrice = nextTicks / factor;
+  const nextPrice = nextTicks * step;
   setLimitPrice(nextPrice.toFixed(symbolDigit));
 };
 

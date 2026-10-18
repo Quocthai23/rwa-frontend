@@ -1,4 +1,4 @@
-import type { Asset } from '@/types';
+﻿import type { Asset } from '@/types';
 
 import type { MarketRowVM, MarketTabVM } from './types';
 
@@ -39,14 +39,32 @@ const normalize = (value: string | undefined): string => {
   return (value ?? '').trim().toLowerCase();
 };
 
+const normalizeCategory = (value: string | undefined): string =>
+  normalize(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '_');
+
+const isRealEstateCategory = (category: CategoryOption): boolean => {
+  const values = [category.code, category.name].map(normalizeCategory);
+  return values.some((value) =>
+    ['real_estate', 'realestate', 'bat_dong_san', 'property'].includes(value),
+  );
+};
+
 export function buildMarketTabs({ categories, t }: BuildMarketTabsParams): MarketTabVM[] {
   const staticTabs: MarketTabVM[] = [
     { id: 'fav', label: t('market.tabs.fav') },
     { id: 'popular', label: t('market.tabs.popular') },
+    { id: 'rental', label: t('market.tabs.rental', { defaultValue: 'Tài sản cho thuê' }) },
+    { id: 'buyout', label: t('market.tabs.buyout', { defaultValue: 'Đang thâu tóm' }) },
   ];
 
   const categoryTabs = categories
-    .filter((category) => (category.name ?? '').trim().length > 0)
+    .filter(
+      (category) => (category.name ?? '').trim().length > 0 && !isRealEstateCategory(category),
+    )
     .map((category) => {
       const key = (category.code ?? category.name ?? '').toString().toLowerCase();
 
@@ -81,17 +99,68 @@ export function buildMarketRows({
         askValue: toNumber(asset.ask),
         bidText: asset.bid,
         bidValue: toNumber(asset.bid),
+        lastPriceValue: toNumber(asset.tokenPrice),
+        referencePriceValue: toNumber(asset.referencePrice),
         categoryCode: asset.category?.code ?? asset.category?.name ?? '',
         categoryName: asset.category?.name ?? '',
+        propertyType: asset.propertyType,
+        location: asset.location,
+        expectedApy: toNumber(asset.expectedApy),
+        buyoutPremiumPercent: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.premiumPercent)
+          : undefined,
+        buyoutMonthlyWaitingRatePercent: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.monthlyWaitingRatePercent ?? undefined)
+          : undefined,
+        buyoutMonthsRemaining: asset.buyoutSummary
+          ? Math.max(0, asset.buyoutSummary.totalMonths - asset.buyoutSummary.monthsCompleted)
+          : undefined,
+        buyoutTotalMonths: asset.buyoutSummary?.totalMonths,
+        buyoutMonthsCompleted: asset.buyoutSummary?.monthsCompleted,
+        buyoutPrincipalUnitPrice: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.principalUnitPrice ?? undefined)
+          : undefined,
+        buyoutRedemptionUnitPrice: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.redemptionUnitPrice ?? undefined)
+          : undefined,
+        buyoutInitialMinorityTokens: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.initialMinorityTokens ?? undefined)
+          : undefined,
+        buyoutRemainingMinorityTokens: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.remainingMinorityTokens ?? undefined)
+          : undefined,
+        buyoutTotalConsiderationVnd: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.totalConsiderationVnd ?? undefined)
+          : undefined,
+        buyoutPrincipalPaidVnd: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.principalPaidVnd ?? undefined)
+          : undefined,
+        buyoutPremiumPaidVnd: asset.buyoutSummary
+          ? toNumber(asset.buyoutSummary.premiumPaidVnd ?? undefined)
+          : undefined,
+        buyoutNextPaymentVnd: asset.buyoutSummary?.nextInstallment
+          ? toNumber(asset.buyoutSummary.nextInstallment.paymentAmount)
+          : undefined,
+        buyoutNextRecordAt:
+          asset.buyoutSummary?.nextInstallment?.recordAt ??
+          asset.buyoutSummary?.nextRecordAt ??
+          undefined,
+        buyoutBuyerGuestNumber: asset.buyoutSummary?.buyerGuestNumber,
+        rentalStatus: asset.rentalSummary?.status,
+        monthlyRentVnd: toNumber(asset.rentalSummary?.monthlyRentVnd ?? undefined),
+        rentalDueDay: asset.rentalSummary?.dueDay ?? undefined,
+        latestRentalPeriod: asset.rentalSummary?.latestDistribution?.periodStart ?? undefined,
         digit: Number.isFinite(asset.digit) ? asset.digit : 2,
         id: asset.id,
         initialHigh: high,
         initialLow: low,
         isActive: Boolean(asset.isActive),
+        tradingStatus: asset.tradingStatus ?? 'PAUSED',
         isFavorite: Boolean(byId ?? bySymbol ?? apiFavorite),
         name: asset.name ?? '',
         spreadText: asset.spread,
         spreadValue: toNumber(asset.spread),
+        statusColor: asset.statusColor,
         symbol: asset.symbol,
       };
     })

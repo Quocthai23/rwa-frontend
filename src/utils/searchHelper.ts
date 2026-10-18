@@ -1,4 +1,4 @@
-export type BaseSearchableAsset = {
+﻿export type BaseSearchableAsset = {
   symbol?: string;
   name?: string;
   marginCurrency?: string;
@@ -86,3 +86,4 @@ export function filterAndSortAssets<T extends BaseSearchableAsset>(
   const results = sorted.map((x) => x.item);
   return maxResults ? results.slice(0, Math.max(1, maxResults)) : results;
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -233,7 +233,7 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
             </div>
             <div>
               <h4 className="font-semibold text-foreground">{t('kyc.benefits.withdrawal', 'High Withdrawal Limits')}</h4>
-              <p className="text-xs text-muted-foreground mt-0.5">{t('kyc.benefits.withdrawalDesc', 'Withdraw up to $100,000 daily.')}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('kyc.benefits.withdrawalDesc', 'Withdraw up to VNĐ100,000 daily.')}</p>
             </div>
           </div>
           
@@ -480,3 +480,4 @@ export function KycFlowSheet({ open, onOpenChange }: KycFlowSheetProps) {
     </Sheet>
   );
 }
+

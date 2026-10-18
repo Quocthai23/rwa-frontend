@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -67,3 +67,4 @@ export default function NewsWebScreen() {
     </div>
   );
 }
+

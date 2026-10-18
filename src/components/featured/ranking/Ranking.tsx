@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ChevronLeft, FilterFunnel01 } from '@untitledui/icons';
 import { useCallback, useMemo, useState, useEffect } from 'react';
@@ -455,3 +455,4 @@ function Ranking() {
 }
 
 export default Ranking;
+

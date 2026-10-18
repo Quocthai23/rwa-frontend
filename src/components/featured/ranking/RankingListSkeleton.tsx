@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 export default function RankingListSkeleton() {
   return (
@@ -29,3 +29,4 @@ export default function RankingListSkeleton() {
     </div>
   );
 }
+

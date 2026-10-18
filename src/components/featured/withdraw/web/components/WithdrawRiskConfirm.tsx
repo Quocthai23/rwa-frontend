@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 // this component no longer shows another modal itself; it simply notifies
 export type WithdrawData = {
   accountId: string;
-  address: string;
+  address?: string;
   amount: string;
   chainId: string;
 };

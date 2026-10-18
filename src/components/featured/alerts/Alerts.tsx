@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowUp, Bell01, ChevronLeft, Minus, Plus, ArrowDown } from '@untitledui/icons';
 import { useMemo, useState } from 'react';
@@ -603,3 +603,4 @@ function SwipeableAlertItem({
     </div>
   );
 }
+

@@ -37,11 +37,16 @@ export async function POST(request: Request) {
     }
 
     const backendUrl = API_BASE_URL || 'http://localhost:3001';
-    
-    const { data: response, response: backendResponse } = await apiClient.postWithResponse<LoginApiResponse>('auth/login', { email, password }, {
-      baseUrl: backendUrl,
-      skipAuth: true,
-    });
+
+    const { data: response, response: backendResponse } =
+      await apiClient.postWithResponse<LoginApiResponse>(
+        'auth/login',
+        { email, password },
+        {
+          baseUrl: backendUrl,
+          skipAuth: true,
+        },
+      );
 
     if (response?.status === 'challenge_required') {
       return successResponse(response, 200);
@@ -68,14 +73,20 @@ export async function POST(request: Request) {
       nextResponse.headers.append('Set-Cookie', cookie);
     });
 
-    setAuthCookies(nextResponse, { accessToken });
+    setAuthCookies(nextResponse, {
+      accessToken,
+      refreshToken: response.refreshToken,
+    });
 
     return nextResponse;
   } catch (error) {
     const message = getErrorMessage(error);
     const status =
       getErrorStatus(error, 0) ||
-      (message.toLowerCase().includes('invalid email or password') || message.toLowerCase().includes('login failed') ? 401 : 500);
+      (message.toLowerCase().includes('invalid email or password') ||
+      message.toLowerCase().includes('login failed')
+        ? 401
+        : 500);
 
     return errorResponse(message, status, {
       code: 'invalid-credentials',

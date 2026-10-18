@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { cn } from '@/utils';
 import { useTheme } from '@/theme';
@@ -164,3 +164,4 @@ const TopRiserItem = ({
 };
 
 export default TopRiserItem;
+

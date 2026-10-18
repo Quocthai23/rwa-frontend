@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Check, SearchLg } from '@untitledui/icons';
 import Image from 'next/image';
@@ -156,3 +156,4 @@ export function DiscoverAssetSelectorContent({
     </>
   );
 }
+

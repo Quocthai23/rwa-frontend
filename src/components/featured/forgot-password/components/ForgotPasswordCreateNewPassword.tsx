@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import { Check, Eye, EyeOff } from '@untitledui/icons';
@@ -35,7 +35,7 @@ export default function ForgotPasswordCreateNewPassword({
   const { hasMinLength, hasSpecialChar, hasUpperCase, hasLowerCase, hasDigit, passwordsMatch } =
     useMemo(() => {
       const min = password.length >= 8;
-      const special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+      const special = /[!@#VNĐ%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
       const upper = /[A-Z]/.test(password);
       const lower = /[a-z]/.test(password);
       const digit = /\d/.test(password);
@@ -220,3 +220,4 @@ function ValidationItem({ isValid, text }: { isValid: boolean; text: string }) {
     </div>
   );
 }
+

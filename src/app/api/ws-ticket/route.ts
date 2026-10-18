@@ -1,4 +1,4 @@
-import { SignJWT } from 'jose';
+﻿import { SignJWT } from 'jose';
 import { NextRequest } from 'next/server';
 
 import { readStringField, successResponse, withServerTokenRefresh } from '@/app/api/_utils/auth';
@@ -73,3 +73,4 @@ export async function POST(request: NextRequest) {
     (data) => successResponse(data, 200),
   );
 }
+

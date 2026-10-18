@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 
 import { ApiError } from '@/services/apiClient';
 import { authApi } from '@/services/auth';
@@ -154,8 +154,14 @@ export const upstreamErrorResponse = (
   fallbackCode: string,
   fallbackStatus = 500,
 ): NextResponse => {
+  console.error('[upstreamErrorResponse] Caught error:', error);
+  let errorDetails = String(error);
+  if (error instanceof Error && (error as any).cause) {
+    errorDetails += ` (cause: ${String((error as any).cause)})`;
+  }
   return errorResponse(getErrorMessage(error), getErrorStatus(error, fallbackStatus), {
     code: getErrorCode(error) || fallbackCode,
+    details: errorDetails,
   });
 };
 
@@ -253,18 +259,24 @@ export const withServerTokenRefresh = async <T>(
     const refreshToken = getRefreshTokenFromRequest(request);
 
     if (!refreshToken) {
-      return errorResponse('Session expired', 401, { code: 'session-expired' });
+      const response = errorResponse('Session expired', 401, { code: 'session-expired' });
+      clearAuthCookies(response);
+      return response;
     }
 
     let newTokens: { accessToken?: string; refreshToken?: string };
     try {
       newTokens = await authApi.refreshToken({ refreshToken });
     } catch {
-      return errorResponse('Session expired', 401, { code: 'refresh-failed' });
+      const response = errorResponse('Session expired', 401, { code: 'refresh-failed' });
+      clearAuthCookies(response);
+      return response;
     }
 
     if (!newTokens.accessToken) {
-      return errorResponse('Session expired', 401, { code: 'refresh-failed' });
+      const response = errorResponse('Session expired', 401, { code: 'refresh-failed' });
+      clearAuthCookies(response);
+      return response;
     }
 
     try {

@@ -54,14 +54,6 @@ export const useUpdateAccountName = () => {
   });
 };
 
-export const useUpdateAccountLeverage = () => {
-  return useMutation({
-    mutationFn: async ({ accountId, leverage }: { accountId: string; leverage: number }) => {
-      return { success: true };
-    },
-  });
-};
-
 export const useDeleteAccount = () => {
   const queryClient = useQueryClient();
   const selectedAccount = useAccountStore((s) => s.selectedAccount);

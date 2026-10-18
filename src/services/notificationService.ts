@@ -1,4 +1,4 @@
-import { NOTIFICATION_ENDPOINTS } from '../constants/api';
+﻿import { NOTIFICATION_ENDPOINTS } from '../constants/api';
 import { NotificationResponse } from '../types/notification';
 import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
@@ -106,3 +106,4 @@ export const getUnreadCount = async (accessToken?: string) => {
     { baseUrl: CLIENT_BASE_URL },
   );
 };
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -77,3 +77,4 @@ export default function AuthCallbackClient() {
 
   return <SplashLogo size={300} />;
 }
+

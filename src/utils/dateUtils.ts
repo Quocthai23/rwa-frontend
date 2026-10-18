@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Date Utilities
  * Common date formatting functions using dayjs
  */
@@ -96,5 +96,6 @@ export function formatPositionDateTime(dateString: string): string {
       second: '2-digit',
       year: 'numeric',
     })
-    .replace(/(\d+)\/(\d+)\/(\d+),/, '$3.$1.$2');
+    .replace(/(\d+)\/(\d+)\/(\d+),/, 'VNĐ3.VNĐ1.VNĐ2');
 }
+

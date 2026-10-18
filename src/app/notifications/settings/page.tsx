@@ -1,4 +1,4 @@
-type RowChevron = {
+﻿type RowChevron = {
   label: string;
   value: string;
 };
@@ -131,3 +131,4 @@ export default function NotificationSettingsPage() {
     </main>
   );
 }
+

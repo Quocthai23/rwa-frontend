@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { Bell01, ChevronLeft, LinkExternal01 } from '@untitledui/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -146,8 +146,6 @@ function SymbolDetailScreen() {
   const initialAsk = Number.parseFloat(asset?.ask || '0');
   const initialBid = Number.parseFloat(asset?.bid || '0');
   const digit = asset?.digit ?? 2;
-  const leverage = typeof asset?.maxLeverage === 'string' ? Number.parseFloat(asset.maxLeverage) : (asset?.maxLeverage ?? 100);
-
   const lastPrice = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.lastPrice);
   const ask = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.ask) ?? initialAsk;
   const bid =
@@ -432,7 +430,7 @@ function SymbolDetailScreen() {
               <ChartCommon setSymbol={setCurrentSymbol} symbol={currentSymbol} />
             ) : (
               <div className="text-body-medium text-muted-foreground px-4 py-6">
-                Loading symbol…
+                Loading symbolâ€¦
               </div>
             )}
           </div>
@@ -531,3 +529,4 @@ function SymbolDetailScreen() {
 }
 
 export default SymbolDetailScreen;
+

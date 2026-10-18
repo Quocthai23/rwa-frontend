@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   LoginResponse,
   RegisterResponse,
   UpdateReferralPayload,
@@ -19,6 +19,15 @@ type JsonValue = boolean | null | number | string;
 type JsonObject = {
   [key: string]: JsonObject | JsonValue | JsonValue[];
 };
+
+export type AuthChallengePurpose =
+  | 'LOGIN'
+  | 'DISABLE_MFA'
+  | 'SETUP_MFA'
+  | 'WITHDRAW'
+  | 'TRANSFER'
+  | 'BUYOUT_ESCROW'
+  | 'BUYOUT_INSTALLMENT';
 
 export const authApi = {
   updateProfile: async (
@@ -195,7 +204,12 @@ export const authApi = {
       return apiClient.post<{ accessToken?: string; refreshToken?: string }>(
         'auth/refresh',
         payload,
-        { skipAuth: true },
+        {
+          skipAuth: true,
+          headers: {
+            Cookie: 'refresh_token=' + encodeURIComponent(payload.refreshToken),
+          },
+        },
       );
     }
 
@@ -329,12 +343,12 @@ export const authApi = {
   },
 
   createAuthChallenge: async (body: {
-    purpose: 'LOGIN' | 'DISABLE_MFA' | 'SETUP_MFA' | 'WITHDRAW' | 'TRANSFER';
+    purpose: AuthChallengePurpose;
     payload?: JsonObject;
     accessToken?: string;
   }): Promise<{
     challengeId: string;
-    purpose: 'LOGIN' | 'DISABLE_MFA' | 'SETUP_MFA' | 'WITHDRAW' | 'TRANSFER';
+    purpose: AuthChallengePurpose;
     requiredFactors: string[];
     expiresAt: string;
   }> => {
@@ -351,7 +365,7 @@ export const authApi = {
 
       return apiClient.post<{
         challengeId: string;
-        purpose: 'LOGIN' | 'DISABLE_MFA' | 'SETUP_MFA' | 'WITHDRAW' | 'TRANSFER';
+        purpose: AuthChallengePurpose;
         requiredFactors: string[];
         expiresAt: string;
       }>('auth/challenge', requestBody, {
@@ -367,7 +381,7 @@ export const authApi = {
 
     return apiClient.post<{
       challengeId: string;
-      purpose: 'LOGIN' | 'DISABLE_MFA' | 'SETUP_MFA' | 'WITHDRAW' | 'TRANSFER';
+      purpose: AuthChallengePurpose;
       requiredFactors: string[];
       expiresAt: string;
     }>('/api/auth/challenge', requestBody, {

@@ -1,12 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Decimal from 'decimal.js';
 import type { DecimalValue } from '@/types/decimal';
 import { toFiniteNumberFromNumberish } from '@/components/shared/chart/components/tradePanel/utils/tradePanelInputHelpers';
-import MiniChart from '@/components/featured/home/MiniChart';
 import { useMarketViewModel } from '@/features/market/shared/hooks/useMarketViewModel';
 import type { MarketRowVM } from '@/features/market/shared/types';
 import { Button } from '@/components/shared/atoms/button';
@@ -17,39 +15,47 @@ import {
   type DataTableSortState,
 } from '@/components/shared/atoms/data-table';
 import { ToggleFavouriteAsset } from '@/components/shared/components/ToggleFavouriteAsset/ToggleFavouriteAsset';
-import { useMiniChartData } from '@/hook/useMinichartData';
 import { useAssetsMarketData } from '@/hook/useAssetsMarketData';
 import { useSymbols } from '@/hook/useSymbols';
 import { cn } from '@/lib/utils';
-import type { Candle } from '@/services/marketService';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
-import { isCategoryOpenByOtcRule } from '@/components/featured/market/web/helpers/marketOpenRule';
 import type { AssetMarketData } from '@/types/assets';
+import { useClaimableDividends, useClaimDividend } from '@/hook/useDividends';
+import { useAuthStore } from '@/store/authStore';
 
 const MARKET_WEB_DEFAULT_TAB = 'popular';
-const MARKET_EQUAL_COLUMN_WIDTH = 'w-[10%]';
-const MARKET_WEB_KLINE_H1_SECONDS = 60 * 60;
-const MARKET_WEB_MINI_CHART_LIMIT = 15;
+const MARKET_SYMBOL_COLUMN_WIDTH = 'w-[24%] min-w-[260px]';
+const MARKET_VALUE_COLUMN_WIDTH = 'w-[8.44%] min-w-[104px]';
+const MARKET_VALUE_CELL_CLASS = 'overflow-hidden whitespace-nowrap tabular-nums';
 type SortColumn =
   | 'symbol'
+  | 'lastPrice'
   | 'sellPrice'
   | 'buyPrice'
   | 'spread'
   | 'volume'
-  | 'sellPercent'
-  | 'buyPercent'
+  | 'quoteVolume'
   | 'changePercent'
   | 'low'
-  | 'high';
+  | 'high'
+  | 'monthlyRent'
+  | 'expectedApy'
+  | 'rentalStatus'
+  | 'dueDay'
+  | 'buyoutProgress'
+  | 'buyoutMonthlyReturn'
+  | 'buyoutPremium'
+  | 'buyoutNextPayment'
+  | 'buyoutNextDate'
+  | 'buyoutBuyer';
 
 type MarketTicker = {
   ask?: DecimalValue;
   bid?: DecimalValue;
-  buyPercent?: DecimalValue;
   changePercent?: DecimalValue;
-  sellPercent?: DecimalValue;
+  lastPrice?: DecimalValue;
+  quoteVolume?: DecimalValue;
   volume?: DecimalValue;
-  takerBuyRatio24h?: DecimalValue;
   takerBuyVolume24h?: DecimalValue;
   takerSellVolume24h?: DecimalValue;
   sessionStats?: {
@@ -61,12 +67,12 @@ type MarketTicker = {
 type ResolvedMarketRow = {
   ask?: DecimalValue;
   bid?: DecimalValue;
-  buyPercent?: number;
   changePercent?: number;
   high?: DecimalValue;
+  lastPrice?: DecimalValue;
   low?: DecimalValue;
+  quoteVolume: number;
   row: MarketRowVM;
-  sellPercent?: number;
   spread?: number;
   volume: number;
 };
@@ -74,7 +80,10 @@ type ResolvedMarketRow = {
 type MarketTableColumn = DataTableColumn<ResolvedMarketRow, SortColumn> & {
   getSortValue: (data: ResolvedMarketRow) => number | string;
 };
-type TranslateFn = (key: string, options?: { defaultValue?: string }) => string;
+type TranslateFn = (
+  key: string,
+  options?: { defaultValue?: string; [key: string]: unknown },
+) => string;
 
 function getPercentClass(value: number | undefined): string {
   const safe = typeof value === 'number' ? value : Number.NaN;
@@ -82,6 +91,77 @@ function getPercentClass(value: number | undefined): string {
   if (safe > 0) return 'text-green-500';
   if (safe < 0) return 'text-red-500';
   return 'text-muted-foreground';
+}
+
+function normalizePropertyType(value?: string): string {
+  return (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function getPropertyTypeClass(value?: string): string {
+  const normalized = normalizePropertyType(value);
+  if (normalized.includes('van phong') || normalized.includes('office')) {
+    return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300';
+  }
+  if (
+    normalized.includes('can ho') ||
+    normalized.includes('nha o') ||
+    normalized.includes('residential') ||
+    normalized.includes('villa') ||
+    normalized.includes('biet thu')
+  ) {
+    return 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300';
+  }
+  if (
+    normalized.includes('khach san') ||
+    normalized.includes('nghi duong') ||
+    normalized.includes('hotel') ||
+    normalized.includes('hospitality')
+  ) {
+    return 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300';
+  }
+  if (
+    normalized.includes('cong nghiep') ||
+    normalized.includes('kho') ||
+    normalized.includes('industrial') ||
+    normalized.includes('logistics')
+  ) {
+    return 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300';
+  }
+  if (
+    normalized.includes('ban le') ||
+    normalized.includes('thuong mai') ||
+    normalized.includes('retail')
+  ) {
+    return 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300';
+  }
+  if (normalized.includes('dat') || normalized.includes('land')) {
+    return 'bg-stone-100 text-stone-700 dark:bg-stone-500/15 dark:text-stone-300';
+  }
+  return 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300';
+}
+
+function getTradingStatusLabel(status: MarketRowVM['tradingStatus'], t: TranslateFn): string {
+  if (status === 'OPEN') return t('market.assetStatus.open', { defaultValue: 'Trading' });
+  if (status === 'BUYOUT_ACTIVE')
+    return t('market.assetStatus.buyoutActive', { defaultValue: 'Buyout active' });
+  if (status === 'PAUSED') return t('market.assetStatus.paused', { defaultValue: 'Paused' });
+  return t('market.assetStatus.closed', { defaultValue: 'Closed' });
+}
+
+function getTradingStatusClass(status: MarketRowVM['tradingStatus']): string {
+  if (status === 'OPEN') {
+    return 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300';
+  }
+  if (status === 'PAUSED') {
+    return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300';
+  }
+  if (status === 'BUYOUT_ACTIVE') {
+    return 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300';
+  }
+  return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700/40 dark:text-neutral-300';
 }
 
 function normalizeDigits(digit: number | undefined): number {
@@ -93,7 +173,10 @@ function formatPrice(value: DecimalValue | undefined, digit: number): string {
   const resolvedDigits = normalizeDigits(digit);
   const safe = toFiniteNumberFromNumberish(value);
   if (safe == null) return '--';
-  return safe.toFixed(resolvedDigits);
+  return safe.toLocaleString('en-US', {
+    minimumFractionDigits: resolvedDigits,
+    maximumFractionDigits: resolvedDigits,
+  });
 }
 
 function formatSignedPercent(value: DecimalValue | undefined): string {
@@ -108,7 +191,10 @@ function formatStatValue(value: DecimalValue | undefined, digit: number): string
   const resolvedDigits = normalizeDigits(digit);
   const safe = toFiniteNumberFromNumberish(value);
   if (safe == null) return '--';
-  return safe.toFixed(resolvedDigits);
+  return safe.toLocaleString('en-US', {
+    minimumFractionDigits: resolvedDigits,
+    maximumFractionDigits: resolvedDigits,
+  });
 }
 
 function formatVolume(value: number | undefined): string {
@@ -120,22 +206,19 @@ function formatVolume(value: number | undefined): string {
   return safe.toFixed(2);
 }
 
-function clampPercent(value: number): number {
-  return Math.min(100, Math.max(0, value));
+function formatVnd(value: number | undefined): string {
+  if (!Number.isFinite(value)) return '—';
+  return `${Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} VND`;
 }
 
 function calculateSpread(
   ask: DecimalValue | undefined,
   bid: DecimalValue | undefined,
-  digit: number,
 ): number | undefined {
   const safeAsk = toFiniteNumberFromNumberish(ask);
   const safeBid = toFiniteNumberFromNumberish(bid);
   if (safeAsk == null || safeBid == null) return undefined;
-  const factor = new Decimal(10).pow(digit);
-  const askTicks = new Decimal(safeAsk).mul(factor).round();
-  const bidTicks = new Decimal(safeBid).mul(factor).round();
-  return askTicks.sub(bidTicks).abs().toNumber();
+  return Math.abs(safeAsk - safeBid);
 }
 
 function resolveRowMetrics(
@@ -164,75 +247,42 @@ function resolveRowMetrics(
   const takerBuyVolume24h = toFiniteNumberFromNumberish(ticker?.takerBuyVolume24h);
   const takerSellVolume24h = toFiniteNumberFromNumberish(ticker?.takerSellVolume24h);
   const tickerVolume = toFiniteNumberFromNumberish(ticker?.volume);
-  const takerBuyRatio24h = toFiniteNumberFromNumberish(ticker?.takerBuyRatio24h);
-  const hasTakerVolume =
-    Number.isFinite(takerBuyVolume24h) || Number.isFinite(takerSellVolume24h);
+  const hasTakerVolume = Number.isFinite(takerBuyVolume24h) || Number.isFinite(takerSellVolume24h);
   const totalVolume = hasTakerVolume
     ? (takerBuyVolume24h ?? 0) + (takerSellVolume24h ?? 0)
     : (tickerVolume ?? toFiniteNumberFromNumberish(marketData?.volume) ?? 0);
-  const marketBuyPercent =
-    toFiniteNumberFromNumberish(ticker?.buyPercent) ??
-    toFiniteNumberFromNumberish(marketData?.buyPercent);
-  const marketSellPercent =
-    toFiniteNumberFromNumberish(ticker?.sellPercent) ??
-    toFiniteNumberFromNumberish(marketData?.sellPercent);
-  const buyPercentRaw =
-    takerBuyRatio24h != null
-      ? takerBuyRatio24h
-      : marketBuyPercent != null
-        ? marketBuyPercent
-        : hasTakerVolume && totalVolume > 0
-          ? ((takerBuyVolume24h ?? 0) / totalVolume) * 100
-          : undefined;
-  const buyPercent = buyPercentRaw == null ? undefined : clampPercent(buyPercentRaw);
-  const sellPercentRaw =
-    marketSellPercent != null
-      ? marketSellPercent
-      : buyPercent == null
-        ? undefined
-        : 100 - buyPercent;
-  const sellPercent = sellPercentRaw == null ? undefined : clampPercent(sellPercentRaw);
+  const lastPrice =
+    toFiniteNumberFromNumberish(ticker?.lastPrice) ??
+    (row.lastPriceValue > 0 ? row.lastPriceValue : undefined);
+  const quoteVolume =
+    toFiniteNumberFromNumberish(ticker?.quoteVolume) ?? totalVolume * (lastPrice ?? 0);
   const spread = toFiniteNumberFromNumberish(marketData?.spread);
 
   return {
     ask: resolvedAsk,
     bid: resolvedBid,
-    buyPercent,
     changePercent: resolvedChangePercent,
     high: resolvedHigh,
+    lastPrice,
     low: resolvedLow,
+    quoteVolume,
     row,
-    sellPercent,
-    spread: spread ?? calculateSpread(resolvedAsk, resolvedBid, row.digit),
+    spread: spread ?? calculateSpread(resolvedAsk, resolvedBid),
     volume: totalVolume,
   };
 }
 
-function MarketChangeMiniChart({ candles, positive }: { candles: Candle[]; positive: boolean }) {
-  if (candles.length < 2) {
-    return <div className="h-7.5 w-15 shrink-0" aria-hidden />;
-  }
-
-  return (
-    <div className="h-7.5 w-15 shrink-0" aria-hidden>
-      <MiniChart candles={candles} height={30} isPositive={positive} strokeWidth={1.2} width={60} />
-    </div>
-  );
-}
-
-function getMarketTableColumns(
-  t: TranslateFn,
-  miniChartBySymbol: Map<string, Candle[]>,
-): MarketTableColumn[] {
+function getMarketTableColumns(t: TranslateFn): MarketTableColumn[] {
   return [
     {
       key: 'symbol',
       label: t('market.columns.symbol', { defaultValue: 'Symbol' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      widthClass: MARKET_SYMBOL_COLUMN_WIDTH,
+      cellClassName: 'overflow-hidden',
       align: 'left',
       getSortValue: (data) => data.row.name || data.row.symbol,
       renderCell: (data) => (
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2 py-1">
           <ToggleFavouriteAsset
             assetId={data.row.id}
             size={16}
@@ -240,28 +290,88 @@ function getMarketTableColumns(
             defaultIsFavorite={data.row.isFavorite}
           />
           <div className="ml-1 min-w-0 flex-1">
-            <p className="text-body-small-medium text-foreground py-1">{data.row.symbol}</p>
-            <div className="flex items-center gap-0">
-              <p className="text-body-caption-medium text-muted-foreground min-w-0 flex-1">
-                {data.row.name}
+            <div className="flex items-center gap-2">
+              <p
+                className="text-body-small-medium text-foreground truncate"
+                title={data.row.symbol}
+              >
+                {data.row.symbol}
               </p>
+            </div>
+            <p
+              className="text-body-caption-medium text-muted-foreground truncate"
+              title={data.row.name}
+            >
+              {data.row.name} · NAV {formatPrice(data.row.referencePriceValue, data.row.digit)}
+            </p>
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1">
+              {data.row.propertyType && (
+                <span
+                  className={cn(
+                    'rounded px-1.5 py-0.5 text-[10px] font-medium',
+                    getPropertyTypeClass(data.row.propertyType),
+                  )}
+                >
+                  {data.row.propertyType}
+                </span>
+              )}
+              <span
+                className={cn(
+                  'rounded px-1.5 py-0.5 text-[10px] font-medium',
+                  getTradingStatusClass(data.row.tradingStatus),
+                )}
+              >
+                {getTradingStatusLabel(data.row.tradingStatus, t)}
+              </span>
+              {data.row.buyoutPremiumPercent !== undefined && (
+                <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+                  {t('market.buyout.premiumBadge', {
+                    defaultValue: 'Buyout +{{premium}}% · {{months}}m',
+                    premium: data.row.buyoutPremiumPercent,
+                    months: data.row.buyoutMonthsRemaining ?? 0,
+                  })}
+                </span>
+              )}
+              <span
+                className={cn(
+                  'rounded px-1.5 py-0.5 text-[10px] font-medium',
+                  data.ask != null && data.bid != null
+                    ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300'
+                    : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
+                )}
+              >
+                {data.ask != null && data.bid != null
+                  ? t('market.liquidity.available', { defaultValue: 'Liquid' })
+                  : t('market.liquidity.low', { defaultValue: 'Low liquidity' })}
+              </span>
             </div>
           </div>
         </div>
       ),
     },
     {
+      key: 'lastPrice',
+      label: t('market.columns.lastPrice', { defaultValue: 'Last' }),
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
+      align: 'right',
+      getSortValue: (data) => data.lastPrice ?? -1,
+      renderCell: (data) => formatPrice(data.lastPrice, data.row.digit),
+    },
+    {
       key: 'sellPrice',
-      label: t('market.columns.sellPrice', { defaultValue: 'Sell Price' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      label: t('market.columns.bestBid', { defaultValue: 'Best Bid' }),
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
       getSortValue: (data) => data.bid ?? -1,
       renderCell: (data) => formatPrice(data.bid, data.row.digit),
     },
     {
       key: 'buyPrice',
-      label: t('market.columns.buyPrice', { defaultValue: 'Buy Price' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      label: t('market.columns.bestAsk', { defaultValue: 'Best Ask' }),
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
       getSortValue: (data) => data.ask ?? -1,
       renderCell: (data) => formatPrice(data.ask, data.row.digit),
@@ -269,55 +379,35 @@ function getMarketTableColumns(
     {
       key: 'spread',
       label: t('market.spread', { defaultValue: 'Spread' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
       getSortValue: (data) => data.spread ?? -1,
-      renderCell: (data) => (data.spread == null ? '--' : String(data.spread)),
+      renderCell: (data) => formatPrice(data.spread, data.row.digit),
     },
     {
       key: 'volume',
       label: t('market.columns.volume', { defaultValue: 'Volume' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
       getSortValue: (data) => data.volume,
       renderCell: (data) => formatVolume(data.volume),
     },
     {
-      key: 'sellPercent',
-      label: t('market.columns.sellPercent', { defaultValue: 'Sell%' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      key: 'quoteVolume',
+      label: t('market.columns.turnover', { defaultValue: 'Turnover' }),
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
-      getSortValue: (data) => data.sellPercent ?? -1,
-      renderCell: (data) => (
-        <span className={cn(data.sellPercent == null ? 'text-muted-foreground' : 'text-red-500')}>
-          {data.sellPercent == null
-            ? '--'
-            : data.sellPercent === 0
-              ? '0.00%'
-              : `${data.sellPercent.toFixed(2)}%`}
-        </span>
-      ),
-    },
-    {
-      key: 'buyPercent',
-      label: t('market.columns.buyPercent', { defaultValue: 'Buy%' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
-      align: 'right',
-      getSortValue: (data) => data.buyPercent ?? -1,
-      renderCell: (data) => (
-        <span className={cn(data.buyPercent == null ? 'text-muted-foreground' : 'text-green-500')}>
-          {data.buyPercent == null
-            ? '--'
-            : data.buyPercent === 0
-              ? '0.00%'
-              : `${data.buyPercent.toFixed(2)}%`}
-        </span>
-      ),
+      getSortValue: (data) => data.quoteVolume,
+      renderCell: (data) => formatVolume(data.quoteVolume),
     },
     {
       key: 'changePercent',
       label: t('market.columns.changePercent', { defaultValue: 'Chg%' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
       getSortValue: (data) => data.changePercent ?? -1,
       renderCell: (data) => (
@@ -325,17 +415,14 @@ function getMarketTableColumns(
           <span className={cn('tabular-nums', getPercentClass(data.changePercent))}>
             {formatSignedPercent(data.changePercent)}
           </span>
-          <MarketChangeMiniChart
-            candles={miniChartBySymbol.get(data.row.symbol) || []}
-            positive={(data.changePercent ?? 0) >= 0}
-          />
         </span>
       ),
     },
     {
       key: 'low',
       label: t('market.columns.low', { defaultValue: 'Low' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
       getSortValue: (data) => data.low ?? -1,
       renderCell: (data) => formatStatValue(data.low, data.row.digit),
@@ -343,7 +430,8 @@ function getMarketTableColumns(
     {
       key: 'high',
       label: t('market.columns.high', { defaultValue: 'High' }),
-      widthClass: MARKET_EQUAL_COLUMN_WIDTH,
+      widthClass: MARKET_VALUE_COLUMN_WIDTH,
+      cellClassName: MARKET_VALUE_CELL_CLASS,
       align: 'right',
       getSortValue: (data) => data.high ?? -1,
       renderCell: (data) => formatStatValue(data.high, data.row.digit),
@@ -351,10 +439,188 @@ function getMarketTableColumns(
   ];
 }
 
+function getRentalTableColumns(t: TranslateFn): MarketTableColumn[] {
+  return [
+    getMarketTableColumns(t)[0],
+    {
+      key: 'rentalStatus',
+      label: t('market.rental.status', { defaultValue: 'Trạng thái thuê' }),
+      widthClass: 'w-[14%] min-w-[150px]',
+      align: 'left',
+      getSortValue: (data) => data.row.rentalStatus ?? '',
+      renderCell: (data) => (
+        <span
+          className={cn(
+            'inline-flex rounded px-2 py-1 text-xs font-medium',
+            data.row.rentalStatus === 'RENTED'
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+          )}
+        >
+          {data.row.rentalStatus === 'RENTED'
+            ? t('market.rental.rented', { defaultValue: 'Đang cho thuê' })
+            : t('market.rental.available', { defaultValue: 'Đang nhận đăng ký' })}
+        </span>
+      ),
+    },
+    {
+      key: 'monthlyRent',
+      label: t('market.rental.monthlyRent', { defaultValue: 'Tiền thuê / tháng' }),
+      widthClass: 'w-[16%] min-w-[180px]',
+      align: 'right',
+      getSortValue: (data) => data.row.monthlyRentVnd ?? -1,
+      renderCell: (data) => formatVnd(data.row.monthlyRentVnd),
+    },
+    {
+      key: 'expectedApy',
+      label: t('market.rental.expectedApy', { defaultValue: 'Lợi suất dự kiến' }),
+      widthClass: 'w-[12%] min-w-[135px]',
+      align: 'right',
+      getSortValue: (data) => data.row.expectedApy ?? -1,
+      renderCell: (data) =>
+        data.row.expectedApy ? `${data.row.expectedApy.toFixed(2)}% / năm` : '—',
+    },
+    {
+      key: 'dueDay',
+      label: t('market.rental.paymentCycle', { defaultValue: 'Chu kỳ thanh toán' }),
+      widthClass: 'w-[14%] min-w-[160px]',
+      align: 'right',
+      getSortValue: (data) => data.row.rentalDueDay ?? -1,
+      renderCell: (data) =>
+        data.row.rentalDueDay
+          ? t('market.rental.dueDay', {
+              day: data.row.rentalDueDay,
+              defaultValue: 'Ngày {{day}} hàng tháng',
+            })
+          : '—',
+    },
+    {
+      key: 'lastPrice',
+      label: t('market.columns.lastPrice', { defaultValue: 'Giá token' }),
+      widthClass: 'w-[14%] min-w-[150px]',
+      align: 'right',
+      getSortValue: (data) => data.lastPrice ?? -1,
+      renderCell: (data) => `${formatPrice(data.lastPrice, data.row.digit)} VND`,
+    },
+  ];
+}
+
+function getBuyoutTableColumns(t: TranslateFn, locale: string): MarketTableColumn[] {
+  return [
+    {
+      key: 'symbol',
+      label: t('market.columns.symbol', { defaultValue: 'Tài sản' }),
+      widthClass: 'w-[24%] min-w-[260px]',
+      cellClassName: 'overflow-hidden',
+      align: 'left',
+      getSortValue: (data) => data.row.name || data.row.symbol,
+      renderCell: (data) => (
+        <div className="min-w-0 py-1">
+          <p className="text-foreground truncate text-sm font-semibold">{data.row.symbol}</p>
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">
+            {data.row.name}
+            {data.row.location ? ` · ${data.row.location}` : ''}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: 'buyoutBuyer',
+      label: t('market.buyout.buyer', { defaultValue: 'Người thâu tóm' }),
+      widthClass: 'w-[12%] min-w-[130px]',
+      align: 'left',
+      getSortValue: (data) => data.row.buyoutBuyerGuestNumber ?? -1,
+      renderCell: (data) =>
+        t('market.buyout.guestBuyer', {
+          number: data.row.buyoutBuyerGuestNumber ?? '—',
+          defaultValue: 'Guest {{number}}',
+        }),
+    },
+    {
+      key: 'lastPrice',
+      label: t('market.buyout.lockedPrice', { defaultValue: 'Giá đã khóa' }),
+      widthClass: 'w-[13%] min-w-[155px]',
+      align: 'right',
+      getSortValue: (data) => data.row.buyoutPrincipalUnitPrice ?? -1,
+      renderCell: (data) => formatVnd(data.row.buyoutPrincipalUnitPrice),
+    },
+    {
+      key: 'buyoutMonthlyReturn',
+      label: t('market.buyout.monthlyReturn', { defaultValue: 'Quyền lợi / tháng' }),
+      widthClass: 'w-[12%] min-w-[145px]',
+      align: 'right',
+      getSortValue: (data) => data.row.buyoutMonthlyWaitingRatePercent ?? -1,
+      renderCell: (data) =>
+        data.row.buyoutMonthlyWaitingRatePercent == null
+          ? '—'
+          : `+${data.row.buyoutMonthlyWaitingRatePercent.toFixed(2)}%`,
+    },
+    {
+      key: 'buyoutPremium',
+      label: t('market.buyout.totalPremium', { defaultValue: 'Thưởng toàn kỳ' }),
+      widthClass: 'w-[11%] min-w-[130px]',
+      align: 'right',
+      getSortValue: (data) => data.row.buyoutPremiumPercent ?? -1,
+      renderCell: (data) =>
+        data.row.buyoutPremiumPercent == null
+          ? '—'
+          : `${data.row.buyoutPremiumPercent.toFixed(2)}%`,
+    },
+    {
+      key: 'buyoutProgress',
+      label: t('market.buyout.progress', { defaultValue: 'Tiến độ' }),
+      widthClass: 'w-[13%] min-w-[150px]',
+      align: 'right',
+      getSortValue: (data) => data.row.buyoutMonthsCompleted ?? -1,
+      renderCell: (data) => {
+        const completed = data.row.buyoutMonthsCompleted ?? 0;
+        const total = data.row.buyoutTotalMonths ?? 0;
+        const percent = total > 0 ? Math.min(100, (completed / total) * 100) : 0;
+        return (
+          <div className="ml-auto w-28">
+            <span className="text-foreground block text-xs tabular-nums">
+              {t('market.buyout.progressValue', {
+                completed,
+                total,
+                defaultValue: '{{completed}}/{{total}} tháng',
+              })}
+            </span>
+            <span className="bg-muted mt-1 block h-1 overflow-hidden">
+              <span className="bg-primary block h-full" style={{ width: `${percent}%` }} />
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'buyoutNextPayment',
+      label: t('market.buyout.nextPayment', { defaultValue: 'Kỳ trả tiếp theo' }),
+      widthClass: 'w-[14%] min-w-[170px]',
+      align: 'right',
+      getSortValue: (data) => data.row.buyoutNextPaymentVnd ?? -1,
+      renderCell: (data) => formatVnd(data.row.buyoutNextPaymentVnd),
+    },
+    {
+      key: 'buyoutNextDate',
+      label: t('market.buyout.nextDate', { defaultValue: 'Ngày chốt kỳ' }),
+      widthClass: 'w-[12%] min-w-[145px]',
+      align: 'right',
+      getSortValue: (data) => data.row.buyoutNextRecordAt ?? '',
+      renderCell: (data) =>
+        data.row.buyoutNextRecordAt
+          ? new Date(data.row.buyoutNextRecordAt).toLocaleDateString(locale)
+          : '—',
+    },
+  ];
+}
+
 export default function MarketWebScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const vm = useMarketViewModel();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { data: rentalClaims = [] } = useClaimableDividends('RENTAL_INCOME', isAuthenticated);
+  const claimRentalIncome = useClaimDividend();
 
   const [activeTab, setActiveTab] = useState(MARKET_WEB_DEFAULT_TAB);
   const [marketOpenOnly, setMarketOpenOnly] = useState(true);
@@ -397,33 +663,27 @@ export default function MarketWebScreen() {
     visibleAssetIds.length > 0,
   );
   useSymbols(visibleSymbols, visibleSymbols.length > 0);
-  const symbolsForMiniCharts = useMemo(
-    () => Array.from(new Set(rows.map((row) => row.symbol).filter(Boolean))),
-    [rows],
-  );
-  const { data: miniChartData = [] } = useMiniChartData({
-    enabled: symbolsForMiniCharts.length > 0,
-    limit: MARKET_WEB_MINI_CHART_LIMIT,
-    symbols: symbolsForMiniCharts,
-    timeframe: MARKET_WEB_KLINE_H1_SECONDS,
-  });
-  const miniChartBySymbol = useMemo(
-    () => new Map(miniChartData.map((item) => [item.symbol, item.candles] as const)),
-    [miniChartData],
-  );
+  const isRentalTab = resolvedActiveTab === 'rental';
+  const isBuyoutTab = resolvedActiveTab === 'buyout';
+  const locale = i18n.resolvedLanguage?.startsWith('vi') ? 'vi-VN' : 'en-US';
   const marketTableColumns = useMemo(
-    () => getMarketTableColumns(t, miniChartBySymbol),
-    [miniChartBySymbol, t],
+    () =>
+      isRentalTab
+        ? getRentalTableColumns(t)
+        : isBuyoutTab
+          ? getBuyoutTableColumns(t, locale)
+          : getMarketTableColumns(t),
+    [isBuyoutTab, isRentalTab, locale, t],
   );
   const resolvedRows = useMemo(
     () =>
       rows
-        .map((row) =>
-          resolveRowMetrics(row, rtBySymbol?.[row.symbol], marketDataById[row.id]),
-        )
+        .map((row) => resolveRowMetrics(row, rtBySymbol?.[row.symbol], marketDataById[row.id]))
         .filter((resolved) => {
           if (!marketOpenOnly) return true;
-          return isCategoryOpenByOtcRule(resolved.row.categoryCode);
+          return (
+            resolved.row.isActive && ['OPEN', 'BUYOUT_ACTIVE'].includes(resolved.row.tradingStatus)
+          );
         }),
     [marketDataById, marketOpenOnly, rows, rtBySymbol],
   );
@@ -502,6 +762,60 @@ export default function MarketWebScreen() {
         </div>
       </div>
 
+      {isRentalTab && (
+        <div className="border-border mx-4 mb-3 flex flex-wrap items-center justify-between gap-3 border-b py-3">
+          <div>
+            <h2 className="text-foreground text-sm font-semibold">
+              {t('market.rental.title', { defaultValue: 'Tài sản cho thuê' })}
+            </h2>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {t('market.rental.description', {
+                defaultValue:
+                  'Tiền thuê được người thuê nộp theo tháng, sau đó chia theo tỷ lệ token tại thời điểm chốt sổ.',
+              })}
+            </p>
+          </div>
+          {rentalClaims.length > 0 && (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <span className="text-muted-foreground text-xs">
+                {t('market.rental.claimable', { defaultValue: 'Thu nhập có thể nhận' })}
+              </span>
+              {rentalClaims.map((claim) => (
+                <Button
+                  key={claim.id}
+                  type="button"
+                  variant="primary-contained"
+                  disabled={claimRentalIncome.isPending}
+                  onClick={() => claimRentalIncome.mutate(claim.distributionId)}
+                  className="h-8 px-3 text-xs"
+                >
+                  {claimRentalIncome.isPending &&
+                  claimRentalIncome.variables === claim.distributionId
+                    ? t('dividends.claiming', { defaultValue: 'Đang nhận...' })
+                    : `${t('dividends.claim', { defaultValue: 'Nhận' })} ${formatVnd(Number(claim.amount))}`}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {isBuyoutTab && (
+        <div className="border-border mx-4 mb-3 flex items-end justify-between gap-3 border-b py-3">
+          <div>
+            <h2 className="text-foreground text-sm font-semibold">
+              {t('market.buyout.title', { defaultValue: 'Tài sản đang được thâu tóm' })}
+            </h2>
+            <p className="text-muted-foreground mt-0.5 max-w-3xl text-xs">
+              {t('market.buyout.description', {
+                defaultValue:
+                  'Giá mua đã được khóa. Cổ đông còn lại vẫn có thể giao dịch và nhận quyền lợi chờ theo từng kỳ.',
+              })}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-hidden">
         <div className="scrollbar-neutral-slim overflow-x-auto overflow-y-visible px-2 pr-3">
           <div
@@ -516,7 +830,7 @@ export default function MarketWebScreen() {
               sortState={sortState}
               onSortChange={handleSortChange}
               headerCellClassName="bg-background sticky top-0 z-10"
-              tableClassName="table-fixed w-full min-w-[1220px] has-[table]:p-4"
+              tableClassName="table-fixed w-full min-w-[1320px] has-[table]:p-4"
               rowKey={(rowData) => rowData.row.id || rowData.row.symbol}
               onRowClick={(rowData) => {
                 const symbol = rowData.row.symbol;
@@ -525,7 +839,13 @@ export default function MarketWebScreen() {
                 if (typeof window !== 'undefined') {
                   window.localStorage.setItem('lastTradeSymbol', symbol);
                 }
-                router.push(`/trade/${encodeURIComponent(symbol)}`);
+                router.push(
+                  isRentalTab
+                    ? `/rentals/${rowData.row.id}`
+                    : isBuyoutTab
+                      ? `/buyout-trading/${encodeURIComponent(symbol)}`
+                      : `/trade/${encodeURIComponent(symbol)}`,
+                );
               }}
               emptyContent={t('market.noDataAvailable', { defaultValue: 'No data available' })}
             />

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowDown, ArrowUp, Copy03, FilterFunnel02, Plus, Check } from '@untitledui/icons';
 import { useRouter } from 'next/navigation';
@@ -340,3 +340,4 @@ export default function SupportHistory() {
     </div>
   );
 }
+

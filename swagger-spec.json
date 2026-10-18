@@ -2561,54 +2561,6 @@
         ]
       }
     },
-    "/payment/deposit-demo": {
-      "post": {
-        "operationId": "PaymentController_depositDemo",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DepositDemoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
-          }
-        },
-        "security": [
-          {
-            "accessToken": []
-          }
-        ],
-        "summary": "Deposit (demo account)",
-        "tags": [
-          "Payment"
-        ]
-      }
-    },
     "/payment/create-wallet": {
       "post": {
         "operationId": "PaymentController_createWallet",
@@ -7416,27 +7368,6 @@
           }
         }
       },
-      "DepositDemoDto": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "string",
-            "description": "Deposit amount as a decimal string. Must be a valid positive number.",
-            "example": "500.00",
-            "pattern": "^-?\\d+(\\.\\d+)?$"
-          },
-          "idempotencyKey": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Client-generated UUID v4 to prevent duplicate deposit submissions (idempotency).",
-            "example": "550e8400-e29b-41d4-a716-446655440000",
-            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-          }
-        },
-        "required": [
-          "amount"
-        ]
-      },
       "CreateWalletDto": {
         "type": "object",
         "properties": {
@@ -8673,6 +8604,83 @@
             "format": "date-time"
           }
         }
+      },
+      "Candle": {
+        "type": "object",
+        "properties": {
+          "time": { "type": "number", "description": "Epoch milliseconds since Unix epoch" },
+          "open": { "type": "number" },
+          "high": { "type": "number" },
+          "low": { "type": "number" },
+          "close": { "type": "number" },
+          "volume": { "type": "number" }
+        },
+        "required": ["time", "open", "high", "low", "close"]
+      },
+      "CandlesResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/Candle" } },
+          "resolution": { "type": "string" }
+        }
+      },
+      "ReferencePrice": {
+        "type": "object",
+        "properties": {
+          "assetId": { "type": "string" },
+          "referencePrice": { "type": "string", "description": "Reference NAV (decimal string)" },
+          "marketPrice": { "type": "string", "description": "Latest market price (decimal string)" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ValuationHistoryItem": {
+        "type": "object",
+        "properties": {
+          "provider": { "type": "string" },
+          "price": { "type": "string" },
+          "areaCode": { "type": "string" },
+          "reportedAt": { "type": "string", "format": "date-time" },
+          "metadata": { "type": "object" }
+        }
+      },
+      "ValuationHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/ValuationHistoryItem" } }
+        }
+      },
+      "PriceObject": {
+        "type": "object",
+        "properties": {
+          "price": { "type": "string" }
+        }
+      },
+      "AssetTicker": {
+        "type": "object",
+        "properties": {
+          "bid": { "type": "string" },
+          "ask": { "type": "string" },
+          "lastPrice": { "type": "string" },
+          "volume": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AssetSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "symbol": { "type": "string" },
+          "name": { "type": "string" },
+          "isActive": { "type": "boolean" },
+          "ticker": { "$ref": "#/components/schemas/AssetTicker" }
+        }
+      },
+      "AssetsListResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/AssetSummary" } }
+        }
+
       }
     },
     "responses": {

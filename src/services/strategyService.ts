@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+﻿import { apiClient } from './apiClient';
 import type { GetStrategyPageRequest, StrategyPageResponse } from '@/types/strategy';
 
 const isServer = typeof window === 'undefined';
@@ -44,3 +44,4 @@ export async function getStrategyPage(
   }
   return (await res.json()) as StrategyPageResponse;
 }
+

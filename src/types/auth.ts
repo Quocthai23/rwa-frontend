@@ -76,6 +76,7 @@ export type User = {
   isBlocking?: boolean;
   isBlockedBy?: boolean;
   kycStatus?: 'NONE' | 'PENDING' | 'APPROVING' | 'APPROVED' | 'REJECTED';
+  role?: 'USER' | 'ADMIN';
 };
 
 /** Partial update: avatar only, username only, or gender + username */

@@ -1,9 +1,9 @@
-import { apiClient } from './apiClient';
+﻿import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
 const isServer = typeof window === 'undefined';
 
-export type ProposalStatus = 'PENDING' | 'PASSED' | 'FAILED' | 'EXECUTED';
+export type ProposalStatus = 'ACTIVE' | 'PASSED' | 'REJECTED' | 'EXECUTED';
 
 export type DaoProposal = {
   id: string;
@@ -11,23 +11,76 @@ export type DaoProposal = {
   title: string;
   description: string;
   status: ProposalStatus;
-  yesVotes: number;
-  noVotes: number;
-  thresholdPercent: number;
-  createdById: string;
+  proposerId: string;
   createdAt: string;
-  endsAt: string;
-  executedAt?: string | null;
+  snapshotDate: string;
+  endDate: string;
+  type?: 'GENERAL' | 'INCREASE_RELEASED_TOKEN_PERCENTAGE' | 'BUYOUT_PROPOSAL';
+  metadata?: Record<string, unknown> | null;
+  asset?: { symbol?: string; tokenPrice?: string | number };
+  votes?: Array<{ isFor: boolean; votingPower: string | number }>;
+  snapshots?: Array<{ userId: string; votingPower: string | number }>;
+  _count?: { votes: number };
+};
+
+export type BuyoutEscrowState = {
+  proposalId: string;
+  buyoutId?: string;
+  proposalStatus: ProposalStatus;
+  isBuyer: boolean;
+  mode?: 'DYNAMIC_VND';
+  currency?: 'VND';
+  terms?: Record<string, unknown> | null;
+  schedule?: {
+    status: string;
+    totalMonths: number;
+    monthsCompleted: number;
+    nextExecutionAt: string;
+    basePriceVnd?: string;
+    depositVnd?: string;
+    totalConsiderationVnd?: string;
+    principalPaidVnd?: string;
+    premiumPaidVnd?: string;
+    monthlyWaitingRatePercent?: string;
+    remainingMinorityTokens?: string;
+    claimableAmount: string;
+    claimableTokenAmount: string;
+    claimablePeriods: number;
+  } | null;
+  escrow?: {
+    status: number;
+    assetToken: string;
+    buyer: string;
+    totalTokens: string;
+    lockedTokens: string;
+    totalConsideration: string;
+    paidConsideration: string;
+    depositAmount: string;
+    totalInstallments: number;
+    installmentsPaid: number;
+    fundingDeadline: number;
+    nextDueAt: number;
+    sellerRoot: string;
+    depositFunded: boolean;
+  };
+  seller?: {
+    lockedTokens: string;
+    claimablePayment: string;
+    tokensRefunded: boolean;
+  };
 };
 
 export type CreateProposalRequest = {
   title: string;
   description: string;
-  endsAt: string;
+  snapshotDate: string;
+  endDate: string;
+  type?: 'GENERAL' | 'INCREASE_RELEASED_TOKEN_PERCENTAGE';
+  category?: 'GENERAL' | 'MAINTENANCE' | 'OPERATOR_CHANGE' | 'RENT_CHANGE' | 'ASSET_SALE';
 };
 
 export type VoteProposalRequest = {
-  vote: 'YES' | 'NO';
+  isFor: boolean;
 };
 
 export const daoApi = {
@@ -35,16 +88,16 @@ export const daoApi = {
     assetId: string,
     payload: CreateProposalRequest,
     accessToken?: string,
-  ): Promise<DaoProposal> => {
+  ): Promise<{ success: boolean; data: DaoProposal }> => {
     if (isServer) {
       const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-      return apiClient.post<DaoProposal>(`assets/${assetId}/proposals`, payload, {
+      return apiClient.post<{ success: boolean; data: DaoProposal }>(`assets/${assetId}/proposals`, payload, {
         headers,
         skipAuth: !accessToken,
       });
     }
 
-    return apiClient.post<DaoProposal>(`/api/assets/${assetId}/proposals`, payload, {
+    return apiClient.post<{ success: boolean; data: DaoProposal }>(`/api/assets/${assetId}/proposals`, payload, {
       baseUrl: CLIENT_BASE_URL,
       skipAuth: false,
     });
@@ -54,10 +107,13 @@ export const daoApi = {
     proposalId: string,
     payload: VoteProposalRequest,
     accessToken?: string,
-  ): Promise<{ success: boolean; proposal: DaoProposal }> => {
+  ): Promise<{ success: boolean; data: { isFor: boolean; votingPower: string | number } }> => {
     if (isServer) {
       const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-      return apiClient.post<{ success: boolean; proposal: DaoProposal }>(
+      return apiClient.post<{
+        success: boolean;
+        data: { isFor: boolean; votingPower: string | number };
+      }>(
         `proposals/${proposalId}/vote`,
         payload,
         {
@@ -67,7 +123,10 @@ export const daoApi = {
       );
     }
 
-    return apiClient.post<{ success: boolean; proposal: DaoProposal }>(
+    return apiClient.post<{
+      success: boolean;
+      data: { isFor: boolean; votingPower: string | number };
+    }>(
       `/api/proposals/${proposalId}/vote`,
       payload,
       {
@@ -77,37 +136,74 @@ export const daoApi = {
     );
   },
 
-  // Fallback mock proposals generator since backend might have sparse proposals
-  getProposals: async (assetId: string): Promise<DaoProposal[]> => {
-    // In a production app, we would query the backend, but since this is spot-only,
-    // we provide a highly realistic mock fallback that pulls from local mock assets
-    return [
-      {
-        id: 'prop-1',
-        assetId,
-        title: 'Upgrade custody security protocol to Multi-Sig v2',
-        description: 'Proposal to transition the core custody wallet from a 2-of-3 scheme to a premium 3-of-5 multi-sig setup including Coinbase Custody and Fireblocks to enhance security for underlying RWA.',
-        status: 'PENDING',
-        yesVotes: 124500,
-        noVotes: 12000,
-        thresholdPercent: 66,
-        createdById: 'user-admin',
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        endsAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 'prop-2',
-        assetId,
-        title: 'Distribute extraordinary rental yield dividend',
-        description: 'Due to premium lease renewals at the London Residential Suites (LND-01), the net rental pool has accumulated a surplus. This proposal aims to distribute a one-time bonus dividend of 0.05 USDC per token.',
-        status: 'PASSED',
-        yesVotes: 250000,
-        noVotes: 4500,
-        thresholdPercent: 51,
-        createdById: 'user-admin',
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        endsAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ];
+  getAllProposals: async (accessToken?: string): Promise<DaoProposal[]> => {
+    if (isServer) {
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+      return apiClient.get<DaoProposal[]>(`proposals`, undefined, {
+        headers,
+        skipAuth: !accessToken,
+      });
+    }
+
+    return apiClient.get<DaoProposal[]>(`/api/proposals`, undefined, {
+      baseUrl: CLIENT_BASE_URL,
+      skipAuth: false,
+    });
   },
+
+  getProposals: async (
+    assetId: string,
+    accessToken?: string,
+  ): Promise<DaoProposal[]> => {
+    if (isServer) {
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+      return apiClient.get<DaoProposal[]>(`assets/${assetId}/proposals`, undefined, {
+        headers,
+        skipAuth: !accessToken,
+      });
+    }
+
+    return apiClient.get<DaoProposal[]>(`/api/assets/${assetId}/proposals`, undefined, {
+      baseUrl: CLIENT_BASE_URL,
+      skipAuth: false,
+    });
+  },
+
+  getBuyoutState: async (
+    proposalId: string,
+  ): Promise<{ success: boolean; data: BuyoutEscrowState }> =>
+    apiClient.get<{ success: boolean; data: BuyoutEscrowState }>(
+      `/api/proposals/${proposalId}/buyout`,
+      undefined,
+      { baseUrl: CLIENT_BASE_URL, skipAuth: false },
+    ),
+
+  executeBuyout: async (
+    proposalId: string,
+    challengeId: string,
+  ): Promise<{ success: boolean; data: unknown }> =>
+    apiClient.post<{ success: boolean; data: unknown }>(
+      `/api/proposals/${proposalId}/buyout/execute`,
+      { challengeId },
+      { baseUrl: CLIENT_BASE_URL, skipAuth: false },
+    ),
+
+  payBuyoutInstallment: async (
+    proposalId: string,
+    challengeId: string,
+  ): Promise<{ success: boolean; data: unknown }> =>
+    apiClient.post<{ success: boolean; data: unknown }>(
+      `/api/proposals/${proposalId}/buyout/installments`,
+      { challengeId },
+      { baseUrl: CLIENT_BASE_URL, skipAuth: false },
+    ),
+
+  claimBuyoutProceeds: async (
+    proposalId: string,
+  ): Promise<{ success: boolean; data: unknown }> =>
+    apiClient.post<{ success: boolean; data: unknown }>(
+      `/api/proposals/${proposalId}/buyout/claims`,
+      {},
+      { baseUrl: CLIENT_BASE_URL, skipAuth: false },
+    ),
 };

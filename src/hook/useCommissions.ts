@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { commissionService } from '@/services/commissionService';
@@ -26,7 +26,7 @@ export const useCommissionStats = () => {
         .filter((r) => r.status === 'CLAIMED')
         .reduce((sum, r) => sum + Number(r.amount), 0);
 
-      const totalUSDT = stats.totalByCurrency?.['USDT'] || (unclaimed + claimed);
+      const totalVNDT = stats.totalByCurrency?.['VNDT'] || (unclaimed + claimed);
       
       // Find unique referrers/invitees
       const uniqueSourceUsers = new Set(rewards.map((r) => r.sourceUserId));
@@ -34,7 +34,7 @@ export const useCommissionStats = () => {
       return {
         totalReferees: uniqueSourceUsers.size,
         activeReferees: uniqueSourceUsers.size,
-        totalCommissions: String(totalUSDT),
+        totalCommissions: String(totalVNDT),
         claimedCommissions: String(claimed),
         unclaimedCommissions: String(unclaimed),
       };
@@ -80,7 +80,7 @@ export const useClaimCommissions = () => {
       showSuccess(
         t('commissions.claimSuccessTitle', { defaultValue: 'Rewards Claimed' }),
         t('commissions.claimSuccessMessage', {
-          defaultValue: `Successfully generated claim signature for $${data.totalAmount} in commission rewards!`,
+          defaultValue: `Successfully generated claim signature for VNĐ${data.totalAmount} in commission rewards!`,
         }),
       );
       // Invalidate stats, rewards, and balances
@@ -97,3 +97,4 @@ export const useClaimCommissions = () => {
     },
   });
 };
+

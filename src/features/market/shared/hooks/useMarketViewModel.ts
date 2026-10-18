@@ -89,6 +89,22 @@ export function useMarketViewModel() {
       );
     }
 
+    if (tabId === 'rental') {
+      return filterMarketRows({
+        marketOpenOnly: options?.marketOpenOnly,
+        rows,
+        search: options?.search,
+      }).filter((row) => Boolean(row.rentalStatus));
+    }
+
+    if (tabId === 'buyout') {
+      return filterMarketRows({
+        marketOpenOnly: options?.marketOpenOnly,
+        rows,
+        search: options?.search,
+      }).filter((row) => row.tradingStatus === 'BUYOUT_ACTIVE');
+    }
+
     const category = categories?.find((item) => item.name === tabId);
 
     return filterMarketRows({

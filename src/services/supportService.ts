@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+﻿import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 import { SupportMessageType, SupportTicketStatus, SupportTicketSubject } from '@/types/support';
 
@@ -155,3 +155,4 @@ export const supportApi = {
     });
   },
 };
+

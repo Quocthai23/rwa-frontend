@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
 import { ArrowLeft, CameraPlus, XClose, SearchLg } from '@untitledui/icons';
@@ -423,7 +423,7 @@ export function EditPostSheet({
                     onClick={() => setIsEmojiPickerOpen((prev) => !prev)}
                     aria-label={t('discover.web.addEmoji', 'Add emoji')}
                   >
-                    <span aria-hidden>😊</span>
+                    <span aria-hidden>đŸ˜</span>
                   </Button>
                 </div>
 
@@ -640,3 +640,4 @@ export function EditPostSheet({
     </>
   );
 }
+

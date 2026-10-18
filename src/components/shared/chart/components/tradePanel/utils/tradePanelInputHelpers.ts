@@ -1,4 +1,4 @@
-import Decimal from 'decimal.js';
+﻿import Decimal from 'decimal.js';
 
 import type { DecimalValue, NullableDecimalValue } from '@/types/decimal';
 
@@ -344,3 +344,4 @@ export const adjustQuantityByDelta = (
   setIsQuantityTouched(true);
   setQuantity(next.toFixed(2));
 };
+

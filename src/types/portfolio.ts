@@ -8,6 +8,8 @@ export type PortfolioItem = {
   symbol: string;
   name: string;
   quantity: string;
+  availableQuantity?: string;
+  lockedQuantity?: string;
   averageBuyPrice: string;
   currentPrice: string;
   totalValue: string; // quantity * currentPrice

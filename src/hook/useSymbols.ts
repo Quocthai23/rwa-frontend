@@ -9,16 +9,20 @@ export function useSymbols(symbols: SymbolSubscription[], enabled: boolean) {
   const subscribeSymbol = useRealtimeStore((s) => s.subscribeSymbol);
   const unsubscribeSymbol = useRealtimeStore((s) => s.unsubscribeSymbol);
 
-  const stableItems = React.useMemo(() => {
-    return symbols
+  // Callers commonly build this array inline. Canonicalize by value so an
+  // equivalent array does not tear down and recreate subscriptions on every
+  // render (the teardown itself updates Zustand and can otherwise loop).
+  const itemsKey = JSON.stringify(
+    symbols
       .map((item) => (typeof item === 'string' ? { symbol: item, id: '' } : item))
       .filter((item) => Boolean(item.symbol))
-      .sort((a, b) => a.symbol.localeCompare(b.symbol));
-  }, [symbols]);
+      .sort((a, b) => a.symbol.localeCompare(b.symbol) || a.id.localeCompare(b.id)),
+  );
 
-  const itemsKey = React.useMemo(() => {
-    return stableItems.map((i) => `${i.symbol}:${i.id}`).join('|');
-  }, [stableItems]);
+  const stableItems = React.useMemo(
+    () => JSON.parse(itemsKey) as Array<{ symbol: string; id: string }>,
+    [itemsKey],
+  );
 
   React.useEffect(() => {
     if (!enabled || stableItems.length === 0) return;

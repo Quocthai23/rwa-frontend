@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+﻿import { memo, useMemo } from 'react';
 
 import { ToggleFavouriteAsset } from '@/components/shared/components/ToggleFavouriteAsset/ToggleFavouriteAsset';
 import { Button } from '@/components/shared/atoms/button';
@@ -130,3 +130,4 @@ function ItemSymbol({
 }
 
 export default memo(ItemSymbol);
+

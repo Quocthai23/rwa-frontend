@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Bookmark,
@@ -1025,7 +1025,7 @@ export function DiscoverPostCard({
           ))}
           {post.status === 'PENDING' ? (
             <div className="absolute inset-0 z-30 flex items-center justify-center rounded-sm bg-black/60 px-4 text-center text-sm font-semibold text-white sm:text-base">
-              {t('discover.web.pendingApproval', 'Đang chờ phê duyệt')}
+              {t('discover.web.pendingApproval', 'Äang chá» phĂª duyá»‡t')}
             </div>
           ) : null}
         </div>
@@ -1633,7 +1633,7 @@ export function DiscoverPostCard({
                   onClick={() => setIsCommentEmojiPickerOpen((prev) => !prev)}
                   aria-label={t('discover.web.addEmoji', 'Add emoji')}
                 >
-                  <span aria-hidden>😊</span>
+                  <span aria-hidden>đŸ˜</span>
                 </Button>
                 {isCommentEmojiPickerOpen ? (
                   <div className="absolute -right-30 bottom-10 z-50">
@@ -1916,3 +1916,4 @@ export function DiscoverPostCard({
     </article>
   );
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Copy07, LinkExternal01 } from '@untitledui/icons';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import { useToast } from '@/hook/useToast';
 
 type WithdrawPendingResultProps = {
   accountId: string;
-  address: string;
+  address?: string;
   amount: string;
   networkFee: number;
 };
@@ -72,26 +72,16 @@ export default function WithdrawPendingResult({
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex h-14 w-14 items-center justify-center">
-            <Image src="/assets/images/tether.png" alt="USDT" width={60} height={60} />
+            <Image src="/assets/images/tether.png" alt="VNDT" width={60} height={60} />
           </div>
-          <h3 className="text-display-sm leading-none text-green-500">+ {amountReceived} USDT</h3>
+          <h3 className="text-display-sm leading-none text-green-500">+ {amountReceived} VNDT</h3>
         </div>
 
         <div className="space-y-6">
           <Row label={t('transactionHistory.from')} value={<span>{short(accountId)}</span>} />
-          <Row
-            label={t('transactionHistory.to')}
-            value={
-              <button
-                type="button"
-                className="inline-flex items-center gap-1"
-                onClick={() => handleCopy(address)}
-              >
-                <span>{short(address)}</span>
-                <Copy07 size={14} className="text-muted-foreground" />
-              </button>
-            }
-          />
+          {address ? (
+            <Row label={t('withdraw.detail.walletAddress')} value={<span>{short(address)}</span>} />
+          ) : null}
           <Row label={t('withdraw.success.time')} value={timeLabel} />
           <Row label={t('withdraw.success.type')} value={t('features.withdraw')} />
           <Row
@@ -112,3 +102,4 @@ export default function WithdrawPendingResult({
     </div>
   );
 }
+

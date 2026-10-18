@@ -1,9 +1,9 @@
-import { apiClient } from './apiClient';
+﻿import { apiClient } from './apiClient';
 import type { CommissionStats, CommissionReward, ClaimCommissionResponse } from '@/types/commission';
 
 export const commissionService = {
   /**
-   * Lấy thống kê tổng quan về hoa hồng của người dùng
+   * Láº¥y thá»‘ng kĂª tá»•ng quan vá» hoa há»“ng cá»§a ngÆ°á»i dĂ¹ng
    */
   getCommissionStats: async (authHeader?: string): Promise<CommissionStats> => {
     const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
@@ -11,7 +11,7 @@ export const commissionService = {
   },
 
   /**
-   * Lấy danh sách lịch sử/phần thưởng hoa hồng chi tiết
+   * Láº¥y danh sĂ¡ch lá»‹ch sá»­/pháº§n thÆ°á»Ÿng hoa há»“ng chi tiáº¿t
    */
   getCommissionRewards: async (
     params?: { skip?: number; take?: number },
@@ -26,7 +26,7 @@ export const commissionService = {
   },
 
   /**
-   * Rút toàn bộ hoa hồng đang chờ duyệt (Pending) vào số dư ví
+   * RĂºt toĂ n bá»™ hoa há»“ng Ä‘ang chá» duyá»‡t (Pending) vĂ o sá»‘ dÆ° vĂ­
    */
   claimCommissions: async (
     rewardIds?: string[],
@@ -40,3 +40,4 @@ export const commissionService = {
     );
   },
 };
+

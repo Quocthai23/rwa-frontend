@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+﻿import { NextRequest } from 'next/server';
 
 import { apiClient } from '@/services/apiClient';
 import type { PresignedUrlResponse } from '@/services/imageService';
@@ -19,3 +19,4 @@ export async function GET(request: NextRequest) {
     'images-presigned-url-failed',
   );
 }
+

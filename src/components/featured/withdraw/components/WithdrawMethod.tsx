@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -35,7 +35,7 @@ const WithdrawMethod = ({ onClose }: { onClose: () => void }) => {
       icon: '/assets/images/tether.png',
       id: 'tether-1',
       limit: t('withdraw.method.limit'),
-      name: t('withdraw.method.usdt'),
+      name: t('withdraw.method.VNDT'),
       processingTime: t('withdraw.method.instantTime15Min'),
     },
     {
@@ -43,7 +43,7 @@ const WithdrawMethod = ({ onClose }: { onClose: () => void }) => {
       icon: '/assets/images/tether.png',
       id: 'tether-2',
       limit: t('withdraw.method.limit'),
-      name: t('withdraw.method.usdt'),
+      name: t('withdraw.method.VNDT'),
       processingTime: t('withdraw.method.instantTime15Min'),
     },
   ];
@@ -80,7 +80,7 @@ const WithdrawMethod = ({ onClose }: { onClose: () => void }) => {
                 <span className="bg-card absolute -right-1 -bottom-1 rounded-full p-0.5">
                   <Image
                     src="/assets/images/tether-1.png"
-                    alt={t('withdraw.method.usdtErc20Alt')}
+                    alt={t('withdraw.method.VNDTErc20Alt')}
                     width={14}
                     height={14}
                   />
@@ -90,7 +90,7 @@ const WithdrawMethod = ({ onClose }: { onClose: () => void }) => {
                 <span className="bg-card absolute -right-1 -bottom-1 rounded-full p-0.5">
                   <Image
                     src="/assets/images/tether-2.png"
-                    alt={t('withdraw.method.usdtBep20Alt')}
+                    alt={t('withdraw.method.VNDTBep20Alt')}
                     width={14}
                     height={14}
                   />
@@ -122,3 +122,4 @@ const WithdrawMethod = ({ onClose }: { onClose: () => void }) => {
 };
 
 export default WithdrawMethod;
+

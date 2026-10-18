@@ -1,4 +1,4 @@
-import { useTheme } from '@/theme';
+﻿import { useTheme } from '@/theme';
 import { InfoCircle } from '@untitledui/icons';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useTranslation } from 'react-i18next';
@@ -229,3 +229,4 @@ function PriceRangeBar({
     </div>
   );
 }
+

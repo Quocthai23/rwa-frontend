@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useRef } from 'react';
 
@@ -79,3 +79,4 @@ function HistoryDateRangePicker({ onRangeChange, value }: HistoryDateRangePicker
 }
 
 export default HistoryDateRangePicker;
+

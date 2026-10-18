@@ -8,9 +8,11 @@ import { getPortfolioOverview } from '@/services/portfolioService';
  * The BE returns { data: PortfolioOverview, success: true } which is passed through as-is.
  */
 export async function GET(request: NextRequest) {
+  const accountId = request.nextUrl.searchParams.get('accountId');
   return withServerTokenRefresh(
     request,
-    (token) => getPortfolioOverview(undefined, token),
+    (token) =>
+      getPortfolioOverview(accountId ? { accountId } : undefined, token),
     'portfolio-overview-fetch-failed',
   );
 }

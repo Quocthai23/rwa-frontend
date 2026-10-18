@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Bell01, CheckCircle, X } from '@untitledui/icons';
 import { useRouter } from 'next/navigation';
@@ -303,3 +303,4 @@ export default function NotificationWebScreen({
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+﻿import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
 const isServer = typeof window === 'undefined';
@@ -19,26 +19,32 @@ export type RedemptionRequest = {
 export const redemptionApi = {
   requestRedeem: async (
     assetId: string,
+    accountId: string,
     accessToken?: string,
   ): Promise<RedemptionRequest> => {
     if (isServer) {
       const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-      return apiClient.post<RedemptionRequest>(`assets/${assetId}/redeem`, undefined, {
-        headers,
-        skipAuth: !accessToken,
-      });
+      return apiClient.post<RedemptionRequest>(
+        `assets/${assetId}/redeem`,
+        { accountId },
+        {
+          headers,
+          skipAuth: !accessToken,
+        },
+      );
     }
 
-    return apiClient.post<RedemptionRequest>(`/api/assets/${assetId}/redeem`, undefined, {
-      baseUrl: CLIENT_BASE_URL,
-      skipAuth: false,
-    });
+    return apiClient.post<RedemptionRequest>(
+      `/api/assets/${assetId}/redeem`,
+      { accountId },
+      {
+        baseUrl: CLIENT_BASE_URL,
+        skipAuth: false,
+      },
+    );
   },
 
-  getMyRedemptions: async (
-    assetId: string,
-    accessToken?: string,
-  ): Promise<RedemptionRequest[]> => {
+  getMyRedemptions: async (assetId: string, accessToken?: string): Promise<RedemptionRequest[]> => {
     if (isServer) {
       const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
       return apiClient.get<RedemptionRequest[]>(`assets/${assetId}/redemptions/me`, undefined, {

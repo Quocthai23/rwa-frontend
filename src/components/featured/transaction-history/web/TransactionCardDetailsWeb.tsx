@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Check,
@@ -311,3 +311,4 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
     </Sheet>
   );
 }
+

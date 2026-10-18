@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Check, Eye, EyeOff } from '@untitledui/icons';
 import { useCallback, useMemo, useState } from 'react';
@@ -40,7 +40,7 @@ export default function ChangePasswordContent({ hasPassword }: ChangePasswordCon
     passwordsMatch,
   } = useMemo(() => {
     const min = newPassword.length >= 8;
-    const special = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+    const special = /[!@#VNĐ%^&*(),.?":{}|<>]/.test(newPassword);
     const upper = /[A-Z]/.test(newPassword);
     const lower = /[a-z]/.test(newPassword);
     const digit = /\d/.test(newPassword);
@@ -105,7 +105,7 @@ export default function ChangePasswordContent({ hasPassword }: ChangePasswordCon
       );
       return;
     }
-    if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(newPassword)) {
+    if (!/(?=.*[!@#VNĐ%^&*(),.?":{}|<>])/.test(newPassword)) {
       showError(
         t('security.resetPassword.changeFailedTitle'),
         t('security.resetPassword.passwordNeedsSpecial'),
@@ -386,3 +386,4 @@ function ValidationItem({ isValid, text }: { isValid: boolean; text: string }) {
     </div>
   );
 }
+

@@ -1,11 +1,9 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 
 import { CHAINS } from '@/constants/chain';
 import { IS_APP_PRODUCTION } from '@/constants/env';
-import { useAccountStore } from '@/store/useAccountStore';
-import { useCreateWallet } from '@/hook/payment/useCreateWallet';
 import { Button } from '@/components/shared/atoms/button';
 import { useToast } from '@/hook/useToast';
 import { useTranslation } from 'react-i18next';
@@ -20,21 +18,32 @@ type Method = {
   processingTime: string;
 };
 
-const DepositMethod = ({ onOpenQr }: { onOpenQr: (address: string, network: string) => void }) => {
+const DepositMethod = ({
+  onOpenPayos,
+}: {
+  onOpenQr: (address: string, network: string) => void;
+  onOpenPayos?: () => void;
+}) => {
   const { t } = useTranslation();
   const { showInfo } = useToast();
-  const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const ethereumChainId = IS_APP_PRODUCTION
     ? CHAINS.ethereumMainnet.chainId
     : CHAINS.sepolia.chainId;
   const bscChainId = IS_APP_PRODUCTION ? CHAINS.bscMainnet.chainId : CHAINS.bscTestnet.chainId;
-  const { isPending: isCreatingWallet, mutate: createWallet } = useCreateWallet();
-
-  const isPending = isCreatingWallet;
+  const isPending = false;
 
   const methods: Method[] = [
     {
+      chainId: 0, // 0 for PayOS
+      icon: '/assets/images/bank.svg',
+      id: 'payos-bank',
+      limit: 'Tá»‘i thiá»ƒu 10,000 VND',
+      name: 'Chuyá»ƒn khoáº£n NgĂ¢n hĂ ng (VNDT)',
+      processingTime: 'Tá»©c thĂ¬ (1-5 phĂºt)',
+    },
+    {
       chainId: ethereumChainId,
+      comingSoon: true,
       icon: '/assets/images/tether.png',
       id: 'tether-1',
       limit: t('topUp.methods.limit'),
@@ -43,6 +52,7 @@ const DepositMethod = ({ onOpenQr }: { onOpenQr: (address: string, network: stri
     },
     {
       chainId: bscChainId,
+      comingSoon: true,
       icon: '/assets/images/tether.png',
       id: 'tether-2',
       limit: t('topUp.methods.limit'),
@@ -65,24 +75,10 @@ const DepositMethod = ({ onOpenQr }: { onOpenQr: (address: string, network: stri
       showInfo(t('common.comingSoonTitle'), t('topUp.comingSoonMethodMessage'));
       return;
     }
-    handleCreateWallet(chainId);
-  };
-
-  const handleCreateWallet = (chainId: number) => {
-    if (!selectedAccount) return;
-
-    createWallet(
-      {
-        address: '',  // Will be filled after wallet creation — address is returned by BE
-        chainId: String(chainId),
-        type: 'EVM',
-      },
-      {
-        onSuccess: (data) => {
-          onOpenQr(data.wallet.address, String(chainId));
-        },
-      },
-    );
+    if (chainId === 0) {
+      if (onOpenPayos) onOpenPayos();
+      return;
+    }
   };
 
   return (
@@ -92,11 +88,11 @@ const DepositMethod = ({ onOpenQr }: { onOpenQr: (address: string, network: stri
       </h3>
 
       <div className="overflow-y-auto p-4">
-        {methods.map((method, index) => {
+        {methods.map((method) => {
           const icon =
-            index === 0
-              ? '/assets/images/usdt.svg'
-              : index === 1
+            method.id === 'tether-1'
+              ? '/assets/images/VNDT.svg'
+              : method.id === 'tether-2'
                 ? '/assets/images/usdc.svg'
                 : method.icon;
 

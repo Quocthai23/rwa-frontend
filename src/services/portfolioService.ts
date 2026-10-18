@@ -1,4 +1,4 @@
-import { PORTFOLIO_ENDPOINTS } from '@/constants/api';
+﻿import { PORTFOLIO_ENDPOINTS } from '@/constants/api';
 import type { PortfolioItem, PortfolioOverview, PortfoliosResponse } from '@/types';
 import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
@@ -7,10 +7,18 @@ const isServer = typeof window === 'undefined';
 
 export type GetPortfolioParams = {
   accountId: string;
+  assetId?: string;
   take?: number;
   skip?: number;
   cursor?: string;
-  sortBy?: 'symbol' | 'quantity' | 'currentPrice' | 'totalValue' | 'profitLoss' | 'averageBuyPrice' | 'category';
+  sortBy?:
+    | 'symbol'
+    | 'quantity'
+    | 'currentPrice'
+    | 'totalValue'
+    | 'profitLoss'
+    | 'averageBuyPrice'
+    | 'category';
   sortDir?: 'desc' | 'asc';
 };
 
@@ -35,9 +43,13 @@ export const getPortfolioOverview = async (
     return response;
   }
 
-  const res = await apiClient.get<PortfolioOverview>(PORTFOLIO_ENDPOINTS.OVERVIEW, params, {
-    baseUrl: CLIENT_BASE_URL,
-  });
+  const res = await apiClient.get<PortfolioOverview>(
+    '/api' + PORTFOLIO_ENDPOINTS.OVERVIEW,
+    params,
+    {
+      baseUrl: CLIENT_BASE_URL,
+    },
+  );
   return res;
 };
 
@@ -62,9 +74,14 @@ export const getPortfolioItems = async (
     return response;
   }
 
-  const res = await apiClient.get<PortfoliosResponse>(PORTFOLIO_ENDPOINTS.ITEMS, params, {
-    baseUrl: CLIENT_BASE_URL,
-  }, true); // haveTotal: return { data, total, nextCursor }
+  const res = await apiClient.get<PortfoliosResponse>(
+    '/api' + PORTFOLIO_ENDPOINTS.ITEMS,
+    params,
+    {
+      baseUrl: CLIENT_BASE_URL,
+    },
+    true,
+  ); // haveTotal: return { data, total, nextCursor }
   return res;
 };
 
@@ -88,7 +105,7 @@ export const getPortfolioHistory = async (
     return response;
   }
 
-  const res = await apiClient.get(PORTFOLIO_ENDPOINTS.HISTORY, params, {
+  const res = await apiClient.get('/api' + PORTFOLIO_ENDPOINTS.HISTORY, params, {
     baseUrl: CLIENT_BASE_URL,
   });
   return res;

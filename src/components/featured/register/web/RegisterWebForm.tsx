@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
@@ -66,7 +66,7 @@ export default function RegisterWebForm() {
   }, [hasHydratedAuth, isAuthenticated, router]);
   const shouldHideForAuthenticatedUser = hasHydratedAuth && isAuthenticated;
 
-  // ── Email step ──────────────────────────────────────────────────────────────
+  // â”€â”€ Email step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
 
@@ -128,7 +128,7 @@ export default function RegisterWebForm() {
     }
   };
 
-  // ── OTP step ────────────────────────────────────────────────────────────────
+  // â”€â”€ OTP step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [otp, setOtp] = useState('');
   const [isOtpLoading, setIsOtpLoading] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
@@ -272,7 +272,7 @@ export default function RegisterWebForm() {
     }
   };
 
-  // ── Password step ───────────────────────────────────────────────────────────
+  // â”€â”€ Password step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -290,7 +290,7 @@ export default function RegisterWebForm() {
     useMemo(
       () => ({
         hasMinLength: password.length >= 8,
-        hasSpecialChar: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/?]/.test(password),
+        hasSpecialChar: /[!@#VNĐ%^&*()_+\-=[\]{};':"\\|,.<>\/?]/.test(password),
         hasUpperCase: /[A-Z]/.test(password),
         hasLowerCase: /[a-z]/.test(password),
         hasDigit: /\d/.test(password),
@@ -403,7 +403,7 @@ export default function RegisterWebForm() {
     }
   };
 
-  // ── Shared header for inner steps ───────────────────────────────────────────
+  // â”€â”€ Shared header for inner steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const StepHeader = ({ title, onBack }: { title: string; onBack: () => void }) => (
     <>
       <div className="mb-6 flex items-center justify-between">
@@ -430,7 +430,7 @@ export default function RegisterWebForm() {
     </>
   );
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (shouldHideForAuthenticatedUser) return null;
 
   return (
@@ -439,7 +439,7 @@ export default function RegisterWebForm() {
         <AuthLeftPanel />
 
         <div className="dark:bg-card dark:text-foreground flex flex-1 flex-col overflow-y-auto bg-white p-8 md:p-12">
-          {/* ── Start step ──────────────────────────────────────────────── */}
+          {/* â”€â”€ Start step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {step === RegisterStep.Start && (
             <>
               <div className="mb-6 flex items-center justify-between">
@@ -505,7 +505,7 @@ export default function RegisterWebForm() {
             </>
           )}
 
-          {/* ── Email input step ─────────────────────────────────────────── */}
+          {/* â”€â”€ Email input step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {step === RegisterStep.Input && (
             <form className="flex flex-1 flex-col" onSubmit={handleEmailContinue}>
               <StepHeader
@@ -543,7 +543,7 @@ export default function RegisterWebForm() {
             </form>
           )}
 
-          {/* ── OTP verification step ────────────────────────────────────── */}
+          {/* â”€â”€ OTP verification step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {step === RegisterStep.VerifyOtp && (
             <form className="flex flex-1 flex-col" onSubmit={handleOtpSubmit}>
               <StepHeader
@@ -612,7 +612,7 @@ export default function RegisterWebForm() {
             </form>
           )}
 
-          {/* ── Create password step ─────────────────────────────────────── */}
+          {/* â”€â”€ Create password step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {step === RegisterStep.CreatePassword && (
             <div className="flex flex-1 flex-col">
               <StepHeader
@@ -747,3 +747,4 @@ export default function RegisterWebForm() {
     </div>
   );
 }
+

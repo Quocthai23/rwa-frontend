@@ -15,7 +15,7 @@ import { useToast } from '@/hook/useToast';
 import { localizeApiError } from '@/i18n/apiErrors';
 
 const EMAIL_REGEX =
-  /^(?!\.)(?!.*\.\.)[A-Za-z0-9_'+\-\.]*[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/;
+  /^(?!\.)(?!.*\.\.)[A-Za-z0-9_'+\-\.]*[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/i;
 
 export function useLoginFormController() {
   const { t } = useTranslation();
@@ -216,3 +216,4 @@ export function useLoginFormController() {
     handleGoogleLogin,
   };
 }
+

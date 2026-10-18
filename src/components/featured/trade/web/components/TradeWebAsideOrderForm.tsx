@@ -15,13 +15,6 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/shared/atoms/button';
 import { Input } from '@/components/shared/atoms/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/shared/atoms/select';
 import { ORDER_SIDES, OrderStatus } from '@/types/orders';
 import { useCreateOrder } from '@/hook/orders/useCreateOrder';
 import { useToast } from '@/hook/useToast';
@@ -45,7 +38,7 @@ import { useAssetById } from '@/hook/useAssets';
 import { formatBalance } from '@/utils/currency';
 import { Minus, Plus } from '@untitledui/icons';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
-import { useAccountBalance } from '@/hook/useAccountBalance';
+import { usePortfolioItem } from '@/hook/usePortfolio';
 import { computeTradePanelLimitStopFlags } from '@/components/shared/chart/components/web/tradePanel/utils/tradePanelLimitStopFlags';
 
 export type TradeWebAsideOrderFormHandle = {
@@ -67,6 +60,7 @@ type TradeWebAsideOrderFormProps = {
   orderSide: 'buy' | 'sell';
   oneClickMode?: boolean;
   asideLimitMode?: boolean;
+  tradingLocked?: boolean;
   onAsideQuantityChange?: (quantity: string) => void;
 };
 
@@ -83,6 +77,7 @@ export const TradeWebAsideOrderForm = forwardRef<
     orderSide: orderSideProp,
     oneClickMode = false,
     asideLimitMode = false,
+    tradingLocked = false,
     onAsideQuantityChange,
   },
   ref,
@@ -92,9 +87,7 @@ export const TradeWebAsideOrderForm = forwardRef<
   const { isConnected, isReconnecting } = useMarketSocketStore();
   const canTrade = navigator.onLine && isConnected && !isReconnecting;
   const rt = useMarketSocketStore((s) => s.rtBySymbol?.[symbol]);
-  const rtBySymbol = useMarketSocketStore((s) => s.rtBySymbol);
   const { data: symbolAsset } = useAssetById(symbol ?? '');
-  const contractSizeNumber = toPositiveAssetNumber(symbolAsset?.contractSize, 100);
 
   const user = useAuthStore((s) => s.user);
   const { showError, showSuccess } = useToast();
@@ -151,7 +144,13 @@ export const TradeWebAsideOrderForm = forwardRef<
   }, [symbolAsset]);
 
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
-  const { data: accountBalance } = useAccountBalance(selectedAccount?.id || '');
+  const { data: portfolioItem } = usePortfolioItem({
+    accountId: selectedAccount?.id || '',
+    assetId: symbolAsset?.id,
+  });
+  const baseAvailableQuantity = Number(
+    portfolioItem?.availableQuantity ?? portfolioItem?.quantity ?? 0,
+  );
   const sellPrice = toFiniteNumberFromNumberish(rt?.bid) ?? 0;
   const buyPrice = toFiniteNumberFromNumberish(rt?.ask) ?? 0;
 
@@ -166,30 +165,46 @@ export const TradeWebAsideOrderForm = forwardRef<
   const rtAsk = (rt?.ask ?? buyPrice) || 0;
   const rtBid = (rt?.bid ?? sellPrice) || 0;
 
-  const { isBuyLimitInvalid, isSellLimitInvalid } =
-    useMemo(() => {
-      const limitFlags = computeTradePanelLimitStopFlags({
-        activeTab,
-        limitPriceNumber,
-        rtAsk,
-        rtBid,
-        takeProfitNumber: null,
-        stopLossNumber: null,
-        triggerType: 'price',
-      });
-
-      return {
-        isBuyLimitInvalid: limitFlags.isBuyLimitInvalid,
-        isSellLimitInvalid: limitFlags.isSellLimitInvalid,
-      };
-    }, [
+  const { isBuyLimitInvalid, isSellLimitInvalid } = useMemo(() => {
+    const limitFlags = computeTradePanelLimitStopFlags({
       activeTab,
       limitPriceNumber,
       rtAsk,
       rtBid,
-    ]);
+      takeProfitNumber: null,
+      stopLossNumber: null,
+      triggerType: 'price',
+    });
+
+    return {
+      isBuyLimitInvalid: limitFlags.isBuyLimitInvalid,
+      isSellLimitInvalid: limitFlags.isSellLimitInvalid,
+    };
+  }, [activeTab, limitPriceNumber, rtAsk, rtBid]);
 
   const symbolDigit = symbolAsset?.digit ?? 2;
+  const priceStep = toPositiveAssetNumber(symbolAsset?.priceTick, 1 / 10 ** symbolDigit);
+
+  useEffect(() => {
+    if (activeTab !== 'Limit') return;
+
+    const sidePrice = transactionType === 'sell' ? sellPrice : buyPrice;
+    const referencePrice = sidePrice > 0 ? sidePrice : referencePriceNumber;
+    if (!Number.isFinite(referencePrice) || referencePrice <= 0) return;
+
+    const alignedReferencePrice = Math.round(referencePrice / priceStep) * priceStep;
+    setLimitPrice(alignedReferencePrice.toFixed(symbolDigit));
+  }, [
+    activeTab,
+    buyPrice,
+    limitPrice,
+    priceStep,
+    referencePriceNumber,
+    sellPrice,
+    setLimitPrice,
+    symbolDigit,
+    transactionType,
+  ]);
 
   const minTradeSize = Math.max(toPositiveAssetNumber(symbolAsset?.minTradeSize, 0.01), 0.01);
   const maxTradeSize = Math.max(
@@ -218,9 +233,6 @@ export const TradeWebAsideOrderForm = forwardRef<
     }
   }, [symbol, defaultQuantityValue, isQuantityTouched, quantity]);
 
-  const quantitySuggestionStep = 1;
-  const quantityStepLarge = 5;
-
   const onAdjustQty = (delta: number) => {
     adjustQuantityByDelta(
       delta,
@@ -235,6 +247,7 @@ export const TradeWebAsideOrderForm = forwardRef<
 
   const handleSubmitOrder = useCallback(
     (sideOverride?: (typeof ORDER_SIDES)[keyof typeof ORDER_SIDES]) => {
+      if (tradingLocked) return;
       submitTradePanelOrder(sideOverride, {
         user,
         router,
@@ -255,9 +268,10 @@ export const TradeWebAsideOrderForm = forwardRef<
         symbol,
         sellPrice,
         buyPrice,
-        calculatedAvailableBalance: availableBalance.toNumber(),
+        quoteAvailableBalance: availableBalance.toNumber(),
+        baseAvailableQuantity,
+        accountId: selectedAccount?.id,
         limitPrice,
-        rt,
         createOrder,
         refetchOrders,
         tradePanelRef,
@@ -283,11 +297,13 @@ export const TradeWebAsideOrderForm = forwardRef<
       sellPrice,
       buyPrice,
       availableBalance,
+      baseAvailableQuantity,
+      selectedAccount?.id,
       limitPrice,
-      rt,
       createOrder,
       refetchOrders,
       tradePanelRef,
+      tradingLocked,
     ],
   );
 
@@ -336,46 +352,146 @@ export const TradeWebAsideOrderForm = forwardRef<
     [handleSubmitOrder, minTradeSize, maxTradeSize, volumeStepNum],
   );
 
-  const sellDisabled = activeTab === 'Limit' && isSellLimitInvalid;
-  const buyDisabled = activeTab === 'Limit' && isBuyLimitInvalid;
-
   const totalCost = useMemo(() => {
     const qty = Number(quantity);
     const priceForTotal =
-      activeTab === 'Market'
-        ? referencePriceNumber || currentPrice
-        : limitPriceNumber;
+      activeTab === 'Market' ? currentPrice || referencePriceNumber : limitPriceNumber;
     if (!Number.isFinite(qty) || qty <= 0 || priceForTotal <= 0) return 0;
     return qty * priceForTotal;
   }, [activeTab, quantity, referencePriceNumber, currentPrice, limitPriceNumber]);
+
+  const estimatedUnitPrice =
+    activeTab === 'Market' ? currentPrice || referencePriceNumber : limitPriceNumber;
+
+  const maxOrderValue = useMemo(() => {
+    const value = Number(symbolAsset?.maxOrderValue);
+    return Number.isFinite(value) && value > 0 ? value : Number.POSITIVE_INFINITY;
+  }, [symbolAsset?.maxOrderValue]);
+
+  const protectedUnitPrice = useMemo(() => {
+    if (activeTab === 'Limit') return limitPriceNumber;
+    const marketPrice = transactionType === 'sell' ? sellPrice : buyPrice;
+    if (marketPrice <= 0) return 0;
+    return marketPrice * (transactionType === 'sell' ? 0.99 : 1.01);
+  }, [activeTab, buyPrice, limitPriceNumber, sellPrice, transactionType]);
+
+  const protectedOrderValue = Number(quantity) * protectedUnitPrice;
+  const exceedsMaxOrderValue =
+    Number.isFinite(maxOrderValue) &&
+    Number.isFinite(protectedOrderValue) &&
+    protectedOrderValue > maxOrderValue;
+
+  const quantityNumber = Number(quantity);
+  const quantityInvalid =
+    !Number.isFinite(quantityNumber) ||
+    quantityNumber < minTradeSize ||
+    quantityNumber > maxTradeSize;
+  const marketPriceUnavailable =
+    activeTab === 'Market' && (transactionType === 'sell' ? sellPrice <= 0 : buyPrice <= 0);
+  const limitPriceInvalid =
+    activeTab === 'Limit' && (transactionType === 'sell' ? isSellLimitInvalid : isBuyLimitInvalid);
+  const insufficientBalance =
+    !quantityInvalid &&
+    (transactionType === 'sell'
+      ? quantityNumber > baseAvailableQuantity
+      : totalCost > availableBalance.toNumber());
+  const orderUnavailable =
+    tradingLocked ||
+    !canTrade ||
+    !selectedAccount?.id ||
+    !symbolAsset ||
+    quantityInvalid ||
+    marketPriceUnavailable ||
+    limitPriceInvalid ||
+    insufficientBalance ||
+    exceedsMaxOrderValue;
+  const submitDisabled = isCreatingOrder || isSubmitLocked || orderUnavailable;
+
+  const disabledReason = useMemo(() => {
+    if (tradingLocked)
+      return t('trade.buyoutTrading.buyerLockedShort', {
+        defaultValue: 'The acquirer cannot place buy or sell orders during the program.',
+      });
+    if (!canTrade)
+      return t('trade.orderForm.unavailableConnection', {
+        defaultValue: 'Trading connection is unavailable.',
+      });
+    if (!selectedAccount?.id)
+      return t('trade.orderForm.selectAccount', { defaultValue: 'Select a trading account.' });
+    if (quantityInvalid)
+      return t('trade.orderForm.invalidQuantity', { defaultValue: 'Enter a valid quantity.' });
+    if (activeTab === 'Limit' && limitPriceInvalid)
+      return t('trade.orderForm.enterLimitPrice', { defaultValue: 'Enter a valid limit price.' });
+    if (marketPriceUnavailable)
+      return t('trade.orderForm.noLiquidity', {
+        defaultValue: 'No matching market liquidity is available.',
+      });
+    if (insufficientBalance)
+      return transactionType === 'sell'
+        ? t('trade.orderForm.insufficientTokens', {
+            defaultValue: 'Insufficient available tokens.',
+          })
+        : t('trade.orderForm.insufficientCash', { defaultValue: 'Insufficient buying power.' });
+    if (exceedsMaxOrderValue)
+      return t('trade.errors.maxOrderValueExceeded', {
+        value: formatBalance(maxOrderValue),
+        defaultValue: 'The maximum value per order is limited. Please reduce the quantity.',
+      });
+    return null;
+  }, [
+    activeTab,
+    canTrade,
+    insufficientBalance,
+    limitPriceInvalid,
+    marketPriceUnavailable,
+    maxOrderValue,
+    quantityInvalid,
+    selectedAccount?.id,
+    t,
+    transactionType,
+    tradingLocked,
+    exceedsMaxOrderValue,
+  ]);
+
+  const setQuantityByPercent = (percent: number) => {
+    const balanceMaximum =
+      transactionType === 'sell'
+        ? baseAvailableQuantity
+        : protectedUnitPrice > 0
+          ? availableBalance.toNumber() / protectedUnitPrice
+          : 0;
+    const orderValueMaximum =
+      protectedUnitPrice > 0 && Number.isFinite(maxOrderValue)
+        ? maxOrderValue / protectedUnitPrice
+        : Number.POSITIVE_INFINITY;
+    const cappedMaximum = Math.min(balanceMaximum, orderValueMaximum, maxTradeSize);
+    const target = Math.floor((cappedMaximum * percent) / volumeStepNum) * volumeStepNum;
+    const next = Math.max(0, Math.min(maxTradeSize, target));
+    setIsQuantityTouched(true);
+    setQuantity(next > 0 ? next.toFixed(2) : '0.00');
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {!oneClickMode && (
-          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as (typeof TABS)[number])}>
-            <SelectTrigger
-              className={`'h-9 bg-card text-body-small-medium text-foreground focus-visible:ring-0', w-full min-w-0 border-none shadow-none`}
-            >
-              <SelectValue placeholder={t('trade.tabs.market')} />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              sideOffset={4}
-              align="start"
-              className="bg-sheet z-50 w-(--radix-select-trigger-width) min-w-(--radix-select-trigger-width) border-none"
-            >
-              {TABS.map((tab) => (
-                <SelectItem
-                  key={tab}
-                  value={tab}
-                  className="hover:bg-muted focus:bg-muted data-highlighted:bg-muted data-[state=checked]:text-primary-500 data-[state=checked]:[&_[data-slot=select-item-indicator]_svg]:text-primary-500 cursor-pointer transition-colors"
-                >
-                  <p className="text-body-small-medium">{getTabLabel(tab)}</p>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="bg-muted grid grid-cols-2 rounded-lg p-1">
+            {TABS.map((tab) => (
+              <Button
+                key={tab}
+                type="button"
+                variant="white-contained"
+                className={`h-9 rounded-md shadow-none ${
+                  activeTab === tab
+                    ? 'bg-background text-primary-500 shadow-sm'
+                    : 'text-muted-foreground bg-transparent'
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {getTabLabel(tab)}
+              </Button>
+            ))}
+          </div>
         )}
 
         <div className="space-y-3">
@@ -412,47 +528,20 @@ export const TradeWebAsideOrderForm = forwardRef<
               <Plus size={20} className="text-primary-500" />
             </Button>
           </div>
-          <div className="text-button-small-medium grid grid-cols-4 gap-2 text-black dark:text-white">
-            <Button
-              variant="white-contained"
-              className="text-button-small-medium border-border h-auto w-full min-w-0 border bg-transparent px-3.25 py-1 text-black hover:bg-transparent dark:text-white"
-              onClick={() => onAdjustQty(-quantityStepLarge)}
-            >
-              -{quantityStepLarge}
-            </Button>
-            <Button
-              variant="white-contained"
-              className="text-button-small-medium border-border h-auto w-full min-w-0 border bg-transparent px-3.25 py-1 text-black hover:bg-transparent dark:text-white"
-              onClick={() => onAdjustQty(-quantitySuggestionStep)}
-            >
-              -{quantitySuggestionStep}
-            </Button>
-            <Button
-              variant="white-contained"
-              className="text-button-small-medium border-border h-auto w-full min-w-0 border bg-transparent px-3.25 py-1 text-black hover:bg-transparent dark:text-white"
-              onClick={() => onAdjustQty(quantitySuggestionStep)}
-            >
-              +{quantitySuggestionStep}
-            </Button>
-            <Button
-              variant="white-contained"
-              className="text-button-small-medium border-border h-auto w-full min-w-0 border bg-transparent px-3.25 py-1 text-black hover:bg-transparent dark:text-white"
-              onClick={() => onAdjustQty(quantityStepLarge)}
-            >
-              +{quantityStepLarge}
-            </Button>
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-caption-regular text-[#0158ff]">
-              {t('trade.totalCost', { defaultValue: 'Total Cost' })}:{' '}
-              <span className="text-foreground">≈{formatBalance(totalCost)}</span>
-            </p>
-            {activeTab === 'Market' && referencePriceNumber > 0 && (
-              <p className="text-caption-regular text-muted-foreground">
-                {t('trade.referencePrice', { defaultValue: 'Reference' })}:{' '}
-                {formatBalance(referencePriceNumber)}
-              </p>
-            )}
+          <div className="grid grid-cols-4 gap-2">
+            {[0.25, 0.5, 0.75, 1].map((percent) => (
+              <Button
+                key={percent}
+                type="button"
+                variant="white-contained"
+                className="text-button-small-medium border-border h-8 min-w-0 border bg-transparent px-1 shadow-none"
+                onClick={() => setQuantityByPercent(percent)}
+              >
+                {percent === 1
+                  ? t('trade.orderForm.maximum', { defaultValue: 'Maximum' })
+                  : `${percent * 100}%`}
+              </Button>
+            ))}
           </div>
         </div>
 
@@ -468,38 +557,95 @@ export const TradeWebAsideOrderForm = forwardRef<
                 transactionType={transactionType}
                 sellPrice={sellPrice}
                 buyPrice={buyPrice}
+                priceStep={priceStep}
               />
             )}
           </div>
         )}
 
+        {!oneClickMode && (
+          <div className="border-border bg-muted/40 space-y-2 rounded-lg border p-3">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-muted-foreground">
+                {t('trade.orderForm.estimatedPrice', { defaultValue: 'Estimated price' })}
+              </span>
+              <span className="text-foreground text-right font-medium tabular-nums">
+                {estimatedUnitPrice > 0 ? `${formatBalance(estimatedUnitPrice)} VNĐ` : '--'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-muted-foreground">
+                {t('trade.orderForm.quantity', { defaultValue: 'Quantity' })}
+              </span>
+              <span className="text-foreground text-right font-medium tabular-nums">
+                {formatBalance(Number(quantity) || 0)} token
+              </span>
+            </div>
+            <div className="border-border flex items-center justify-between gap-3 border-t pt-2 text-sm">
+              <span className="text-foreground font-medium">
+                {transactionType === 'sell'
+                  ? t('trade.orderForm.estimatedProceeds', {
+                      defaultValue: 'Estimated proceeds',
+                    })
+                  : t('trade.orderForm.estimatedOrderValue', {
+                      defaultValue: 'Estimated order value',
+                    })}
+              </span>
+              <span className="text-foreground text-right font-semibold tabular-nums">
+                {formatBalance(totalCost)} VNĐ
+              </span>
+            </div>
+            {activeTab === 'Market' && (
+              <p className="text-muted-foreground text-[11px] leading-4">
+                {t('trade.orderForm.marketPriceNotice', {
+                  defaultValue:
+                    'A market order may execute at multiple prices. The final value depends on actual fills.',
+                })}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {!oneClickMode && (
         <div className="bg-background shrink-0 pt-5">
-          <div className="mb-3 flex items-center justify-between text-body-small-medium">
+          <div className="text-body-small-medium mb-3 flex items-center justify-between">
             <span className="text-muted-foreground">
               {t('trade.web.orderForm.available', { defaultValue: 'Available' })}
             </span>
             <span className="text-foreground">
-              {formatBalance(accountBalance?.currentBalance ?? '0')}{' '}
-              {symbolAsset?.marginCurrency ?? t('common.usd')}
+              {transactionType === 'sell'
+                ? `${formatBalance(baseAvailableQuantity)} ${symbol}`
+                : `${formatBalance(availableBalance.toNumber())} VNDT`}
             </span>
           </div>
+          {disabledReason && (
+            <p className="bg-muted text-muted-foreground border-border mb-2 rounded-md border px-3 py-2 text-xs leading-4">
+              {disabledReason}
+            </p>
+          )}
           {transactionType === 'sell' ? (
             <Button
-              variant="red-contained"
-              disabled={isCreatingOrder || isSubmitLocked || sellDisabled}
-              className="text-body-small-semibold! w-full rounded px-2 py-2.5 text-white disabled:opacity-50"
+              variant="white-contained"
+              disabled={submitDisabled}
+              className={`text-body-small-semibold! w-full rounded border px-2 py-2.5 disabled:opacity-100 ${
+                submitDisabled
+                  ? 'border-border bg-muted !text-muted-foreground pointer-events-none cursor-not-allowed'
+                  : '!text-foreground border-red-200 bg-red-50 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/15 dark:hover:bg-red-500/20'
+              }`}
               onClick={() => handleSubmitOrder(ORDER_SIDES.SELL)}
             >
               {t('trade.sell')} {symbol}
             </Button>
           ) : (
             <Button
-              variant="green-contained"
-              disabled={isCreatingOrder || isSubmitLocked || buyDisabled}
-              className="text-body-small-semibold! w-full rounded px-2 py-2.5 text-white disabled:opacity-50"
+              variant="white-contained"
+              disabled={submitDisabled}
+              className={`text-body-small-semibold! w-full rounded border px-2 py-2.5 disabled:opacity-100 ${
+                submitDisabled
+                  ? 'border-border bg-muted !text-muted-foreground pointer-events-none cursor-not-allowed'
+                  : '!text-foreground border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:hover:bg-emerald-500/20'
+              }`}
               onClick={() => handleSubmitOrder(ORDER_SIDES.BUY)}
             >
               {t('trade.buy')} {symbol}

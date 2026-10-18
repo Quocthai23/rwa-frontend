@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowLeft, Attachment02, Send03 } from '@untitledui/icons';
 import dayjs from 'dayjs';
@@ -563,3 +563,4 @@ export default function ChatSupportWebScreen({
     </div>
   );
 }
+

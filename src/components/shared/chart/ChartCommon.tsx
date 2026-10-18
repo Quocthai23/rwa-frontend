@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import SplashLogo from '@/components/shared/SplashLogo';
@@ -574,7 +574,7 @@ const MAX_HISTORY_BARS_PER_REQUEST = 1000;
 
 const CHART_BAR_SPACING_MIN = 2;
 const CHART_BAR_SPACING_MAX = 50;
-/** Default bar spacing on load — higher = fewer candles visible = more zoomed in */
+/** Default bar spacing on load â€” higher = fewer candles visible = more zoomed in */
 const CHART_DEFAULT_BAR_SPACING = 4.5;
 const CHART_MAX_FUTURE_BARS = 3;
 
@@ -764,7 +764,9 @@ function ChartCommon({
 
   const { data: dataOrder } = useInfiniteOrders({
     accountId: shouldFetchTradeData ? activeAccount?.id || '' : '',
-    symbol: shouldFetchTradeData ? currentSymbol : '',
+    assetId: shouldFetchTradeData
+      ? contextAssets?.find((asset) => asset.symbol === currentSymbol)?.id
+      : undefined,
   });
 
   const ordersData: OrderItem[] = useMemo(
@@ -1538,7 +1540,7 @@ function ChartCommon({
 
   // Wait until TradingView has finished init (onChartReady) before seeding OHLC / subscribing
   // to kline. Otherwise, on client-side navigation the effect can run before the datafeed has
-  // received its first getBars response — waitForFirstHistoryBar never completes, the splash
+  // received its first getBars response â€” waitForFirstHistoryBar never completes, the splash
   // never clears, and kline subscription never runs until a full remount (reload).
   useEffect(() => {
     if (!isChartReady || !isTvChartReady) return;

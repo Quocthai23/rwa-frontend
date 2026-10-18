@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Header from '@/components/shared/Header';
 import { Button } from '@/components/shared/atoms/button';
@@ -18,6 +18,8 @@ export default function DaoPage() {
   const [proposals, setProposals] = useState<DaoProposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [votingProposalId, setVotingProposalId] = useState<string | null>(null);
 
   // New proposal form
   const [title, setTitle] = useState('');
@@ -55,26 +57,21 @@ export default function DaoPage() {
   }, [selectedAsset]);
 
   const handleVote = async (proposalId: string, vote: 'YES' | 'NO') => {
+    if (votingProposalId) return;
+    setVotingProposalId(proposalId);
     try {
-      // Simulate real voting call
-      await daoApi.voteProposal(proposalId, { vote });
-
-      // Update local state dynamically to feel extremely alive and responsive!
-      setProposals((prev) =>
-        prev.map((prop) => {
-          if (prop.id === proposalId) {
-            return {
-              ...prop,
-              yesVotes: vote === 'YES' ? prop.yesVotes + 1250 : prop.yesVotes,
-              noVotes: vote === 'NO' ? prop.noVotes + 800 : prop.noVotes,
-            };
-          }
-          return prop;
-        })
-      );
-      showSuccess('Vote Cast successfully!', `Your vote has been submitted to the blockchain governance ledger.`);
+      await daoApi.voteProposal(proposalId, { isFor: vote === 'YES' });
+      if (selectedAsset) {
+        setProposals(await daoApi.getProposals(selectedAsset.id));
+      }
+      showSuccess('Vote cast successfully', 'Your vote has been recorded.');
     } catch (err) {
-      showError('Voting Failed', 'Unable to record your vote at this time.');
+      showError(
+        'Voting Failed',
+        err instanceof Error ? err.message : 'Unable to record your vote at this time.',
+      );
+    } finally {
+      setVotingProposalId(null);
     }
   };
 
@@ -82,28 +79,30 @@ export default function DaoPage() {
     e.preventDefault();
     if (!selectedAsset || !title || !description) return;
 
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      const newProp: DaoProposal = {
-        id: `prop-${Date.now()}`,
-        assetId: selectedAsset.id,
+      const snapshotDate = new Date();
+      const endDate = new Date(snapshotDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      await daoApi.createProposal(selectedAsset.id, {
         title,
         description,
-        status: 'PENDING',
-        yesVotes: 1000, // Initiator vote weight
-        noVotes: 0,
-        thresholdPercent: 66,
-        createdById: 'current-user',
-        createdAt: new Date().toISOString(),
-        endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      };
+        snapshotDate: snapshotDate.toISOString(),
+        endDate: endDate.toISOString(),
+      });
 
-      setProposals((prev) => [newProp, ...prev]);
+      setProposals(await daoApi.getProposals(selectedAsset.id));
       setIsModalOpen(false);
       setTitle('');
       setDescription('');
       showSuccess('Proposal Created!', 'Your governance proposal is now active for community voting.');
     } catch (err) {
-      showError('Failed to create proposal', 'Please verify your inputs and try again.');
+      showError(
+        'Failed to create proposal',
+        err instanceof Error ? err.message : 'Please verify your inputs and try again.',
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -178,22 +177,28 @@ export default function DaoPage() {
             </div>
           ) : (
             proposals.map((proposal) => {
-              const totalVotes = proposal.yesVotes + proposal.noVotes;
-              const yesPercent = totalVotes > 0 ? Math.round((proposal.yesVotes / totalVotes) * 100) : 0;
+              const yesVotes = (proposal.votes ?? [])
+                .filter((vote) => vote.isFor)
+                .reduce((sum, vote) => sum + Number(vote.votingPower), 0);
+              const noVotes = (proposal.votes ?? [])
+                .filter((vote) => !vote.isFor)
+                .reduce((sum, vote) => sum + Number(vote.votingPower), 0);
+              const totalVotes = yesVotes + noVotes;
+              const yesPercent = totalVotes > 0 ? Math.round((yesVotes / totalVotes) * 100) : 0;
               const noPercent = totalVotes > 0 ? 100 - yesPercent : 0;
-              const isEnded = new Date(proposal.endsAt).getTime() < Date.now();
+              const isEnded = new Date(proposal.endDate).getTime() < Date.now();
 
               return (
                 <div key={proposal.id} className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-all">
                   <div className="flex items-center justify-between gap-4 mb-3">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${proposal.status === 'PENDING'
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${proposal.status === 'ACTIVE'
                         ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                         : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                       }`}>
                       {proposal.status}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Ends: {new Date(proposal.endsAt).toLocaleDateString()}
+                      Ends: {new Date(proposal.endDate).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -216,21 +221,23 @@ export default function DaoPage() {
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Total Votes: {totalVotes.toLocaleString()}</span>
-                      <span>Target: {proposal.thresholdPercent}% YES</span>
+                      <span>Votes recorded: {proposal._count?.votes ?? proposal.votes?.length ?? 0}</span>
                     </div>
                   </div>
 
                   {/* Vote Actions */}
-                  {!isEnded && proposal.status === 'PENDING' && (
+                  {!isEnded && proposal.status === 'ACTIVE' && (
                     <div className="flex gap-3">
                       <Button
                         onClick={() => handleVote(proposal.id, 'YES')}
+                        disabled={votingProposalId === proposal.id}
                         className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 rounded-xl"
                       >
                         Vote YES
                       </Button>
                       <Button
                         onClick={() => handleVote(proposal.id, 'NO')}
+                        disabled={votingProposalId === proposal.id}
                         className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-500 rounded-xl"
                       >
                         Vote NO
@@ -285,9 +292,10 @@ export default function DaoPage() {
                 </Button>
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className="flex-1 bg-primary-500 hover:bg-primary-600 text-white rounded-xl"
                 >
-                  Publish Proposal
+                  {isSubmitting ? 'Publishing...' : 'Publish Proposal'}
                 </Button>
               </div>
             </form>
@@ -297,3 +305,4 @@ export default function DaoPage() {
     </div>
   );
 }
+

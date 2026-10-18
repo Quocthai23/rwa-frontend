@@ -1,4 +1,4 @@
-import { CALENDAR_ENDPOINTS, COUNTRY_FLAGS } from '@/constants/api';
+﻿import { CALENDAR_ENDPOINTS, COUNTRY_FLAGS } from '@/constants/api';
 import type { CalendarResponse, GetCalendarEventsRequest } from '@/types/calendar';
 
 import { apiClient } from './apiClient';
@@ -28,10 +28,10 @@ const CURRENCY_TO_COUNTRY: Record<string, string> = {
 };
 
 export const getCountryFlag = (codeOrCurrency: string): string => {
-  if (!codeOrCurrency) return '🌍';
+  if (!codeOrCurrency) return 'đŸŒ';
   const upper = codeOrCurrency.toUpperCase();
   const countryCode = CURRENCY_TO_COUNTRY[upper] ?? upper.slice(0, 2);
-  return COUNTRY_FLAGS[countryCode] ?? '🌍';
+  return COUNTRY_FLAGS[countryCode] ?? 'đŸŒ';
 };
 
 export { COUNTRY_FLAGS as countryFlags } from '@/constants/api';
@@ -106,3 +106,4 @@ export const getCalendarEventsAPI = async (
     throw error;
   }
 };
+

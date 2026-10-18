@@ -1,29 +1,20 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
 
-import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/shared/atoms/dialog';
 import { Button } from '@/components/shared/atoms/button';
 import { useInfinitePortfolioItems } from '@/hook/usePortfolio';
-import { useToast } from '@/hook/useToast';
 import { useClaimableDividends, useClaimDividend } from '@/hook/useDividends';
-import { cn } from '@/lib/utils';
-import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useGetData } from '@/context/GetdataContext';
-import type { PortfolioItem } from '@/types/portfolio';
-import { ArrowDown, ArrowUp, Check, Copy01, InfoCircle, Share04, X } from '@untitledui/icons';
-import { Decimal } from 'decimal.js';
 import {
   EmptyState,
-  type RtBySymbol,
   type SortDir,
   SortHeader,
   TableLoadingState,
   formatDecimal,
-  sideLabel,
   sortRows,
 } from './PositionWebTableShared';
 import { LoadingMoreTableSkeleton } from '../../shared/LoadingSkeletons';
@@ -77,22 +68,16 @@ function persistPortfolioSort(storageKey: string, value: PortfolioSortState) {
 
 type PortfolioTabContentProps = {
   accountId: string;
-  rtBySymbol: RtBySymbol;
-  onSellClick?: (item: PortfolioItem, currentPrice: number) => void;
 };
 
 /**
- * Portfolio Tab - displays user's asset holdings for Spot trading
- * Replaces Position-based view with portfolio/asset management
+ * Displays real token balances from the account ledger as property ownership.
  */
 export default function PortfolioTabContent({
   accountId,
-  rtBySymbol,
-  onSellClick,
 }: PortfolioTabContentProps) {
   const { t } = useTranslation();
   const router = useRouter();
-  const { showError, showSuccess } = useToast();
   const { assets } = useGetData();
   const [sortState, setSortState] = useState<PortfolioSortState>(
     () => readPortfolioSort(PORTFOLIO_SORT_STORAGE_KEY) ?? DEFAULT_PORTFOLIO_SORT,
@@ -150,23 +135,19 @@ export default function PortfolioTabContent({
     [],
   );
 
-  const handleSellAsset = (item: PortfolioItem) => {
-    // Navigate to trade panel with pre-filled sell order
-    router.push(`/chart?symbol=${item.symbol}&side=SELL`);
-  };
-
+  // (removed unused handleSellAsset)
   if (isLoading) {
     return <TableLoadingState />;
   }
 
   return (
-    <div className="flex flex-col gap-2 px-2">
+    <div className="flex flex-col gap-4 py-2">
       {/* Claimable Dividends Section */}
       {claimableDividends && claimableDividends.length > 0 && (
         <div className="border-border bg-card mb-4 rounded-xl border p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <div className="bg-primary-500/10 p-1.5 rounded-lg">
-              <span className="text-primary-500 font-semibold text-lg">💰</span>
+              <span className="text-primary-500 font-semibold text-lg">đŸ’°</span>
             </div>
             <div>
               <h3 className="text-body-large-semibold text-foreground">
@@ -193,7 +174,7 @@ export default function PortfolioTabContent({
                     </span>
                   </div>
                   <div className="text-primary-500 text-h3-semibold mt-1">
-                    ${formatDecimal(div.amount, '-', 2)} <span className="text-xs text-muted-foreground font-normal">USDT</span>
+                    VNĐ {formatDecimal(div.amount, '-', 2)} <span className="text-xs text-muted-foreground font-normal">VNDT</span>
                   </div>
                 </div>
                 <Button
@@ -220,132 +201,173 @@ export default function PortfolioTabContent({
           })}
         />
       ) : (
-        <>
-          <table className="w-full text-sm">
+        <div className="overflow-hidden">
+          <div className="border-border flex items-center justify-between border-b px-3 py-3">
+            <div>
+              <h2 className="text-foreground text-sm font-semibold">
+                {t('portfolio.ownership.title', { defaultValue: 'Owned properties' })}
+              </h2>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                {t('portfolio.ownership.description', {
+                  defaultValue: 'Ownership is calculated from token balances recorded in your account ledger.',
+                })}
+              </p>
+            </div>
+            <span className="text-muted-foreground text-xs tabular-nums">
+              {sortedPortfolioItems.length} {t('portfolio.ownership.properties', { defaultValue: 'properties' })}
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[1180px] text-sm">
             <thead>
-              <tr className="border-border border-b">
-                <th className="px-2 py-2 text-left">
+              <tr className="border-border border-b bg-muted/20">
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
                   <SortHeader
-                    label={t('portfolio.table.asset', { defaultValue: 'Asset' })}
+                    label={t('portfolio.table.asset', { defaultValue: 'Property' })}
                     sortKey="symbol"
                     currentSortKey={sortState.sortKey}
                     currentSortDir={sortState.sortDir}
                     onSort={handleSort}
                   />
                 </th>
-                <th className="px-2 py-2 text-right">
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
                   <SortHeader
-                    label={t('portfolio.table.quantity', { defaultValue: 'Quantity' })}
+                    label={t('portfolio.table.quantity', { defaultValue: 'Tokens owned' })}
                     sortKey="quantity"
                     currentSortKey={sortState.sortKey}
                     currentSortDir={sortState.sortDir}
                     onSort={handleSort}
                   />
                 </th>
-                <th className="px-2 py-2 text-right">
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
                   <SortHeader
-                    label={t('portfolio.table.avgBuyPrice', { defaultValue: 'Avg Buy Price' })}
+                    label={t('portfolio.table.avgBuyPrice', { defaultValue: 'Ownership share' })}
                     sortKey="averageBuyPrice"
                     currentSortKey={sortState.sortKey}
                     currentSortDir={sortState.sortDir}
                     onSort={handleSort}
                   />
                 </th>
-                <th className="px-2 py-2 text-right">
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
                   <SortHeader
-                    label={t('portfolio.table.currentPrice', { defaultValue: 'Current Price' })}
+                    label={t('portfolio.table.currentPrice', { defaultValue: 'Token valuation' })}
                     sortKey="currentPrice"
                     currentSortKey={sortState.sortKey}
                     currentSortDir={sortState.sortDir}
                     onSort={handleSort}
                   />
                 </th>
-                <th className="px-2 py-2 text-right">
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
                   <SortHeader
-                    label={t('portfolio.table.totalValue', { defaultValue: 'Total Value' })}
+                    label={t('portfolio.table.totalValue', { defaultValue: 'Current property value' })}
                     sortKey="totalValue"
                     currentSortKey={sortState.sortKey}
                     currentSortDir={sortState.sortDir}
                     onSort={handleSort}
                   />
                 </th>
-                <th className="px-2 py-2 text-right">
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
                   <SortHeader
-                    label={t('portfolio.table.profitLoss', { defaultValue: 'Profit/Loss' })}
+                    label={t('portfolio.table.profitLoss', { defaultValue: 'Est. annual income' })}
                     sortKey="profitLoss"
                     currentSortKey={sortState.sortKey}
                     currentSortDir={sortState.sortDir}
                     onSort={handleSort}
                   />
                 </th>
-                <th className="px-2 py-2 text-left">
-                  <SortHeader
-                    label={t('portfolio.table.category', { defaultValue: 'Category' })}
-                    sortKey="category"
-                    currentSortKey={sortState.sortKey}
-                    currentSortDir={sortState.sortDir}
-                    onSort={handleSort}
-                  />
-                </th>
-                <th className="px-2 py-2 text-center">
-                  {t('portfolio.table.actions', { defaultValue: 'Actions' })}
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
+                  {t('portfolio.table.actions', { defaultValue: 'Property actions' })}
                 </th>
               </tr>
             </thead>
             <tbody>
               {sortedPortfolioItems.map((item) => {
-                const pnlNum = Number.parseFloat(item.profitLoss || '0');
-                const pnlClass = pnlNum > 0 ? 'text-success-500' : pnlNum < 0 ? 'text-error-500' : '';
+                const fullAsset = assets?.find(a => a.id === item.assetId || a.symbol === item.symbol);
+                const quantity = Number.parseFloat(item.quantity || '0');
+                const totalSupply = Number(fullAsset?.totalSupply || 0);
+                const ownershipPercent = totalSupply > 0 ? (quantity / totalSupply) * 100 : 0;
+                const expectedApy = Number(fullAsset?.expectedApy || 0);
+                const annualIncome = Number(item.totalValue || 0) * expectedApy / 100;
+                const gallery = Array.isArray(fullAsset?.gallery)
+                  ? fullAsset.gallery
+                  : typeof fullAsset?.gallery === 'string'
+                    ? [fullAsset.gallery]
+                    : [];
+                const propertyImage = fullAsset?.logo || gallery[0];
 
                 return (
-                  <tr key={item.assetId} className="border-border border-b hover:bg-muted/50">
-                    <td className="px-2 py-3 font-medium">
-                      <div className="flex items-center gap-2">
-                        <span>{item.symbol}</span>
-                        {item.name && (
-                          <span className="text-muted-foreground text-xs">({item.name})</span>
+                  <tr key={item.assetId} className="border-border border-b last:border-b-0 hover:bg-muted/30 transition-colors group">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        {propertyImage && (
+                          <div className="relative h-14 w-20 overflow-hidden rounded-lg bg-muted border border-border shrink-0">
+                            <Image
+                              src={propertyImage}
+                              alt={item.name}
+                              fill
+                              unoptimized
+                              sizes="80px"
+                              className="object-cover"
+                            />
+                          </div>
                         )}
+                        <div className="flex min-w-0 flex-col">
+                          <span className="font-semibold text-foreground text-base">{item.name}</span>
+                          <span className="text-muted-foreground text-xs truncate max-w-[250px]">
+                            {fullAsset?.location || item.symbol}
+                          </span>
+                          <span className="text-primary-500 mt-1 text-[11px] font-medium">
+                            {fullAsset?.propertyType || 'Bất động sản token hóa'} · {item.symbol}
+                          </span>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-2 py-3 text-right tabular-nums">
-                      {formatDecimal(item.quantity, '-', 8)}
-                    </td>
-                    <td className="px-2 py-3 text-right tabular-nums">
-                      ${formatDecimal(item.averageBuyPrice, '-', 8)}
-                    </td>
-                    <td className="px-2 py-3 text-right tabular-nums">
-                      ${formatDecimal(item.currentPrice, '-', 8)}
-                    </td>
-                    <td className="px-2 py-3 text-right tabular-nums">
-                      ${formatDecimal(item.totalValue, '-', 2)}
-                    </td>
-                    <td className={cn('px-2 py-3 text-right tabular-nums', pnlClass)}>
-                      <div className="flex items-center justify-end gap-1">
-                        {pnlNum >= 0 ? (
-                          <ArrowUp size={16} className="text-success-500" />
-                        ) : (
-                          <ArrowDown size={16} className="text-error-500" />
-                        )}
-                        ${formatDecimal(Math.abs(pnlNum), '-', 2)}
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex flex-col tabular-nums">
+                        <span className="font-semibold text-foreground">
+                          {formatDecimal(item.quantity, '-', 2)} token
+                        </span>
                       </div>
                     </td>
-                    <td className="text-muted-foreground px-2 py-3 text-left text-xs">
-                      {item.category || '-'}
+                    <td className="px-4 py-4 text-right tabular-nums font-medium text-foreground">
+                      {ownershipPercent.toLocaleString(undefined, { maximumFractionDigits: 4 })}%
                     </td>
-                    <td className="px-2 py-3 text-center">
-                      <Button
-                        variant="primary-outline"
-                        onClick={() => handleSellAsset(item)}
-                        title={t('portfolio.actions.sell', { defaultValue: 'Sell' })}
-                      >
-                        {t('portfolio.actions.sell', { defaultValue: 'Sell' })}
-                      </Button>
+                    <td className="px-4 py-4 text-right tabular-nums font-semibold text-foreground">
+                      {formatDecimal(item.currentPrice, '-', 0)} VNĐ
+                    </td>
+                    <td className="px-4 py-4 text-right tabular-nums font-bold text-foreground">
+                      {formatDecimal(item.totalValue, '-', 0)} VNĐ
+                    </td>
+                    <td className="px-4 py-4 text-right tabular-nums">
+                      <div className="font-medium text-foreground">
+                        ≈ {formatDecimal(annualIncome, '-', 0)} VNĐ
+                      </div>
+                      <div className="text-muted-foreground text-xs">APY {expectedApy.toFixed(2)}%</div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="neutral-outline"
+                          className="h-8 rounded-lg border-primary/30 bg-primary/5 px-3 text-primary-500 hover:bg-primary/10"
+                          onClick={() => router.push(`/asset-management/${item.assetId}`)}
+                        >
+                          {t('portfolio.actions.viewProperty', { defaultValue: 'View property' })}
+                        </Button>
+                        <Button
+                          variant="primary-contained"
+                          className="h-8 px-4 rounded-lg font-semibold"
+                          onClick={() => router.push(`/trade/${item.symbol}`)}
+                        >
+                          {t('portfolio.actions.trade', { defaultValue: 'Buy / Sell' })}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+          </div>
 
           {isFetchingNextPage && <LoadingMoreTableSkeleton rows={3} columns={6} />}
 
@@ -361,8 +383,9 @@ export default function PortfolioTabContent({
                 : t('common.loadMore', { defaultValue: 'Load More' })}
             </Button>
           )}
-        </>
+        </div>
       )}
     </div>
   );
 }
+

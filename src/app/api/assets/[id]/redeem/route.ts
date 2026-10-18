@@ -13,11 +13,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   const accessToken = getAccessTokenFromRequest(request);
+  const body = (await request.json()) as { accountId?: string };
+  if (!body.accountId) {
+    return Response.json({ message: 'Missing account id' }, { status: 400 });
+  }
   const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
 
   const data = await apiClient.post<any>(
     `assets/${assetId}/redeem`,
-    undefined,
+    { accountId: body.accountId },
     {
       headers,
     },

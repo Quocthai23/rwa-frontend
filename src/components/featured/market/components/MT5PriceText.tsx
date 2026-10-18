@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { memo, useMemo } from 'react';
 import type { CSSProperties } from 'react';
@@ -215,3 +215,4 @@ const MT5PriceText = memo(function MT5PriceText({
 });
 
 export default MT5PriceText;
+

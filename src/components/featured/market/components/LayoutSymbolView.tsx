@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+﻿import React, { memo } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/shared/atoms/button';
 import { useTranslation } from 'react-i18next';
@@ -72,3 +72,4 @@ function LayoutSymbolView({ onSelect, selectedView }: LayoutSymbolViewProps) {
 }
 
 export default memo(LayoutSymbolView);
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   ArrowLeft,
@@ -2026,3 +2026,4 @@ export function ProfileTab({
     </div>
   );
 }
+

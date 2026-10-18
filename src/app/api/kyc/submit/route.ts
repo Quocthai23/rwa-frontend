@@ -6,7 +6,6 @@ import { ApiError } from '@/services/apiClient';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('[KYC SUBMIT] Route hit with body:', body);
 
     return await withServerTokenRefresh(
       request,
@@ -39,3 +38,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Eye, EyeOff } from '@untitledui/icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -120,7 +120,7 @@ export default function ResetPassword() {
       );
       return;
     }
-    if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(newPassword)) {
+    if (!/(?=.*[!@#VNĐ%^&*(),.?":{}|<>])/.test(newPassword)) {
       showError(
         t('security.resetPassword.changeFailedTitle'),
         t('security.resetPassword.passwordNeedsSpecial'),
@@ -308,3 +308,4 @@ export default function ResetPassword() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   ArrowCircleRight,
@@ -154,3 +154,4 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
 };
 
 export default TransactionHistoryCard;
+

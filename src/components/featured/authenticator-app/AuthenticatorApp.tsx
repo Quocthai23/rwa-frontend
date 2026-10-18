@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { Button } from '@/components/shared/atoms/button';
 import { Checkbox } from '@/components/shared/atoms/checkbox';
 import { ChevronLeft, InfoHexagon, Trash01 } from '@untitledui/icons';
@@ -46,7 +46,7 @@ export default function AuthenticatorAppComponent() {
   const [setupChallengeId, setSetupChallengeId] = useState<string | null>(null);
   const [isActivationStarted, setIsActivationStarted] = useState<boolean>(false);
   const RESEND_COOLDOWN_SECONDS = 1 * 60;
-  /** Above this, remaining seconds is almost certainly a bug (e.g. nowMs was 0) — show ellipsis instead of raw value. */
+  /** Above this, remaining seconds is almost certainly a bug (e.g. nowMs was 0) â€” show ellipsis instead of raw value. */
   const RESEND_COUNTDOWN_MAX_PLAUSIBLE_SECONDS = RESEND_COOLDOWN_SECONDS * 5;
 
   const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
@@ -911,3 +911,4 @@ export default function AuthenticatorAppComponent() {
     </>
   );
 }
+

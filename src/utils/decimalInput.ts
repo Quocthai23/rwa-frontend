@@ -1,4 +1,4 @@
-type SanitizeDecimalInputOptions = {
+﻿type SanitizeDecimalInputOptions = {
   maxDecimalPlaces?: number;
   minValue?: number;
   maxValue?: number;
@@ -44,3 +44,4 @@ export function sanitizeDecimalInput(
 
   return normalized;
 }
+

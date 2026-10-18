@@ -1,4 +1,4 @@
-import Image from 'next/image';
+﻿import Image from 'next/image';
 import Lottie from 'lottie-react';
 import { useAnimation } from '@/context/AnimationContext';
 
@@ -29,3 +29,4 @@ export default function SplashLogo({
     </div>
   );
 }
+

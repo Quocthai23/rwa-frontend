@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
@@ -167,3 +167,4 @@ function DepositQR({ address, currency, network, onClose }: DepositQRProps) {
 }
 
 export default DepositQR;
+

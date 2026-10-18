@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
@@ -134,7 +134,7 @@ export default function PersonalInfo() {
 
   const username = user?.username?.trim() || t('personalInfo.notSet');
   const displayName = user?.displayName?.trim() || t('personalInfo.notSet');
-  const linkEmail = user?.email ? maskEmail(user.email) : '—';
+  const linkEmail = user?.email ? maskEmail(user.email) : 'â€”';
   const referrer = user?.referenceId ? user.referenceId : t('personalInfo.notSet');
   const canEditReferrer = referrer === t('personalInfo.notSet');
   const genderDisplay =
@@ -152,7 +152,7 @@ export default function PersonalInfo() {
       setIsUploadingAvatar(true);
 
       try {
-        // Pass File directly — fetch(blob URL) from camera captures is flaky on some mobile browsers
+        // Pass File directly â€” fetch(blob URL) from camera captures is flaky on some mobile browsers
         const avatar = await imageApi.uploadImageToPresignedUrl(file, {
           type: file.type || 'image/jpeg',
           fileName: file.name || 'photo.jpg',
@@ -180,7 +180,7 @@ export default function PersonalInfo() {
     [user, updateUser, showSuccess, showError, t],
   );
 
-  /** Close sheet first — opening the native picker while a modal is open often breaks iOS/Android. */
+  /** Close sheet first â€” opening the native picker while a modal is open often breaks iOS/Android. */
   const triggerHiddenFileInput = useCallback((ref: React.RefObject<HTMLInputElement | null>) => {
     setIsAvatarSheetOpen(false);
     // Short delay so the sheet finishes closing; otherwise the file picker may not fire `change` on iOS
@@ -296,7 +296,7 @@ export default function PersonalInfo() {
         <div className="border-border bg-card mt-6 rounded-xl border p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <div className="bg-primary-500/10 p-1.5 rounded-lg">
-              <span className="text-primary-500 font-semibold text-lg">📢</span>
+              <span className="text-primary-500 font-semibold text-lg">đŸ“¢</span>
             </div>
             <div>
               <h3 className="text-body-large-semibold text-foreground">
@@ -312,7 +312,7 @@ export default function PersonalInfo() {
           {canEditReferrer && (
             <div className="bg-muted/30 border-primary-500/10 mb-4 rounded-lg border p-3.5">
               <div className="text-body-medium-semibold text-foreground mb-1.5 flex items-center gap-1.5">
-                <span>🎁</span>
+                <span>đŸ</span>
                 <span>{t('personalInfo.enterReferrerTitle', { defaultValue: 'Enter Referral Code' })}</span>
               </div>
               <p className="text-body-small-regular text-muted-foreground mb-3 text-xs">
@@ -430,7 +430,7 @@ export default function PersonalInfo() {
                 {t('commissions.unclaimedBalance', { defaultValue: 'Unclaimed' })}
               </div>
               <div className="text-body-large-semibold text-foreground mt-0.5">
-                ${Number(commStats?.unclaimedCommissions ?? 0).toFixed(2)} <span className="text-xs text-muted-foreground font-normal">USDT</span>
+                ${Number(commStats?.unclaimedCommissions ?? 0).toFixed(2)} <span className="text-xs text-muted-foreground font-normal">VNDT</span>
               </div>
             </div>
             <Button
@@ -585,3 +585,4 @@ export default function PersonalInfo() {
     </div>
   );
 }
+

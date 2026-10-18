@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -1583,3 +1583,4 @@ export function MyWall({ onOpenAuthorProfile }: MyWallProps) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { Calendar, Check, ChevronRight } from '@untitledui/icons';
@@ -207,3 +207,4 @@ const DateRangePicker = ({ onSelect, selectedValue = 'last_7_days' }: Props) => 
 };
 
 export default DateRangePicker;
+

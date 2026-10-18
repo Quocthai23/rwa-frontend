@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 
 import { useCancelOrders, useInfiniteOrders } from '@/hook/useOrder';
 import { cn } from '@/lib/utils';
-import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthHydrated } from '@/hook/useAuthHydrated';
@@ -99,12 +98,6 @@ export default function PositionWebScreen({
   );
 
   useEffect(() => {
-    setOrderHistoryDateRange(
-      readPersistedDateRange(ORDER_HISTORY_RANGE_STORAGE_KEY) ?? getDefaultDateRangeValue(),
-    );
-  }, []);
-
-  useEffect(() => {
     persistDateRange(ORDER_HISTORY_RANGE_STORAGE_KEY, orderHistoryDateRange);
   }, [orderHistoryDateRange]);
 
@@ -115,7 +108,6 @@ export default function PositionWebScreen({
   );
   const cancelOrdersMutation = useCancelOrders(accountId);
 
-  const rtBySymbol = useMarketSocketStore((state) => state.rtBySymbol);
   const hasHydratedAuth = useAuthHydrated();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
@@ -178,16 +170,16 @@ export default function PositionWebScreen({
 
   return (
     <div
-      className={`flex ${checkPathname ? 'h-[calc(100dvh-72px)]' : 'h-[calc(100%)]'} ${checkPathname ? 'p-6' : 'p-1'} border-border bg-background flex-col gap-3 overflow-hidden border-t`}
+      className={`flex ${checkPathname ? 'h-[calc(100dvh-72px)]' : 'h-[calc(100%)]'} ${checkPathname ? 'px-7 py-5' : 'p-1'} border-border bg-background flex-col gap-3 overflow-hidden border-t`}
     >
       {checkPathname && selectedAccount && (
         <AssetOverview activeAccount={selectedAccount} />
       )}
 
       <div className="bg-background h-full min-h-0 flex-1 overflow-hidden">
-        <div className="bg-background px-2">
-          <div className="flex min-h-10 items-center justify-between gap-5">
-            <div className="scrollbar-neutral-slim flex min-w-0 flex-1 gap-5 overflow-x-auto">
+        <div className="border-border bg-background border-b">
+          <div className="flex min-h-11 items-center justify-between gap-5">
+            <div className="scrollbar-neutral-slim flex min-w-0 flex-1 gap-6 overflow-x-auto">
               {!checkPathname && (
                 <Button
                   variant="white-contained"
@@ -209,7 +201,7 @@ export default function PositionWebScreen({
                 const getTabLabel = () => {
                   switch (tab.id) {
                     case 'orders':
-                      return `${tab.label}(${allOpenOrders.length})`;
+                      return `${tab.label} (${allOpenOrders.length})`;
                     default:
                       return tab.label;
                   }
@@ -221,10 +213,10 @@ export default function PositionWebScreen({
                     variant="white-contained"
                     onClick={() => handleTabChange(tab.id)}
                     className={cn(
-                      'shrink-0 whitespace-nowrap transition-colors',
+                      'relative h-11 shrink-0 rounded-none px-0 whitespace-nowrap transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5',
                       currentActiveTab === tab.id
-                        ? 'text-primary-500 dark:text-primary-500 text-body-large-medium!'
-                        : 'text-body-large-medium! text-muted-foreground hover:text-primary-500',
+                        ? 'text-foreground text-body-small-semibold! after:bg-primary-500'
+                        : 'text-body-small-medium! text-muted-foreground hover:text-foreground after:bg-transparent',
                     )}
                   >
                     {getTabLabel()}
@@ -258,7 +250,7 @@ export default function PositionWebScreen({
 
         <div className="scrollbar-neutral-slim h-[calc(100%-35px)] overflow-auto py-1">
           {currentActiveTab === 'portfolio' ? (
-            <PortfolioTabContent accountId={accountId} rtBySymbol={rtBySymbol} />
+            <PortfolioTabContent accountId={accountId} />
           ) : null}
           {currentActiveTab === 'orders' ? <OpenOrdersTabContent accountId={accountId} /> : null}
           {currentActiveTab === 'order-history' ? (
@@ -324,3 +316,4 @@ export default function PositionWebScreen({
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-// export function formatPriceDecimal2(price: number): string {
+﻿// export function formatPriceDecimal2(price: number): string {
 //   // const absPrice = Math.abs(price);
 //   // let decimals;
 
@@ -62,3 +62,4 @@ export const formatQuantity = (value: number | string, decimals = 2) => {
     maximumFractionDigits: decimals,
   });
 };
+

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 
 import {
   adjustQuantityByDelta,
@@ -103,3 +103,4 @@ export function TradePanelVolumeControl({
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Environment Variables Configuration
  * Centralized configuration for all environment variables
  * This file exports all env variables used across the application
@@ -63,3 +63,4 @@ if (typeof window === 'undefined') {
   // Only validate on server side
   validateEnv();
 }
+

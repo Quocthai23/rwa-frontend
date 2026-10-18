@@ -145,7 +145,7 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
               {navItems.map((item) => {
                 const isActive = item.activePrefix
                   ? pathname.startsWith(item.activePrefix)
-                  : pathname === item.href || pathname.startsWith(item.href);
+                  : pathname === item.href || pathname.startsWith(item.href + '/');
 
                 return (
                   <Button
@@ -253,3 +253,4 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
     </>
   );
 }
+

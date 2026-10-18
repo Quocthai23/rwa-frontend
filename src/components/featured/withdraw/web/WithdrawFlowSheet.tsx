@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { X } from '@untitledui/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -84,13 +84,15 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
     );
   };
 
-  const withdrawPayloadBase: Omit<WithdrawPayload, 'idempotencyKey' | 'challengeId'> | null = selectedAccount?.id
-    ? {
-        amount,
-        destinationAddress: normalizedAddress,
-        chainId,
-      }
-    : null;
+  const withdrawPayloadBase: Omit<WithdrawPayload, 'idempotencyKey' | 'challengeId'> | null =
+    selectedAccount?.id
+      ? {
+          accountId: selectedAccount.id,
+          amount,
+          destinationAddress: normalizedAddress,
+          chainId,
+        }
+      : null;
 
   const handleResendOtp = async () => {
     if (otpCountdown > 0 || isSendingOtp) return;
@@ -106,6 +108,7 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
         {
           purpose: 'WITHDRAW',
           payload: {
+            accountId: selectedAccount?.id || '',
             amount,
             destinationAddress: normalizedAddress,
             chainId,
@@ -144,6 +147,7 @@ const WithdrawFlowSheet = ({ isOpen, onOpenChange }: WithdrawFlowSheetProps) => 
         {
           purpose: 'WITHDRAW',
           payload: {
+            accountId: selectedAccount?.id || '',
             amount,
             destinationAddress: normalizedAddress,
             chainId,

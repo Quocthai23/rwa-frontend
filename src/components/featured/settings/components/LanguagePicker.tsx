@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, SearchLg } from '@untitledui/icons';
@@ -186,3 +186,4 @@ export function LanguagePicker({
     </>
   );
 }
+

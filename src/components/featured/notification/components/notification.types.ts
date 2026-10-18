@@ -1,4 +1,4 @@
-import type { NotificationItem as ApiNotificationItem } from '@/types/notification';
+﻿import type { NotificationItem as ApiNotificationItem } from '@/types/notification';
 import { formatTimeAgo } from '@/utils/dateUtils';
 
 export enum NotificationCategory {
@@ -499,3 +499,4 @@ export function getNotificationCategoryStyle(
       };
   }
 }
+

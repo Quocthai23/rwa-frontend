@@ -1,27 +1,25 @@
-// types/payment.ts
-// Aligned with rwa-backend payment.dto.ts — DO NOT add fields that don't exist in the BE DTO.
+﻿// types/payment.ts
+// Aligned with rwa-backend payment.dto.ts. Do not add fields absent from the backend DTO.
 
-// ─── Deposit Demo ───────────────────────────────────────────────────────────
-// BE: DepositDemoDto { amount: string; idempotencyKey?: string }
-export type DepositDemoPayload = {
-  /** Deposit amount as a decimal string, e.g. "500.00" */
-  amount: string;
-  /** Optional UUID v4 to prevent duplicate submissions */
-  idempotencyKey?: string;
+// PayOS deposit checkout
+export type PayosCheckoutPayload = {
+  accountId: string;
+  amount: number;
 };
 
-export type DepositDemoResponse = {
-  transactionId: string;
-  success: boolean;
+export type PayosCheckoutResponse = {
+  checkoutUrl: string;
+  qrCode: string;
+  orderCode: number;
+  amount: number;
 };
 
-// ─── Create Wallet ───────────────────────────────────────────────────────────
-// BE: CreateWalletDto { address: string; type?: 'EVM'|'SOL'; chainId?: string }
+// â”€â”€â”€ Create Wallet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// BE provisions an encrypted platform-managed EVM wallet.
 export type CreateWalletPayload = {
-  /** Blockchain wallet address, e.g. "0x..." */
-  address: string;
-  /** Optional chain type: 'EVM' or 'SOL' */
-  type?: 'EVM' | 'SOL';
+  /** Deprecated compatibility field; the backend ignores external addresses. */
+  address?: string;
+  type?: 'EVM';
   /** Optional EVM chain ID: '1'|'56'|'97'|'11155111' */
   chainId?: string;
 };
@@ -32,16 +30,19 @@ export type CreateWalletResponse = {
     address: string;
     chainId: string | null;
     type: string;
+    custody: 'PLATFORM_MANAGED';
   };
 };
 
-// ─── Withdraw ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Withdraw â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BE: WithdrawV2Dto { amount, destinationAddress, chainId, idempotencyKey, challengeId }
 export type WithdrawPayload = {
+  /** Source live account UUID */
+  accountId: string;
   /** Withdrawal amount as decimal string */
   amount: string;
   /** Destination blockchain wallet address */
-  destinationAddress: string;
+  destinationAddress?: string;
   /** Target EVM chain ID */
   chainId: string;
   /** UUID v4 idempotency key */
@@ -55,12 +56,14 @@ export type WithdrawResponse = {
   transactionId: string;
 };
 
-// ─── Transfer ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Transfer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BE: TransferV2Dto { amount, assetId?, toUserId?, toEmail?, idempotencyKey, challengeId }
 export type TransferPayload = {
+  /** Source live account UUID */
+  accountId: string;
   /** Amount to transfer as decimal string */
   amount: string;
-  /** Optional asset ID. Omit for USDT balance transfer */
+  /** Optional asset ID. Omit for VNDT balance transfer */
   assetId?: string;
   /** Recipient user ID (either toUserId or toEmail required) */
   toUserId?: string;
@@ -72,7 +75,7 @@ export type TransferPayload = {
   challengeId: string;
 };
 
-// ─── Transaction History ─────────────────────────────────────────────────────
+// â”€â”€â”€ Transaction History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BE: GetTransactionHistoryDto { take?, skip?, type?, status?, startDate?, endDate? }
 export type GetPaymentHistoryParams = {
   take?: number;
@@ -91,6 +94,7 @@ export type GetPaymentHistoryParams = {
 export type PaymentHistoryItem = {
   id: string;
   userId: string;
+  accountId: string;
   type: string;
   status: string;
   /** Decimal string */

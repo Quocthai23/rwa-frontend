@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Copy07 } from '@untitledui/icons';
@@ -175,3 +175,4 @@ export default function SuccessContent() {
     </div>
   );
 }
+

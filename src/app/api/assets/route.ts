@@ -1,4 +1,4 @@
-import { ASSETS_ENDPOINTS } from '@/constants/api';
+﻿import { ASSETS_ENDPOINTS } from '@/constants/api';
 import type { Asset } from '@/types';
 import { apiClient } from '@/services/apiClient';
 import { getAccessTokenFromRequest } from '@/app/api/_utils/auth';
@@ -14,3 +14,4 @@ export async function GET(request: Request) {
 
   return Response.json({ data: assets });
 }
+

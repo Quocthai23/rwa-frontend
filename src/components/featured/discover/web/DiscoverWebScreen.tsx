@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Bookmark, Compass03, UserCircle, UserPlus01 } from '@untitledui/icons';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -363,3 +363,4 @@ export default function DiscoverWebScreen() {
     </div>
   );
 }
+

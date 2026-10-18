@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -68,3 +68,4 @@ export function SymbolRowSkeleton({ shimmer = true }: { readonly shimmer?: boole
     </div>
   );
 }
+

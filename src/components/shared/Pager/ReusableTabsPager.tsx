@@ -1,4 +1,4 @@
-/* ReusableTabsPager.tsx (web) */
+﻿/* ReusableTabsPager.tsx (web) */
 'use client';
 /* eslint-disable react-hooks/refs */
 
@@ -349,3 +349,4 @@ export default function ReusableTabsPager({
     </div>
   );
 }
+

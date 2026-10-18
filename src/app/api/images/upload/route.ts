@@ -1,10 +1,10 @@
-import { NextRequest } from 'next/server';
+﻿import { NextRequest } from 'next/server';
 
 import { getAccessTokenFromRequest, errorResponse } from '@/app/api/_utils/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Validate auth — read httpOnly access_token cookie from browser request
+    // 1. Validate auth â€” read httpOnly access_token cookie from browser request
     const accessToken = getAccessTokenFromRequest(request);
     if (!accessToken) {
       return errorResponse('Unauthorized', 401, { code: 'missing-token' });
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const backendResponse = await fetch(backendUploadUrl, {
       method: 'POST',
-      // Do NOT set Content-Type — let fetch set multipart/form-data boundary automatically
+      // Do NOT set Content-Type â€” let fetch set multipart/form-data boundary automatically
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Parse backend JSON — NestJS /images/upload returns:
+    // 4. Parse backend JSON â€” NestJS /images/upload returns:
     //    { success: true, result: { variants: [url], ... } }
     const backendData = (await backendResponse.json()) as {
       success?: boolean;
@@ -76,3 +76,4 @@ export async function POST(request: NextRequest) {
     return Response.json({ errors: message, success: false }, { status: 500 });
   }
 }
+

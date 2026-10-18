@@ -1,33 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
+import { withServerTokenRefresh } from '@/app/api/_utils/auth';
+import { ApiError } from '@/services/apiClient';
 
-const FPT_API_KEY = process.env.FPT_API_KEY || '';
-const FPT_IDR_URL = process.env.FPT_IDR_URL || 'https://api.fpt.ai/vision/idr/vnm';
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const formData = await req.formData();
+    const formData = await request.formData();
     const image = formData.get('image');
 
     if (!image) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
 
-    // Forward the form data to FPT AI
-    const fptFormData = new FormData();
-    fptFormData.append('image', image);
-
-    const response = await fetch(FPT_IDR_URL, {
-      method: 'POST',
-      headers: {
-        'api-key': FPT_API_KEY,
+    return await withServerTokenRefresh(
+      request,
+      async (token) => {
+        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+        const res = await fetch(`${backendUrl}/kyc/fpt/idr`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => '');
+          if (res.status === 401) {
+            throw new ApiError('token-expired', 'Token expired', 401);
+          }
+          throw new Error(`fetch failed: ${res.status} ${errBody}`);
+        }
+        
+        const data = await res.json();
+        return data.data || data;
       },
-      body: fptFormData,
-    });
-
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
-  } catch (error: any) {
-    console.error('FPT IDR Error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+      'kyc-idr-failed',
+    );
+  } catch (err: any) {
+    console.error('FPT IDR Proxy Error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+

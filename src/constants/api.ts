@@ -1,4 +1,4 @@
-/**
+﻿/**
  * News API Endpoints
  */
 export const NEWS_ENDPOINTS = {
@@ -47,17 +47,25 @@ export const ASSETS_ENDPOINTS = {
   CATEGORIES: '/asset-categories',
   LIST: '/assets',
   MARKET_DATA: (id: string) => `/assets/${id}/market-data`,
+  HOLDERS: (id: string) => `/assets/${id}/holders`,
   ONBOARDING: (id: string) => `/assets/${id}/onboarding/submit`,
 } as const;
 
+export const ASSET_MANAGEMENT_ENDPOINTS = {
+  STATUS: (id: string) => `/asset-management/${id}/status`,
+  BUYOUT_PROPOSALS: (id: string) => `/asset-management/${id}/dao/buyout-proposals`,
+  BUYOUT_QUOTE: (id: string, durationMonths: number, premiumPercent?: number) =>
+    `/asset-management/${id}/dao/buyout-quote?durationMonths=${durationMonths}${
+      premiumPercent === undefined ? '' : `&premiumPercent=${premiumPercent}`
+    }`,
+} as const;
+
 export const PAYMENT_ENDPOINTS = {
-  DEPOSIT_DEMO: '/payment/deposit-demo',
   CREATE_WALLET: '/payment/create-wallet',
   WITHDRAW: '/payment/withdraw',
   HISTORY: '/payment/history',
   TRANSFER: '/payment/transfer',
 } as const;
-
 
 export const ORDERS_ENDPOINTS = {
   CREATE: '/orders',
@@ -112,33 +120,33 @@ export const PAGINATION = {
  * Country code to flag emoji mapping
  */
 export const COUNTRY_FLAGS: Record<string, string> = {
-  AR: '🇦🇷',
-  AU: '🇦🇺',
-  BR: '🇧🇷',
-  CA: '🇨🇦',
-  CH: '🇨🇭',
-  CN: '🇨🇳',
-  DE: '🇩🇪',
-  DK: '🇩🇰',
-  ES: '🇪🇸',
-  EU: '🇪🇺',
-  FR: '🇫🇷',
-  GB: '🇬🇧',
-  HK: '🇭🇰',
-  IN: '🇮🇳',
-  IT: '🇮🇹',
-  JP: '🇯🇵',
-  KR: '🇰🇷',
-  MX: '🇲🇽',
-  NO: '🇳🇴',
-  NZ: '🇳🇿',
-  PL: '🇵🇱',
-  RU: '🇷🇺',
-  SE: '🇸🇪',
-  SG: '🇸🇬',
-  TR: '🇹🇷',
-  US: '🇺🇸',
-  ZA: '🇿🇦',
+  AR: 'đŸ‡¦đŸ‡·',
+  AU: 'đŸ‡¦đŸ‡º',
+  BR: 'đŸ‡§đŸ‡·',
+  CA: 'đŸ‡¨đŸ‡¦',
+  CH: 'đŸ‡¨đŸ‡­',
+  CN: 'đŸ‡¨đŸ‡³',
+  DE: 'đŸ‡©đŸ‡ª',
+  DK: 'đŸ‡©đŸ‡°',
+  ES: 'đŸ‡ªđŸ‡¸',
+  EU: 'đŸ‡ªđŸ‡º',
+  FR: 'đŸ‡«đŸ‡·',
+  GB: 'đŸ‡¬đŸ‡§',
+  HK: 'đŸ‡­đŸ‡°',
+  IN: 'đŸ‡®đŸ‡³',
+  IT: 'đŸ‡®đŸ‡¹',
+  JP: 'đŸ‡¯đŸ‡µ',
+  KR: 'đŸ‡°đŸ‡·',
+  MX: 'đŸ‡²đŸ‡½',
+  NO: 'đŸ‡³đŸ‡´',
+  NZ: 'đŸ‡³đŸ‡¿',
+  PL: 'đŸ‡µđŸ‡±',
+  RU: 'đŸ‡·đŸ‡º',
+  SE: 'đŸ‡¸đŸ‡ª',
+  SG: 'đŸ‡¸đŸ‡¬',
+  TR: 'đŸ‡¹đŸ‡·',
+  US: 'đŸ‡ºđŸ‡¸',
+  ZA: 'đŸ‡¿đŸ‡¦',
 };
 /**
  * Dividend API Endpoints
@@ -158,10 +166,10 @@ export const KYC_ENDPOINTS = {
  * News source config for emoji display
  */
 export const NEWS_SOURCE_ICONS: Record<string, string> = {
-  bloomberg: '📊',
-  crypto: '₿',
-  default: '📰',
-  reuters: '📈',
-  tradingeconomics: '💹',
-  vnwallstreet: '🇻🇳',
+  bloomberg: 'đŸ“',
+  crypto: 'â‚¿',
+  default: 'đŸ“°',
+  reuters: 'đŸ“ˆ',
+  tradingeconomics: 'đŸ’¹',
+  vnwallstreet: 'đŸ‡»đŸ‡³',
 };

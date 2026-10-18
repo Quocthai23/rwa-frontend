@@ -1,4 +1,4 @@
-import { X } from '@untitledui/icons';
+﻿import { X } from '@untitledui/icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -107,13 +107,13 @@ function CalendarModal({
         {/* Month Header */}
         <div className="mb-4 flex items-center justify-between px-4">
           <button className="p-2" onClick={() => onMonthChange('prev')}>
-            ←
+            â†
           </button>
 
           <span className="font-semibold">{monthName}</span>
 
           <button className="p-2" onClick={() => onMonthChange('next')}>
-            →
+            â†’
           </button>
         </div>
 
@@ -156,3 +156,4 @@ function CalendarModal({
 }
 
 export default CalendarModal;
+

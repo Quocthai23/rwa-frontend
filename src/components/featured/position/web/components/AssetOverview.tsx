@@ -1,7 +1,6 @@
 'use client';
 
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
-import { useTheme } from '@/theme/ThemeProvider';
 import type { Account } from '@/types/account';
 import { formatBalance } from '@/utils/currency';
 import { PlusSquare } from '@untitledui/icons';
@@ -16,25 +15,29 @@ export default function AssetOverview({
   activeAccount: Account;
 }) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
   const [isTopUpSheetOpen, setIsTopUpSheetOpen] = useState(false);
 
   const balance = Number(activeAccount?.balance || '0');
   const availableBalance = Number(activeAccount?.availableBalance || '0');
+  const reservedBalance = Math.max(0, balance - availableBalance);
 
   return (
-    <div className="border-border w-full rounded-sm border p-4">
+    <section className="border-border w-full border-b pb-4">
       <DepositFlowSheet isOpen={isDepositSheetOpen} onOpenChange={setIsDepositSheetOpen} />
       <TopUpFlowSheet isOpen={isTopUpSheetOpen} onOpenChange={setIsTopUpSheetOpen} />
 
-      <h2 className="text-h3-semibold text-foreground mb-2">
-        {t('account.assetOverview') || 'Asset Overview'}
-      </h2>
-
-      <div className="flex flex-row justify-between">
-        <div className="mb-3 flex flex-row items-center gap-2">
-          <span className="text-body-large-medium">{t('account.balance') || 'Total Balance'}</span>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-h3-semibold text-foreground">
+            {t('account.assetOverview') || 'Property ownership portfolio'}
+          </h1>
+          <p className="text-muted-foreground mt-0.5 text-sm">
+            {t('account.assetOverviewDescription', {
+              defaultValue: 'Track your tokenized property ownership and investment funds.',
+            })}
+          </p>
+        </div>
           <button
             onClick={() => {
               if (activeAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
@@ -43,30 +46,35 @@ export default function AssetOverview({
                 setIsDepositSheetOpen(true);
               }
             }}
-            className="transition-opacity hover:opacity-80"
+            className="border-border text-foreground hover:bg-muted flex items-center gap-2 rounded border px-3 py-2 text-sm font-medium transition-colors"
           >
-            <PlusSquare color={colors.primary500} size={24} strokeWidth={2.5} />
+            <PlusSquare size={17} />
+            {t('account.addInvestmentFunds', { defaultValue: 'Add funds' })}
           </button>
-        </div>
-        <p className="text-h2-semibold text-foreground tabular-nums">
-          {formatBalance(balance)}
-        </p>
       </div>
-
-      <div className="border-border mb-4 border-b" />
-
-      <div className="grid grid-cols-2 gap-10">
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-row items-center justify-between">
-            <p className="text-body-small-regular text-muted-foreground">
-              {t('account.available') || 'Available Balance'}
-            </p>
-            <p className="text-body-large-medium text-foreground tabular-nums">
-              {formatBalance(availableBalance)}
+      <div className="border-border grid border-y md:grid-cols-3 md:divide-x divide-border">
+        {[
+          {
+            label: t('account.totalCashBalance', { defaultValue: 'Total cash balance' }),
+            value: balance,
+          },
+          {
+            label: t('account.availableInvestmentFunds', { defaultValue: 'Available investment funds' }),
+            value: availableBalance,
+          },
+          {
+            label: t('account.reservedForOrders', { defaultValue: 'Reserved for pending purchases' }),
+            value: reservedBalance,
+          },
+        ].map(({ label, value }) => (
+          <div key={label} className="px-4 py-3 first:pl-0 last:pr-0">
+            <div className="text-muted-foreground mb-1 text-xs">{label}</div>
+            <p className="text-foreground text-lg font-semibold tabular-nums">
+              {formatBalance(value)} <span className="text-muted-foreground text-xs">VNDT</span>
             </p>
           </div>
-        </div>
+        ))}
       </div>
-    </div>
+    </section>
   );
 }

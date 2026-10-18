@@ -1,6 +1,4 @@
-import {
-  isAvailableBalanceSufficient,
-} from '@/components/featured/position/utils/position.calculations';
+import { isAvailableBalanceSufficient } from '@/components/featured/position/utils/position.calculations';
 import { ORDER_SIDES } from '@/types/orders';
 import { isForexMarketOpen } from '@/utils/forexMarketHours';
 import type { CreateOrderPayload } from '@/types/orders';
@@ -9,6 +7,8 @@ import type { DecimalValue } from '@/types/decimal';
 import type { TFunction } from 'i18next';
 import type { MutableRefObject } from 'react';
 import Decimal from 'decimal.js';
+import { generateUUID } from '@/utils/uuid';
+import { localizeApiError } from '@/i18n/apiErrors';
 
 import type { TradePanelSheetHandle } from './tradePanelTypes';
 import {
@@ -18,9 +18,10 @@ import {
 } from './tradePanelInputHelpers';
 import { TABS } from './tradePanelUtils';
 
-type RT = { ask?: DecimalValue; bid?: DecimalValue };
-
 type TradePanelActiveTab = (typeof TABS)[number];
+
+const MARKET_BUY_PROTECTION_RATE = new Decimal('0.01');
+const MARKET_SELL_PROTECTION_RATE = new Decimal('0.01');
 
 export type SubmitTradePanelOrderParams = {
   user: unknown;
@@ -42,9 +43,10 @@ export type SubmitTradePanelOrderParams = {
   symbol: string;
   sellPrice: DecimalValue;
   buyPrice: DecimalValue;
-  calculatedAvailableBalance: number;
+  quoteAvailableBalance: number;
+  baseAvailableQuantity: number;
+  accountId?: string;
   limitPrice: string;
-  rt: RT | undefined;
   createOrder: (
     payload: CreateOrderPayload,
     callbacks: {
@@ -82,9 +84,10 @@ export function submitTradePanelOrder(
     symbol,
     sellPrice,
     buyPrice,
-    calculatedAvailableBalance,
+    quoteAvailableBalance,
+    baseAvailableQuantity,
+    accountId,
     limitPrice,
-    rt,
     createOrder,
     refetchOrders,
     tradePanelRef,
@@ -174,6 +177,10 @@ export function submitTradePanelOrder(
     showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
     return;
   }
+  if (!accountId) {
+    showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
+    return;
+  }
 
   const referencePriceValue =
     (symbolAsset as { referencePrice?: string } | undefined)?.referencePrice ?? '';
@@ -181,25 +188,76 @@ export function submitTradePanelOrder(
     (symbolAsset as { priceBandPercentage?: string } | undefined)?.priceBandPercentage ?? '';
   const referencePriceNumber = Number(referencePriceValue);
   const priceBandPercentage = Number(priceBandValue);
+  const maxOrderValue = Number(symbolAsset.maxOrderValue);
+  const hasMaxOrderValue = Number.isFinite(maxOrderValue) && maxOrderValue > 0;
+  const showMaxOrderValueError = () =>
+    showError(
+      t('trade.errors.tradeFailedTitle'),
+      t('trade.errors.maxOrderValueExceeded', {
+        value: maxOrderValue.toLocaleString(),
+        defaultValue:
+          'The maximum value per order is limited. Please reduce the quantity.',
+      }),
+    );
 
   const payload: CreateOrderPayload = {
     assetId: symbolAsset.id,
-    symbol,
     type: orderTypeString,
     quantity: String(qty),
     side: sideString,
+    idempotencyKey: generateUUID(),
+    accountId,
   };
 
   if (isMarket) {
     const marketPrice =
       toFiniteNumberFromNumberish(side === ORDER_SIDES.SELL ? sellPrice : buyPrice) ?? 0;
 
-    const totalCost = qty * marketPrice;
-    if (!isAvailableBalanceSufficient(calculatedAvailableBalance, totalCost)) {
-      showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.insufficientAvailableBalance'));
+    if (marketPrice <= 0) {
+      showError(
+        t('trade.errors.tradeFailedTitle'),
+        t('trade.errors.marketPriceUnavailable', {
+          defaultValue: 'Market price is not available.',
+        }),
+      );
       return;
     }
 
+    if (side === ORDER_SIDES.BUY) {
+      const maxTotalCost = new Decimal(qty)
+        .mul(marketPrice)
+        .mul(new Decimal(1).plus(MARKET_BUY_PROTECTION_RATE));
+      if (hasMaxOrderValue && maxTotalCost.gt(maxOrderValue)) {
+        showMaxOrderValueError();
+        return;
+      }
+      if (!isAvailableBalanceSufficient(quoteAvailableBalance, maxTotalCost.toNumber())) {
+        showError(
+          t('trade.errors.tradeFailedTitle'),
+          t('trade.errors.insufficientAvailableBalance'),
+        );
+        return;
+      }
+      payload.maxTotalCost = maxTotalCost.toFixed();
+    } else {
+      if (baseAvailableQuantity < qty) {
+        showError(
+          t('trade.errors.tradeFailedTitle'),
+          t('trade.errors.insufficientAssetBalance', {
+            defaultValue: 'Insufficient available asset balance.',
+          }),
+        );
+        return;
+      }
+      payload.minTotalProceeds = new Decimal(qty)
+        .mul(marketPrice)
+        .mul(new Decimal(1).minus(MARKET_SELL_PROTECTION_RATE))
+        .toFixed();
+      if (hasMaxOrderValue && new Decimal(payload.minTotalProceeds).gt(maxOrderValue)) {
+        showMaxOrderValueError();
+        return;
+      }
+    }
   } else {
     // LIMIT orders
     if (!limitPrice) {
@@ -208,28 +266,10 @@ export function submitTradePanelOrder(
     }
 
     const price = Number.parseFloat(normalizeDecimalInput(limitPrice));
-    const ask = toFiniteNumberFromNumberish(rt?.ask) ?? 0;
-    const bid = toFiniteNumberFromNumberish(rt?.bid) ?? 0;
     const isBuy = side === ORDER_SIDES.BUY;
 
     if (!Number.isFinite(price) || price <= 0) {
       showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.enterValidLimitPrice'));
-      return;
-    }
-
-    // LIMIT order price validation
-    if (isBuy && !new Decimal(price).lt(ask)) {
-      showError(
-        t('trade.errors.tradeFailedTitle'),
-        t('trade.errors.buyLimitPriceBelowAsk', { price, ask }),
-      );
-      return;
-    }
-    if (!isBuy && !new Decimal(price).gt(bid)) {
-      showError(
-        t('trade.errors.tradeFailedTitle'),
-        t('trade.errors.sellLimitPriceAboveBid', { price, bid }),
-      );
       return;
     }
 
@@ -254,11 +294,26 @@ export function submitTradePanelOrder(
 
     payload.price = String(price);
 
-    const totalCost = qty * price;
-    if (!isAvailableBalanceSufficient(calculatedAvailableBalance, totalCost)) {
+    if (hasMaxOrderValue && new Decimal(qty).mul(price).gt(maxOrderValue)) {
+      showMaxOrderValueError();
+      return;
+    }
+
+    if (isBuy) {
+      const totalCost = new Decimal(qty).mul(price).toNumber();
+      if (!isAvailableBalanceSufficient(quoteAvailableBalance, totalCost)) {
+        showError(
+          t('trade.errors.tradeFailedTitle'),
+          t('trade.errors.insufficientAvailableBalanceToPlaceOrder'),
+        );
+        return;
+      }
+    } else if (baseAvailableQuantity < qty) {
       showError(
         t('trade.errors.tradeFailedTitle'),
-        t('trade.errors.insufficientAvailableBalanceToPlaceOrder'),
+        t('trade.errors.insufficientAssetBalance', {
+          defaultValue: 'Insufficient available asset balance.',
+        }),
       );
       return;
     }
@@ -281,13 +336,10 @@ export function submitTradePanelOrder(
         (res.success === false || (typeof res.code === 'string' && res.code !== 'success'));
 
       if (hasBusinessError) {
-        const errorMessage =
-          (typeof res?.errors === 'string' && res.errors) ||
-          (typeof res?.message === 'string' && res.message) ||
-          (typeof res?.code === 'string' ? res.code : undefined) ||
-          t('trade.errors.failedCreateOrder');
-
-        showError(t('trade.errors.orderPlacementFailedTitle'), errorMessage);
+        showError(
+          t('trade.errors.orderPlacementFailedTitle'),
+          localizeApiError(res, t, 'trade.errors.failedCreateOrder'),
+        );
         return;
       }
 
@@ -322,12 +374,10 @@ export function submitTradePanelOrder(
         return;
       }
 
-      const message =
-        apiErrorMessage ||
-        (typeof err?.errors === 'string' && err.errors) ||
-        t('trade.errors.failedCreateOrder');
-
-      showError(t('trade.errors.orderPlacementFailedTitle'), message);
+      showError(
+        t('trade.errors.orderPlacementFailedTitle'),
+        localizeApiError(error, t, 'trade.errors.failedCreateOrder'),
+      );
     },
     onSettled: () => {
       submitLockRef.current = false;

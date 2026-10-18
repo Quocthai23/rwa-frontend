@@ -15,6 +15,9 @@ export async function GET(request: NextRequest) {
     accountId: searchParams.get('accountId') || '',
   };
 
+  const assetId = searchParams.get('assetId');
+  if (assetId) params.assetId = assetId;
+
   const take = searchParams.get('take');
   if (take) params.take = parseInt(take, 10);
 

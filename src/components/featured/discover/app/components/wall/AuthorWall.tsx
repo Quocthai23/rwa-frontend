@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   DotsHorizontal,
@@ -546,3 +546,4 @@ export function AuthorWall({ onOpenAuthorProfile, userId }: AuthorWallProps) {
     </div>
   );
 }
+

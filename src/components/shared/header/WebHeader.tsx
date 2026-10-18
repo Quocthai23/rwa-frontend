@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Eye, EyeOff, Moon01, ChevronDown, ChevronRight, Sun, Check } from '@untitledui/icons';
 import Image from 'next/image';
@@ -10,6 +10,7 @@ import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from 'react-i18next';
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
+import { IS_APP_PRODUCTION } from '@/constants/env';
 import { formatBalance } from '@/utils/currency';
 import type { SharedHeaderProps } from './AppHeader';
 import { useTheme } from '@/theme';
@@ -23,9 +24,10 @@ export type WebHeaderProps = Omit<SharedHeaderProps, 'label'> & {
   label?: string;
 };
 
-type HeaderMetricId = 'equity' | 'available' | 'totalPnl' | 'balance';
+type HeaderMetricId = 'totalCash' | 'available' | 'locked';
 
 type HeaderMetricOption = {
+  description: string;
   id: HeaderMetricId;
   label: string;
   value: string;
@@ -34,17 +36,12 @@ type HeaderMetricOption = {
 
 const HEADER_METRIC_STORAGE_KEY = 'web-header-selected-metrics';
 const HEADER_METRIC_MAX = 3;
-const FIXED_HEADER_METRIC_ID: HeaderMetricId = 'equity';
+const FIXED_HEADER_METRIC_ID: HeaderMetricId = 'totalCash';
 const MAX_OPTIONAL_HEADER_METRICS = HEADER_METRIC_MAX - 1;
-const DEFAULT_HEADER_METRIC_IDS: HeaderMetricId[] = [FIXED_HEADER_METRIC_ID, 'available', 'balance'];
+const DEFAULT_HEADER_METRIC_IDS: HeaderMetricId[] = ['available', 'locked', FIXED_HEADER_METRIC_ID];
 
 function isHeaderMetricId(value: string): value is HeaderMetricId {
-  return (
-    value === 'equity' ||
-    value === 'available' ||
-    value === 'totalPnl' ||
-    value === 'balance'
-  );
+  return value === 'totalCash' || value === 'available' || value === 'locked';
 }
 
 function normalizeHeaderMetricIds(ids: HeaderMetricId[]): HeaderMetricId[] {
@@ -92,8 +89,8 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
     ? 'demo'
     : 'live';
 
-  const { availableBalance, balance, currentUnrealizedPnl, equity } =
-    useAccountSummaryMetrics();
+  const { availableBalance, balance } = useAccountSummaryMetrics();
+  const lockedBalance = useMemo(() => balance.minus(availableBalance), [availableBalance, balance]);
 
   const handleSwitchMode = (mode: 'demo' | 'live') => {
     const nextAccount = accounts.find((account) =>
@@ -135,35 +132,31 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
   const metricOptions = useMemo<HeaderMetricOption[]>(
     () => [
       {
-        id: 'equity',
-        label: t('market.accountDropdown.equity', { defaultValue: 'Equity' }),
-        value: accountValue(`$${formatBalance(equity.toNumber())}`),
+        id: 'totalCash',
+        label: t('account.headerMetric.totalCash', { defaultValue: 'Tổng tiền' }),
+        description: t('account.headerMetric.totalCashDescription', {
+          defaultValue: 'Sức mua cộng tiền đang chờ khớp',
+        }),
+        value: accountValue(`${formatBalance(balance.toNumber())} VNĐ`),
       },
       {
         id: 'available',
         label: t('account.available', { defaultValue: 'Available' }),
-        value: accountValue(`$${formatBalance(availableBalance.toNumber())}`),
+        description: t('account.headerMetric.availableDescription', {
+          defaultValue: 'Có thể đặt lệnh hoặc rút',
+        }),
+        value: accountValue(`${formatBalance(availableBalance.toNumber())} VNĐ`),
       },
       {
-        id: 'totalPnl',
-        label: t('market.accountDropdown.profitLoss', { defaultValue: 'Total PnL' }),
-        value: accountValue(`${formatBalance(currentUnrealizedPnl.toNumber())}`),
-        valueClassName: currentUnrealizedPnl.gte(0) ? 'text-green-500' : 'text-red-500',
-      },
-      {
-        id: 'balance',
-        label: t('account.balance', { defaultValue: 'Balance' }),
-        value: accountValue(`$${formatBalance(balance.toNumber())}`),
+        id: 'locked',
+        label: t('account.headerMetric.locked', { defaultValue: 'Tiền chờ khớp' }),
+        description: t('account.headerMetric.lockedDescription', {
+          defaultValue: 'Đang được giữ cho các lệnh mở',
+        }),
+        value: accountValue(`${formatBalance(lockedBalance.toNumber())} VNĐ`),
       },
     ],
-    [
-      t,
-      accountValue,
-      equity,
-      availableBalance,
-      currentUnrealizedPnl,
-      balance,
-    ],
+    [t, accountValue, availableBalance, balance, lockedBalance],
   );
 
   const selectedMetrics = useMemo(() => {
@@ -249,7 +242,7 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
             <>
               <div className="no-scrollbar flex max-w-full min-w-0 shrink-0 items-center gap-2 overflow-x-auto sm:max-w-none md:gap-3">
                 {selectedMetrics.map((metric) =>
-                  metric.id === 'equity' || metric.id === 'available' ? (
+                  metric.id === 'totalCash' || metric.id === 'available' ? (
                     <div key={metric.id} className="max-[1208px]:hidden min-[1209px]:contents">
                       <Metric
                         label={metric.label}
@@ -281,8 +274,8 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
                       className="fixed inset-0 z-[1000]"
                       onClick={() => setShowAccountDropdown(false)}
                     />
-                    <div className="bg-background dark:bg-card absolute top-full right-0 z-[1000] mt-5 w-[min(360px,calc(100vw-1.5rem))] rounded-md border border-neutral-200 p-2 shadow-lg dark:border-neutral-800">
-                      <div className="grid grid-cols-2 gap-1.5">
+                    <div className="bg-background dark:bg-card absolute top-full right-0 z-[1000] mt-5 w-[min(440px,calc(100vw-1.5rem))] rounded-lg border border-neutral-200 p-3 shadow-lg dark:border-neutral-800">
+                      <div className="flex flex-col gap-1">
                         {metricOptions.map((metric) => {
                           const checked = selectedMetricIds.includes(metric.id);
                           const isFixedMetric = metric.id === FIXED_HEADER_METRIC_ID;
@@ -308,6 +301,7 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
                               checked={checked}
                               disabled={disabled}
                               disabledReason={disabledReason}
+                              description={metric.description}
                               label={metric.label}
                               value={metric.value}
                               valueColor={metric.valueClassName}
@@ -357,34 +351,36 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
               <DepositFlowSheet isOpen={showDepositSheet} onOpenChange={setShowDepositSheet} />
               <TopUpFlowSheet isOpen={showTopUpSheet} onOpenChange={setShowTopUpSheet} />
 
-              <div className="flex shrink-0 rounded bg-neutral-100 dark:bg-neutral-800">
-                <Button
-                  type="button"
-                  variant="white-contained"
-                  onClick={() => handleSwitchMode('demo')}
-                  aria-pressed={currentMode === 'demo'}
-                  className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
-                    currentMode === 'demo'
-                      ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
-                      : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
-                  }`}
-                >
-                  <span>{t('market.accountDropdown.demo')}</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="white-contained"
-                  onClick={() => handleSwitchMode('live')}
-                  aria-pressed={currentMode === 'live'}
-                  className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
-                    currentMode === 'live'
-                      ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
-                      : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
-                  }`}
-                >
-                  <span>{t('market.accountDropdown.live')}</span>
-                </Button>
-              </div>
+              {!IS_APP_PRODUCTION && (
+                <div className="flex shrink-0 rounded bg-neutral-100 dark:bg-neutral-800">
+                  <Button
+                    type="button"
+                    variant="white-contained"
+                    onClick={() => handleSwitchMode('demo')}
+                    aria-pressed={currentMode === 'demo'}
+                    className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
+                      currentMode === 'demo'
+                        ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
+                        : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
+                    }`}
+                  >
+                    <span>{t('market.accountDropdown.demo')}</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="white-contained"
+                    onClick={() => handleSwitchMode('live')}
+                    aria-pressed={currentMode === 'live'}
+                    className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
+                      currentMode === 'live'
+                        ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
+                        : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
+                    }`}
+                  >
+                    <span>{t('market.accountDropdown.live')}</span>
+                  </Button>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -448,10 +444,11 @@ function Metric({
   valueClassName?: string;
 }) {
   return (
-    <div className="min-w-[72px] shrink-0 text-right sm:min-w-[96px] md:min-w-[112px]">
+    <div className="max-w-[148px] min-w-[72px] shrink-0 text-right sm:min-w-[96px] md:min-w-[112px] xl:max-w-[168px]">
       <p className="text-caption-regular text-muted-foreground truncate tabular-nums">{label}</p>
       <p
-        className={`text-caption-regular sm:text-body-small-medium tabular-nums ${valueClassName ?? 'text-foreground'}`}
+        className={`text-caption-regular sm:text-body-small-medium truncate whitespace-nowrap tabular-nums ${valueClassName ?? 'text-foreground'}`}
+        title={value}
       >
         {value}
       </p>
@@ -463,6 +460,7 @@ function HeaderAccountMetricCard({
   checked = false,
   disabled = false,
   disabledReason,
+  description,
   label,
   onToggle,
   value,
@@ -471,6 +469,7 @@ function HeaderAccountMetricCard({
   checked?: boolean;
   disabled?: boolean;
   disabledReason?: string;
+  description: string;
   label: string;
   onToggle?: () => void;
   value: string;
@@ -484,21 +483,29 @@ function HeaderAccountMetricCard({
         disabled={disabled}
         className={cn(
           'w-full rounded p-1.5 text-left',
-          disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+          disabled
+            ? 'cursor-not-allowed'
+            : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900',
         )}
       >
-        <div className="flex items-start gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           <span
             className={`border-primary-500 dark:border-primary-500 dark:bg-background mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border ${checked ? 'border-primary-500 bg-primary-500 dark:bg-primary-500 text-neutral-900 text-white' : 'border-neutral-300 bg-neutral-100 text-transparent'}`}
           >
             <Check size={14} />
           </span>
-          <div className="min-w-0 text-left">
-            <p className="text-caption-regular text-muted-foreground text-left leading-none whitespace-nowrap tabular-nums">
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-body-small-medium text-foreground text-left leading-tight whitespace-nowrap">
               {label}
             </p>
+            <p className="text-caption-regular text-muted-foreground mt-0.5 truncate text-left">
+              {description}
+            </p>
+          </div>
+          <div className="max-w-[220px] min-w-0 shrink-0 text-right">
             <p
-              className={`text-body-small-semibold pt-[2px] text-left leading-tight tabular-nums ${valueColor ?? 'text-foreground'}`}
+              className={`text-body-small-semibold truncate whitespace-nowrap tabular-nums ${valueColor ?? 'text-foreground'}`}
+              title={value}
             >
               {value}
             </p>

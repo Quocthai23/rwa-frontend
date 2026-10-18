@@ -53,7 +53,6 @@ function FeedbackPage() {
     { label: t('feedback.types.deposit'), value: FeedbackType.Deposit },
     { label: t('feedback.types.others'), value: FeedbackType.Others },
     { label: t('feedback.types.events'), value: FeedbackType.Events },
-    { label: t('feedback.types.copyTrading'), value: FeedbackType.CopyTrading },
     { label: t('feedback.types.partnerHub'), value: FeedbackType.Partnership },
   ];
 
@@ -343,3 +342,4 @@ function FeedbackPage() {
 }
 
 export default memo(FeedbackPage);
+

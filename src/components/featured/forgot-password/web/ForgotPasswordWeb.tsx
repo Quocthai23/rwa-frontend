@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
-// layout-only web form — no Image/Link needed here
+// layout-only web form â€” no Image/Link needed here
 import { Check, ChevronLeft, Eye, EyeOff, X } from '@untitledui/icons';
 
 import { Button } from '@/components/shared/atoms/button';
@@ -238,7 +238,7 @@ export default function ForgotPasswordWeb() {
   const { hasMinLength, hasSpecialChar, hasUpperCase, hasLowerCase, hasDigit, passwordsMatch } =
     useMemo(() => {
       const min = password.length >= 8;
-      const special = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/?]/.test(password);
+      const special = /[!@#VNĐ%^&*()_+\-=[\]{};':"\\|,.<>\/?]/.test(password);
       const upper = /[A-Z]/.test(password);
       const lower = /[a-z]/.test(password);
       const digit = /\d/.test(password);
@@ -621,3 +621,4 @@ export default function ForgotPasswordWeb() {
     </div>
   );
 }
+

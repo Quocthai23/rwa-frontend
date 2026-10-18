@@ -22,7 +22,7 @@ export const useInfiniteOrders = (
       pageSize,
       params.status,
       params.side,
-      params.symbol,
+      params.assetId,
       params.orderType,
       params.fromDate,
       params.toDate,

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useMemo, useState, useEffect, useDeferredValue, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -318,3 +318,4 @@ const TabAsset = ({ searchText = '', onSelectSymbol, isTrade }: TabAssetProps) =
 };
 
 export default TabAsset;
+

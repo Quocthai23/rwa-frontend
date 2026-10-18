@@ -60,7 +60,7 @@ export const newsService = {
     }
 
     return apiClient.get<NewsDataResponse>(
-      NEWS_ENDPOINTS.LIST,
+      isServer ? NEWS_ENDPOINTS.LIST : '/api/news',
       searchParameters,
       { 
         baseUrl: isServer ? undefined : CLIENT_BASE_URL, 
@@ -73,7 +73,7 @@ export const newsService = {
   async getNewsTopics(): Promise<string[]> {
     try {
       const sources = await apiClient.get<any[]>(
-        NEWS_ENDPOINTS.SOURCES,
+        isServer ? NEWS_ENDPOINTS.SOURCES : '/api/news/topics',
         undefined,
         { baseUrl: isServer ? undefined : CLIENT_BASE_URL, skipAuth: true }
       );
@@ -85,3 +85,4 @@ export const newsService = {
     }
   },
 };
+

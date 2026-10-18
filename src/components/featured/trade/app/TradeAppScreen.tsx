@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -13,13 +13,10 @@ import { useToast } from '@/hook/useToast';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useInfiniteOrders } from '@/hook/useOrder';
-import {
-  isAvailableBalanceSufficient,
-} from '@/components/featured/position/utils/position.calculations';
+import { isAvailableBalanceSufficient } from '@/components/featured/position/utils/position.calculations';
 import { useAssetById } from '@/hook/useAssets';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
-import { normalizeLeverage } from '@/utils/leverage';
 import { isForexMarketOpen } from '@/utils/forexMarketHours';
 import { useTransactionStore } from '@/store/transactionStore';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
@@ -34,6 +31,10 @@ import {
   toPositiveAssetNumber,
 } from '@/components/shared/chart/components/tradePanel/utils/tradePanelInputHelpers';
 import { ORDER_SIDES, ORDER_TYPES, OrderStatus } from '@/types/orders';
+import { usePortfolioItem } from '@/hook/usePortfolio';
+import { generateUUID } from '@/utils/uuid';
+import { localizeApiError } from '@/i18n/apiErrors';
+import { BuyoutTradingOverview } from '../components/BuyoutTradingOverview';
 
 const ChartCommon = dynamic(() => import('@/components/chart/ChartCommon'), {
   ssr: false,
@@ -42,14 +43,18 @@ const ChartCommon = dynamic(() => import('@/components/chart/ChartCommon'), {
 
 const TRADE_VOLUME_BY_SYMBOL_KEY = 'tradeVolumeBySymbol';
 
-function TradeAppScreen() {
+function TradeAppScreen({ mode = 'standard' }: { mode?: 'standard' | 'buyout' }) {
   const { t } = useTranslation();
+  const isBuyoutMode = mode === 'buyout';
   const { colors } = useTheme();
   const router = useRouter();
   const params = useParams<{ symbol: string | string[] }>();
   const symbolParam = Array.isArray(params?.symbol) ? params.symbol[0] : params?.symbol;
   const [currentSymbol, setCurrentSymbol] = useState(symbolParam);
   const { data } = useAssetById(currentSymbol ?? '');
+  const buyoutBuyerLocked = Boolean(
+    data?.buyoutSummary?.status === 'ACTIVE' && data.buyoutSummary.viewerIsBuyer,
+  );
   const minTradeSize = useMemo(
     () => Math.max(toPositiveAssetNumber(data?.minTradeSize, 0.01), 0.01),
     [data?.minTradeSize],
@@ -236,7 +241,13 @@ function TradeAppScreen() {
   const initialAsk = Number.parseFloat(data?.ask || '0');
   const initialBid = Number.parseFloat(data?.bid || '0');
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
-  const leverage = normalizeLeverage(undefined, data?.maxLeverage, 100);
+  const { data: portfolioItem } = usePortfolioItem({
+    accountId: selectedAccount?.id || '',
+    assetId: data?.id,
+  });
+  const baseAvailableQuantity = Number(
+    portfolioItem?.availableQuantity ?? portfolioItem?.quantity ?? 0,
+  );
   const digit = data?.digit ?? 2;
 
   const ask = useMarketSocketStore((s) => s.rtBySymbol?.[currentSymbol]?.ask) ?? initialAsk;
@@ -246,6 +257,10 @@ function TradeAppScreen() {
   const { showError, showSuccess } = useToast();
   const { isPending, mutateAsync: createOrder } = useCreateOrder();
   const user = useAuthStore((s) => s.user);
+
+  const showBuyerLockedError = () => {
+    showError(t('trade.buyoutTrading.lockedTitle'), t('trade.buyoutTrading.buyerLockedShort'));
+  };
 
   const { availableBalance } = useAccountSummaryMetrics();
   const { refetch: refetchOrders } = useInfiniteOrders({
@@ -257,6 +272,10 @@ function TradeAppScreen() {
     side: (typeof ORDER_SIDES)[keyof typeof ORDER_SIDES],
     orderType: (typeof ORDER_TYPES)[keyof typeof ORDER_TYPES],
   ) => {
+    if (buyoutBuyerLocked) {
+      showBuyerLockedError();
+      return;
+    }
     if (!canTrade) {
       showError(
         t('trade.errors.connectionErrorTitle', { defaultValue: 'Connection Error' }),
@@ -271,12 +290,10 @@ function TradeAppScreen() {
     if (!currentSymbol) return;
 
     const categoryCode = data?.category?.code?.toUpperCase?.() ?? '';
-    if (categoryCode !== CATEGORY_CODE.CRYPTO && !isForexMarketOpen()) {
+    if (categoryCode === CATEGORY_CODE.FOREX && !isForexMarketOpen()) {
       showError(t('trade.errors.marketClosedTitle'), t('trade.errors.marketClosedForexMessage'));
       return;
     }
-
-    const contractSize = toPositiveAssetNumber(data?.contractSize, 100);
 
     if (!volumeInput) {
       setVolumeError(t('trade.validation.volumeRequired'));
@@ -340,16 +357,40 @@ function TradeAppScreen() {
 
     setVolumeBoth(qty);
 
+    if (!selectedAccount?.id) {
+      showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
+      return;
+    }
+
+    if (side === ORDER_SIDES.SELL && baseAvailableQuantity < qty) {
+      showError(
+        t('trade.errors.tradeFailedTitle'),
+        t('trade.errors.insufficientAssetBalance', {
+          defaultValue: 'Insufficient available asset balance.',
+        }),
+      );
+      return;
+    }
+
+    let maxTotalCost: string | undefined;
     if (orderType === ORDER_TYPES.MARKET) {
       const price = side === ORDER_SIDES.BUY ? ask : bid;
-      const totalCost = qty * price;
-      if (side === ORDER_SIDES.BUY && !isAvailableBalanceSufficient(availableBalance.toNumber(), totalCost)) {
+      if (!Number.isFinite(price) || price <= 0) {
+        showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
+        return;
+      }
+      const totalCost = qty * price * 1.01;
+      if (
+        side === ORDER_SIDES.BUY &&
+        !isAvailableBalanceSufficient(availableBalance.toNumber(), totalCost)
+      ) {
         showError(
           t('trade.errors.tradeFailedTitle'),
           t('trade.errors.insufficientAvailableBalance'),
         );
         return;
       }
+      if (side === ORDER_SIDES.BUY) maxTotalCost = String(totalCost);
     }
     if (!data?.id) {
       showError(t('trade.errors.tradeFailedTitle'), t('trade.errors.tradeFailedMessage'));
@@ -357,12 +398,14 @@ function TradeAppScreen() {
     }
     try {
       const response = await createOrder({
+        accountId: selectedAccount.id,
         assetId: data.id,
-        symbol: currentSymbol || '',
         type: orderType === ORDER_TYPES.LIMIT ? 'LIMIT' : 'MARKET',
         quantity: String(qty),
         side: side === ORDER_SIDES.BUY ? 'BUY' : 'SELL',
         price: orderType === ORDER_TYPES.LIMIT ? limitPrice : undefined,
+        maxTotalCost,
+        idempotencyKey: generateUUID(),
       });
       if (response) {
         showSuccess(
@@ -393,11 +436,10 @@ function TradeAppScreen() {
         return;
       }
 
-      const fallbackMessage =
-        apiErrorMessage ||
-        (error instanceof Error ? error.message : t('trade.errors.failedCreateOrder'));
-
-      showError(t('trade.errors.tradeFailedTitle'), fallbackMessage);
+      showError(
+        t('trade.errors.tradeFailedTitle'),
+        localizeApiError(error, t, 'trade.errors.failedCreateOrder'),
+      );
     }
   };
 
@@ -419,14 +461,18 @@ function TradeAppScreen() {
         window.history.replaceState(
           window.history.state,
           '',
-          `/trade/${encodeURIComponent(nextSymbol)}`,
+          `/${isBuyoutMode ? 'buyout-trading' : 'trade'}/${encodeURIComponent(nextSymbol)}`,
         );
       }
     },
-    [currentSymbol],
+    [currentSymbol, isBuyoutMode],
   );
 
   const openMarketTradePanel = () => {
+    if (buyoutBuyerLocked) {
+      showBuyerLockedError();
+      return;
+    }
     setSymbolTrade(currentSymbol);
     setIsOneClickEnabled(false);
     if (!tradePanelRef.current?.isOpen?.()) {
@@ -441,6 +487,10 @@ function TradeAppScreen() {
   };
 
   const openLimitPanel = () => {
+    if (buyoutBuyerLocked) {
+      showBuyerLockedError();
+      return;
+    }
     setSymbolTrade(currentSymbol);
     setIsOneClickEnabled(false);
     if (!tradePanelRef.current?.isOpen?.()) {
@@ -476,6 +526,7 @@ function TradeAppScreen() {
 
   const tradeContent = (
     <div className="bg-background text-foreground flex-1">
+      {isBuyoutMode ? <BuyoutTradingOverview asset={data} compact /> : null}
       <div ref={screenReference}>
         <TradeStickyHeader
           currentSymbol={currentSymbol}
@@ -530,6 +581,7 @@ function TradeAppScreen() {
         setVolumeBoth={setVolumeBoth}
         onSell={handleBottomSellPress}
         onBuy={handleBottomBuyPress}
+        disabled={buyoutBuyerLocked}
       />
     </div>
   );

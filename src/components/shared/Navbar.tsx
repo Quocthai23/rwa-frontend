@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -50,3 +50,4 @@ export function Navbar() {
 
   return experience === 'web' ? <WebNavbar /> : <AppNavbar />;
 }
+

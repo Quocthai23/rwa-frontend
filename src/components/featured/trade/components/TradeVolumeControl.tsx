@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ChevronDown, ChevronUp } from '@untitledui/icons';
 import {
@@ -153,3 +153,4 @@ export function TradeVolumeControl({
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { getSocketBaseUrl } from '@/utils/socketUrl';
+﻿import { getSocketBaseUrl } from '@/utils/socketUrl';
 import { io, type Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
@@ -44,7 +44,7 @@ type KlineSocketState = {
   disconnect: () => void;
   listeners: Map<string, Set<(candle: Candle) => void>>;
 
-  /** topicId = asset UUID (preferred) or symbol string — must match server kline keys */
+  /** topicId = asset UUID (preferred) or symbol string â€” must match server kline keys */
   subscribe: (topicId: string, timeframe: number, callback: (candle: Candle) => void) => void;
   unsubscribe: (topicId: string, timeframe: number, callback: (candle: Candle) => void) => void;
 };
@@ -218,7 +218,7 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
     });
 
     socket.on('connect_error', (error) => {
-      console.error('🔴 Kline socket error:', error);
+      console.error('đŸ”´ Kline socket error:', error);
     });
 
     // Listen to kline events
@@ -355,3 +355,4 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
     }
   },
 }));
+

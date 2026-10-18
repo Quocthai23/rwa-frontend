@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from '@untitledui/icons';
+﻿import { Eye, EyeOff } from '@untitledui/icons';
 import { memo, useEffect, useState } from 'react';
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { useAccountStore } from '@/store/useAccountStore';
@@ -76,7 +76,7 @@ const AccountInfo = () => {
 
           <div className="flex items-center gap-2">
             <span className="text-h1-semibold text-foreground">
-              {isBalanceVisible ? `$${formatBalance(balanceData?.currentBalance || '0')}` : '****'}
+              {isBalanceVisible ? `VNĐ${formatBalance(balanceData?.currentBalance || '0')}` : '****'}
             </span>
           </div>
           <Button onClick={handleShowDepositMethod} className="text-button-large-medium mt-2 py-2">
@@ -107,7 +107,7 @@ const AccountInfo = () => {
 
           <div className="flex items-center gap-2">
             <span className="text-h1-semibold text-foreground">
-              {isBalanceVisible ? `$${formatBalance(balanceData?.currentBalance || '0')}` : '****'}
+              {isBalanceVisible ? `VNĐ${formatBalance(balanceData?.currentBalance || '0')}` : '****'}
             </span>
 
             {isBalanceVisible && (
@@ -140,3 +140,4 @@ const AccountInfo = () => {
 };
 
 export default memo(AccountInfo);
+

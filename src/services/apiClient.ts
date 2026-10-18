@@ -1,4 +1,4 @@
-import ky, {
+﻿import ky, {
   HTTPError,
   type KyInstance,
   type Options as KyOptions,
@@ -17,7 +17,7 @@ const isBrowser = typeof window !== 'undefined';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const shouldLogRequests = SHOULD_LOG_REQUESTS;
 const LOGIN_PATH = '/login';
-const FORCE_LOGOUT_CODES = new Set(['refresh-failed']);
+const FORCE_LOGOUT_CODES = new Set(['auth-refresh-failed', 'refresh-failed', 'session-expired']);
 
 let isForceLogoutInProgress = false;
 
@@ -87,6 +87,17 @@ const forceLogoutAndRedirectToLogin = () => {
   isForceLogoutInProgress = true;
   tokenStorage.clearToken();
   useAuthStore.getState().logout();
+
+  // A protected request can finish after navigation to the login page. Do not
+  // call logout and replace /login with itself, otherwise every late 401 causes
+  // another full page load and creates an infinite refresh loop.
+  if (
+    window.location.pathname === LOGIN_PATH ||
+    window.location.pathname.startsWith(`${LOGIN_PATH}/`)
+  ) {
+    isForceLogoutInProgress = false;
+    return;
+  }
 
   void fetch('/api/auth/logout', {
     method: 'POST',
@@ -414,6 +425,27 @@ class ApiClient {
       hooks,
       retry: 0,
       timeout: 30000,
+      fetch: async (input, init) => {
+        if (typeof window !== 'undefined') {
+          return fetch(input, init);
+        }
+
+        // Server-side: Bypass Next.js bug with fetch(Request)
+        const req = input as Request;
+        const bodyText = req.body ? await req.text() : undefined;
+
+        const headers = new Headers();
+        req.headers.forEach((value, key) => headers.set(key, value));
+
+        return fetch(req.url, {
+          method: req.method,
+          headers,
+          body: bodyText,
+          credentials: req.credentials,
+          cache: req.cache,
+          redirect: req.redirect,
+        });
+      },
     });
 
     this.client = this.rawClient.extend({ prefixUrl: API_BASE });
@@ -462,6 +494,16 @@ class ApiClient {
 
     if (haveTotal) {
       const typed = data as PaginatedResponse<T>;
+
+      if (
+        typed.data &&
+        typeof typed.data === 'object' &&
+        'data' in typed.data &&
+        'total' in typed.data
+      ) {
+        return typed.data as unknown as T;
+      }
+
       return {
         data: typed.data,
         total: typed.total,
@@ -557,7 +599,7 @@ class ApiClient {
     // Clone response before consuming it if we want to read it again, but usually headers are fine to read after consumption
     const clonedResponse = response.clone();
     const data = await this.parseResponse<T>(response, haveTotal);
-    
+
     return { data, response: clonedResponse };
   }
 

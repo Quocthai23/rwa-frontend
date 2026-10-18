@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+﻿import React, { useId } from 'react';
 import { useTheme } from '@/theme';
 
 import type { Candle } from '@/services/marketService';
@@ -85,3 +85,4 @@ const MiniChart = ({
 };
 
 export default MiniChart;
+

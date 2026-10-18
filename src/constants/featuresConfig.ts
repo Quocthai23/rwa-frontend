@@ -90,42 +90,13 @@ export const FEATURES_CONFIG: Feature[] = [
     path: '/social',
     icon: Globe02,
   },
-  {
-    id: FeatureId.Copy,
-    label: 'Copy Trading',
-    labelKey: 'features.copyTrading',
-    path: '/copytrading',
-    icon: (({
-      size = 24,
-      className = '',
-      color,
-    }: {
-      size?: number;
-      className?: string;
-      color?: string;
-    }) =>
-      createElement('div', {
-        className: color ? className : `bg-current ${className}`.trim(),
-        style: {
-          width: size,
-          height: size,
-          backgroundColor: color,
-          WebkitMaskImage: 'url(/assets/icons/home/Frame.svg)',
-          WebkitMaskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-          maskImage: 'url(/assets/icons/home/Frame.svg)',
-          maskSize: 'contain',
-          maskRepeat: 'no-repeat',
-          maskPosition: 'center',
-        },
-      })) as unknown as UntitledIcon,
-  },
+
   {
     id: FeatureId.Chat,
     label: 'Chat',
     labelKey: 'features.chat',
-    path: '/',
+    // FIX 3.9: Was '/' which redirected to homepage instead of chat page
+    path: '/chat',
     icon: MessageChatSquare,
   },
   {
@@ -175,7 +146,7 @@ export const FEATURE_SECTIONS = [
   {
     title: 'Discover',
     titleKey: 'features.sections.discover',
-    featureIds: [FeatureId.Social, FeatureId.Copy, FeatureId.Chat],
+    featureIds: [FeatureId.Social, FeatureId.Chat],
   },
   {
     title: 'Event',
@@ -200,7 +171,6 @@ export const HOME_FEATURES_IDS: FeatureId[] = [
   FeatureId.Deposit,
   FeatureId.Withdraw,
   FeatureId.Social,
-  FeatureId.Copy,
   FeatureId.Chat,
   FeatureId.More,
 ];

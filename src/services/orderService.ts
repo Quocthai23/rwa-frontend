@@ -1,5 +1,10 @@
 import { ORDERS_ENDPOINTS } from '../constants/api';
-import type { CreateOrderPayload, CreateOrderResponse, GetOrdersParams, GetOrdersResponse, OrderItem } from '../types';
+import type {
+  CreateOrderPayload,
+  CreateOrderResponse,
+  GetOrdersParams,
+  GetOrdersResponse,
+} from '../types';
 
 import { apiClient } from './apiClient';
 
@@ -12,6 +17,13 @@ export const createOrderAPI = async (
   payload: CreateOrderPayload,
   authHeader?: string,
 ): Promise<CreateOrderResponse> => {
+  if (typeof window !== 'undefined' && !authHeader) {
+    return apiClient.post<CreateOrderResponse>('/api/create-order', payload, {
+      baseUrl: window.location.origin,
+      skipAuth: true,
+    });
+  }
+
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
 
   return apiClient.post<CreateOrderResponse>(ORDERS_ENDPOINTS.CREATE, payload, {
@@ -45,29 +57,25 @@ type UpdateOrderPayload = {
 
 export const updateOrderAPI = async (
   orderId: string,
-  accountId: string,
+  _accountId: string | null | undefined,
   payload: UpdateOrderPayload = {},
   authHeader?: string,
-): Promise<any> => {
+): Promise<unknown> => {
   const { cancel = false, price } = payload;
-  const updatePayload: any = {
+  const updatePayload: UpdateOrderPayload = {
     cancel,
   };
-  
+
   if (price !== undefined && price !== null) {
-    updatePayload.price = { price: String(price) };
+    updatePayload.price = String(price);
   }
 
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
-  
+
   // Use path parameter for orderId as per Swagger: PATCH /orders/{orderId}
-  const response = await apiClient.patch<any>(
-    ORDERS_ENDPOINTS.UPDATE(orderId),
-    updatePayload,
-    {
-      headers,
-    }
-  );
+  const response = await apiClient.patch<unknown>(ORDERS_ENDPOINTS.UPDATE(orderId), updatePayload, {
+    headers,
+  });
   return response;
 };
 
@@ -75,19 +83,15 @@ export const cancelAllOrdersAPI = async (
   accountId: string,
   authHeader?: string,
   orderIds?: string[],
-): Promise<any> => {
+): Promise<unknown> => {
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
-  
+
   const payload = {
     orderIds: orderIds || [], // Bulk cancel expects an array of IDs
   };
 
-  const response = await apiClient.post<any>(
-    ORDERS_ENDPOINTS.BULK_CANCEL,
-    payload,
-    {
-      headers,
-    }
-  );
+  const response = await apiClient.post<unknown>(ORDERS_ENDPOINTS.BULK_CANCEL, payload, {
+    headers,
+  });
   return response;
 };

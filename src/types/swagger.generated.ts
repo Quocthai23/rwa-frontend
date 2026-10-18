@@ -239,6 +239,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/user/portfolio/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get paginated portfolio holdings (Spot) */
+        get: operations["UsersController_getPortfolioItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/kyc/submit": {
         parameters: {
             query?: never;
@@ -429,6 +446,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/assets/{id}/market-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get latest market data for an asset */
+        get: operations["AssetsController_getAssetMarketData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/assets": {
         parameters: {
             query?: never;
@@ -609,6 +643,23 @@ export interface paths {
         put?: never;
         /** Request full asset redemption (requires 100% supply) */
         post: operations["RedemptionController_requestRedeem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/assets/{id}/redemptions/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current user redemption requests for a specific asset */
+        get: operations["RedemptionController_getMyRedemptions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -819,23 +870,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/payment/deposit-demo": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Deposit (demo account) */
-        post: operations["PaymentController_depositDemo"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/payment/create-wallet": {
         parameters: {
             query?: never;
@@ -870,6 +904,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/payment/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Withdrawal Request (alias → v2/withdraw) */
+        post: operations["PaymentController_withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payment/v2/transfer": {
         parameters: {
             query?: never;
@@ -881,6 +932,23 @@ export interface paths {
         put?: never;
         /** Transfer Funds V2 */
         post: operations["PaymentController_transferV2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payment/transfer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transfer Funds (alias → v2/transfer) */
+        post: operations["PaymentController_transfer"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1771,6 +1839,110 @@ export interface paths {
         patch: operations["DaoController_execute"];
         trace?: never;
     };
+    "/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List user accounts */
+        get: operations["AccountsController_findAll"];
+        put?: never;
+        /** Create a new trading account */
+        post: operations["AccountsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List available account types */
+        get: operations["AccountsController_getTypes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get specific account balance */
+        get: operations["AccountsController_getBalance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an account */
+        delete: operations["AccountsController_remove"];
+        options?: never;
+        head?: never;
+        /** Update account details */
+        patch: operations["AccountsController_update"];
+        trace?: never;
+    };
+    "/images/presigned-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get presigned URL for image upload */
+        get: operations["ImagesController_getPresignedUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/images/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Direct image upload */
+        post: operations["ImagesController_uploadImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1875,6 +2047,60 @@ export interface components {
              */
             reason: string;
         };
+        AssetMarketDataDto: {
+            /**
+             * @description Best sell price (ask) in USDT
+             * @example 50.5
+             */
+            sellPrice?: number;
+            /**
+             * @description Best buy price (bid) in USDT
+             * @example 50
+             */
+            buyPrice?: number;
+            /**
+             * @description Spread between ask and bid
+             * @example 0.5
+             */
+            spread?: number;
+            /**
+             * @description Traded volume in the last period
+             * @example 1200
+             */
+            volume?: number;
+            /**
+             * @description Sell percentage (market sell pressure)
+             * @example 62.5
+             */
+            sellPercent?: number;
+            /**
+             * @description Buy percentage (market buy pressure)
+             * @example 37.5
+             */
+            buyPercent?: number;
+            /**
+             * @description Change percent versus previous period
+             * @example -1.25
+             */
+            chgPercent?: number;
+            /**
+             * @description Lowest price in the period
+             * @example 49
+             */
+            low?: number;
+            /**
+             * @description Highest price in the period
+             * @example 52
+             */
+            high?: number;
+            /**
+             * Format: date-time
+             * @description Timestamp of the last update
+             */
+            lastUpdated?: string;
+            /** @description Optional source identifier for the market data (exchange, aggregator, etc.) */
+            source?: string;
+        };
         SubmitAssetOnboardingDto: {
             /** @description Legal document URLs (title deed, legal docs, custody authorization) */
             legalDocumentUrls: string[];
@@ -1909,6 +2135,22 @@ export interface components {
             expectedApy?: number;
             /** @description Whether this asset is highlighted as hot */
             isHot?: boolean;
+            /** @description Asset location/address */
+            location?: string;
+            /** @description Array of image URLs */
+            images?: Record<string, never>;
+            /** @description Total area */
+            area?: number;
+            /** @description Zoning / Planning information */
+            zoning?: string;
+            /** @description Business model / What it does */
+            businessModel?: string;
+            /** @description Monthly benefits / Cashflow */
+            monthlyBenefits?: string;
+            /** @description Title deed / Sổ đỏ image URL */
+            titleDeedImage?: string;
+            /** @description Optional latest market data snapshot */
+            marketData?: components["schemas"]["AssetMarketDataDto"];
         };
         UpdateAssetDto: {
             /**
@@ -2046,20 +2288,7 @@ export interface components {
              *       "reward_01J2XGHIJKL"
              *     ]
              */
-            rewardIds: string[];
-        };
-        DepositDemoDto: {
-            /**
-             * @description Deposit amount as a decimal string. Must be a valid positive number.
-             * @example 500.00
-             */
-            amount: string;
-            /**
-             * Format: uuid
-             * @description Client-generated UUID v4 to prevent duplicate deposit submissions (idempotency).
-             * @example 550e8400-e29b-41d4-a716-446655440000
-             */
-            idempotencyKey?: string;
+            rewardIds?: string[];
         };
         CreateWalletDto: {
             /**
@@ -2192,9 +2421,10 @@ export interface components {
         UpdateOrderDto: {
             /** @description Set to true to cancel the order. If true, other fields are ignored */
             cancel?: boolean;
-            price?: components["schemas"]["PriceObject"];
-            stopLossPrice?: components["schemas"]["PriceObject"];
-            takeProfitPrice?: components["schemas"]["PriceObject"];
+            /** @description Trading account identifier */
+            accountId?: string;
+            /** @description New limit/stop price. Only applicable for non-MARKET orders */
+            price?: string;
         };
         CreateOrderDto: {
             /** @description Asset ID */
@@ -2220,6 +2450,8 @@ export interface components {
             idempotencyKey?: string;
             /** @description Max total cost for MARKET BUY orders to lock funds safely. */
             maxTotalCost?: string;
+            /** @description Trading account identifier */
+            accountId?: string;
         };
         CreateSupportTicketDto: {
             /**
@@ -2557,6 +2789,18 @@ export interface components {
             description: string;
             /** @example Hanoi - Nam Tu Liem */
             location?: string;
+            /** @description Array of image URLs */
+            images?: Record<string, never>;
+            /** @description Total area */
+            area?: number;
+            /** @description Zoning / Planning information */
+            zoning?: string;
+            /** @description Business model / What it does */
+            businessModel?: string;
+            /** @description Monthly benefits / Cashflow */
+            monthlyBenefits?: string;
+            /** @description Title deed / Sổ đỏ image URL */
+            titleDeedImage?: string;
             /**
              * @description Expected appraisal value
              * @example 3500000000
@@ -2564,6 +2808,31 @@ export interface components {
             estimatedValue: string;
             /** @description Array of URLs for legal document images (title deed, IDs, etc.) */
             legalDocuments: string[];
+            /**
+             * @default ACCUMULATION
+             * @enum {string}
+             */
+            assetType: "INTEREST_BEARING" | "ACCUMULATION";
+            /**
+             * @description Monthly interest rate for INTEREST_BEARING assets
+             * @example 0.01
+             */
+            monthlyInterestRate?: string;
+            /**
+             * @description Penalty rate for late payments
+             * @example 0.05
+             */
+            penaltyRate?: string;
+            /**
+             * @description Percentage of tokens retained by the issuer
+             * @example 50
+             */
+            retainedTokenPercentage?: string;
+            /**
+             * @description Percentage of tokens released to the market
+             * @example 50
+             */
+            releasedTokenPercentage?: string;
         };
         AdminUpdateOnboardingStatusDto: {
             /** @enum {string} */
@@ -2625,10 +2894,29 @@ export interface components {
              * @example 2026-05-08T00:00:00.000Z
              */
             endDate: string;
+            /**
+             * @description Type of proposal
+             * @default GENERAL
+             * @enum {string}
+             */
+            type: "GENERAL" | "INCREASE_RELEASED_TOKEN_PERCENTAGE";
         };
         VoteProposalDto: {
             /** @description True: For, False: Against */
             isFor: boolean;
+        };
+        CreateAccountDto: {
+            /**
+             * Format: uuid
+             * @description Account type ID
+             */
+            accountTypeId: string;
+            /** @description Account name */
+            name: string;
+        };
+        UpdateAccountDto: {
+            /** @description Account name */
+            name?: string;
         };
         ValidationErrorItem: {
             field: string;
@@ -3183,6 +3471,34 @@ export interface operations {
             500: components["responses"]["InternalServerError"];
         };
     };
+    UsersController_getPortfolioItems: {
+        parameters: {
+            query?: {
+                skip?: string;
+                take?: string;
+                sortBy?: string;
+                sortDir?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
     KycController_submit: {
         parameters: {
             query?: never;
@@ -3248,9 +3564,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": Record<string, never>[];
-                };
+                content?: never;
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
@@ -3456,6 +3770,33 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    AssetsController_getAssetMarketData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetMarketDataDto"];
+                };
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
@@ -3777,6 +4118,31 @@ export interface operations {
             500: components["responses"]["InternalServerError"];
         };
     };
+    RedemptionController_getMyRedemptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
     RedemptionController_list: {
         parameters: {
             query?: never;
@@ -3871,9 +4237,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": Record<string, never>;
-                };
+                content?: never;
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
@@ -4095,33 +4459,6 @@ export interface operations {
             500: components["responses"]["InternalServerError"];
         };
     };
-    PaymentController_depositDemo: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DepositDemoDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-            429: components["responses"]["TooManyRequests"];
-            500: components["responses"]["InternalServerError"];
-        };
-    };
     PaymentController_createWallet: {
         parameters: {
             query?: never;
@@ -4176,7 +4513,61 @@ export interface operations {
             500: components["responses"]["InternalServerError"];
         };
     };
+    PaymentController_withdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WithdrawV2Dto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
     PaymentController_transferV2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferV2Dto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    PaymentController_transfer: {
         parameters: {
             query?: never;
             header?: never;
@@ -4401,6 +4792,18 @@ export interface operations {
                 status?: "PENDING" | "OPEN" | "PARTIALLY_FILLED" | "FILLED" | "CANCELLED" | "REJECTED";
                 /** @description Asset ID */
                 assetId?: string;
+                /** @description Trading account ID */
+                accountId?: string;
+                /** @description Order type */
+                orderType?: "MARKET" | "LIMIT";
+                /** @description Sort field (e.g. createdAt, price) */
+                sortBy?: string;
+                /** @description Sort direction */
+                sortDir?: "asc" | "desc";
+                /** @description Start date (ISO 8601) */
+                fromDate?: string;
+                /** @description End date (ISO 8601) */
+                toDate?: string;
             };
             header?: never;
             path?: never;
@@ -4472,9 +4875,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["CandlesResponse"];
-                };
+                content?: never;
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
@@ -4496,13 +4897,12 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Reference NAV and market price */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReferencePrice"];
+                    "application/json": Record<string, never>;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -4534,9 +4934,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["ValuationHistoryResponse"];
-                };
+                content?: never;
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
@@ -6299,6 +6697,210 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    AccountsController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    AccountsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAccountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    AccountsController_getTypes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    AccountsController_getBalance: {
+        parameters: {
+            query: {
+                accountId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    AccountsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    AccountsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAccountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    ImagesController_getPresignedUrl: {
+        parameters: {
+            query?: {
+                files?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    ImagesController_uploadImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

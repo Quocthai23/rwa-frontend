@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTheme } from '@/theme';
 import type { Account } from '@/types/account';
@@ -143,3 +143,4 @@ export default function HomeHeader() {
     </div>
   );
 }
+

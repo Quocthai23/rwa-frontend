@@ -22,6 +22,7 @@ export type TradeBottomBarProps = {
   setVolumeBoth: (next: number) => void;
   onSell: () => void;
   onBuy: () => void;
+  disabled?: boolean;
   bottomClassName?: string;
 };
 
@@ -41,6 +42,7 @@ export function TradeBottomBar({
   setVolumeBoth,
   onSell,
   onBuy,
+  disabled = false,
   bottomClassName,
 }: TradeBottomBarProps) {
   const { t } = useTranslation();
@@ -57,7 +59,8 @@ export function TradeBottomBar({
           <Button
             type="button"
             variant="red-contained"
-            className="w-full items-center justify-center gap-1 rounded-none py-2"
+            disabled={disabled}
+            className="w-full items-center justify-center gap-1 rounded-none py-2 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={onSell}
           >
             <span className="text-body-large-semibold text-white">{t('symbolDetail.sell')}</span>
@@ -86,7 +89,8 @@ export function TradeBottomBar({
           <Button
             type="button"
             variant="green-contained"
-            className="w-full items-center justify-center gap-1 rounded-none py-2"
+            disabled={disabled}
+            className="w-full items-center justify-center gap-1 rounded-none py-2 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={onBuy}
           >
             <span className="text-body-large-semibold text-white">{t('symbolDetail.buy')}</span>

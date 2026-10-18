@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useMarketSocketStore } from '@/store/marketSocketStore';
 import AccountInfo from '@/components/featured/home/AccountInfo';
 import PortfolioTabContent from '../web/components/tab/PortfolioTabContent';
 import OpenOrdersTabContent from '../web/components/tab/OpenOrdersTabContent';
@@ -17,7 +16,6 @@ export default function PositionAppScreen() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'portfolio' | 'orders' | 'history'>('portfolio');
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
-  const rtBySymbol = useMarketSocketStore((state) => state.rtBySymbol);
   const accountId = selectedAccount?.id || '';
 
   const { start, end } = getDefaultHistoryRange();
@@ -62,7 +60,7 @@ export default function PositionAppScreen() {
 
       <div className="flex-1 overflow-y-auto p-4">
         {activeTab === 'portfolio' && (
-          <PortfolioTabContent accountId={accountId} rtBySymbol={rtBySymbol} />
+          <PortfolioTabContent accountId={accountId} />
         )}
         {activeTab === 'orders' && <OpenOrdersTabContent accountId={accountId} />}
         {activeTab === 'history' && (

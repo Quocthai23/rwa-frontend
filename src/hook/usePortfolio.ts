@@ -80,6 +80,7 @@ export const usePortfolioItem = (params: { accountId: string; assetId?: string }
       }
       const result = await getPortfolioItems({
         accountId: params.accountId,
+        assetId: params.assetId,
         take: 1,
       });
       // Filter for specific asset

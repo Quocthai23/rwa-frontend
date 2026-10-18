@@ -30,6 +30,13 @@ function isValidPrice(value: number | undefined): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0;
 }
 
+function formatVnd(value: number, digit = 2): string {
+  return value.toLocaleString('vi-VN', {
+    minimumFractionDigits: digit,
+    maximumFractionDigits: digit,
+  });
+}
+
 export type TradeOrderPanelAsideProps = {
   assetId: string;
   isFavorite?: boolean;
@@ -89,16 +96,16 @@ export function TradeOrderPanelAside({
   const lastPriceValue = toFiniteNumberFromNumberish(lastPrice);
   const hasAsk = isValidPrice(askValue);
   const hasBid = isValidPrice(bidValue);
-  const hasLastPrice = isValidPrice(lastPriceValue);
   const hasBothPrices = hasAsk && hasBid;
-  const midText = hasBothPrices ? ((askValue + bidValue) / 2).toFixed(digit) : '--';
-  const bidText = hasBid ? bidValue.toFixed(digit) : '--';
-  const askText = hasAsk ? askValue.toFixed(digit) : '--';
-  const spreadText = hasBothPrices ? (askValue - bidValue).toFixed(digit) : '--';
+  const sellActionDisabled = disableOrderActions || (!isAsideLimitMode && !hasBid);
+  const buyActionDisabled = disableOrderActions || (!isAsideLimitMode && !hasAsk);
+  const bidText = hasBid ? formatVnd(bidValue, digit) : '--';
+  const askText = hasAsk ? formatVnd(askValue, digit) : '--';
 
   const triggerOneClickSubmit = useCallback(
     (side: 'buy' | 'sell') => {
-      if (!isOneClickEnabled || disableOrderActions) return;
+      const selectedSideDisabled = side === 'buy' ? buyActionDisabled : sellActionDisabled;
+      if (!isOneClickEnabled || selectedSideDisabled) return;
 
       // Defer submit one frame so the side-switch render can paint first.
       if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
@@ -112,7 +119,7 @@ export function TradeOrderPanelAside({
         asideOrderFormRef.current?.submitOrder(side);
       }, 0);
     },
-    [asideOrderFormRef, isOneClickEnabled, disableOrderActions],
+    [asideOrderFormRef, buyActionDisabled, isOneClickEnabled, sellActionDisabled],
   );
 
   const handleCapture = async () => {
@@ -175,7 +182,7 @@ export function TradeOrderPanelAside({
       className={cn(
         'bg-background flex h-full min-h-0 flex-col overflow-hidden transition-all duration-300 ease-in-out',
         expanded
-          ? 'border-border w-65 border-l px-2 py-3 opacity-100'
+          ? 'border-border w-80 border-l px-3 py-3 opacity-100'
           : 'pointer-events-none w-0 border-l-0 px-0 py-0 opacity-0',
       )}
     >
@@ -208,9 +215,9 @@ export function TradeOrderPanelAside({
             <div>
               <div className="flex items-center gap-1">
                 <p className={`text-display-sm font-semibold ${chgClass}`}>
-                  {lastPriceValue?.toFixed(digit) ?? '--'}
+                  {lastPriceValue == null ? '--' : formatVnd(lastPriceValue, digit)}
                 </p>
-                <span className="text-body-small-medium text-muted-foreground">USD</span>
+                <span className="text-body-small-medium text-muted-foreground">VNĐ</span>
                 {chg > 0 && <ArrowUp size={16} className="text-green-500" />}
                 {chg < 0 && <ArrowDown size={16} className="text-red-500" />}
               </div>
@@ -224,84 +231,55 @@ export function TradeOrderPanelAside({
           </div>
         </div>
 
-        <div className="relative grid grid-cols-2 gap-2">
+        <div className="bg-muted grid grid-cols-2 rounded-lg p-1">
           <Button
-            disabled={disableOrderActions}
+            variant="white-contained"
+            disabled={sellActionDisabled}
             onClick={() => {
               onOrderSideChange('sell');
               triggerOneClickSubmit('sell');
             }}
             className={cn(
-              'focus-visible:ring-primary-500 flex flex-col items-start gap-0 rounded px-3 py-2 text-left transition-shadow outline-none focus-visible:ring-2 active:opacity-80',
-              isOneClickEnabled
-                ? 'bg-red-500'
+              'focus-visible:ring-primary-500 flex flex-col items-center gap-0 rounded-md px-3 py-2 text-center shadow-none outline-none focus-visible:ring-2 disabled:pointer-events-none',
+              sellActionDisabled
+                ? 'text-muted-foreground bg-transparent'
                 : orderSide === 'sell'
-                  ? 'border border-red-500 bg-red-50 dark:bg-red-900'
-                  : 'bg-red-50 dark:bg-red-900',
+                  ? 'border-border bg-background !text-foreground shadow-sm'
+                  : '!text-foreground bg-transparent',
             )}
           >
-            <p
-              className={`${isOneClickEnabled
-                  ? 'text-body-small-medium text-white'
-                  : orderSide === 'sell'
-                    ? 'text-body-small-medium text-red-500 dark:text-white'
-                    : 'text-body-small-medium text-red-500 dark:text-white'
-                }`}
-            >
-              {t('trade.sell')}
-            </p>
-            <p
-              className={`${isOneClickEnabled
-                  ? 'text-body-small-medium text-white'
-                  : orderSide === 'sell'
-                    ? 'text-body-small-medium text-red-500 dark:text-white'
-                    : 'text-body-small-medium text-red-500 dark:text-white'
-                }`}
-            >
-              {bidText}
-            </p>
+            <p className="text-body-small-semibold">{t('trade.sell')}</p>
+            <p className="text-caption-regular">{bidText}</p>
           </Button>
           <Button
             type="button"
-            disabled={disableOrderActions}
+            variant="white-contained"
+            disabled={buyActionDisabled}
             onClick={() => {
               onOrderSideChange('buy');
               triggerOneClickSubmit('buy');
             }}
             className={cn(
-              'focus-visible:ring-primary-500 flex flex-col items-end gap-0 rounded px-3 py-2 text-right transition-shadow outline-none focus-visible:ring-2 active:opacity-80',
-              isOneClickEnabled
-                ? 'bg-green-500'
+              'focus-visible:ring-primary-500 flex flex-col items-center gap-0 rounded-md px-3 py-2 text-center shadow-none outline-none focus-visible:ring-2 disabled:pointer-events-none',
+              buyActionDisabled
+                ? 'text-muted-foreground bg-transparent'
                 : orderSide === 'buy'
-                  ? 'border border-green-500 bg-green-50 dark:bg-green-900'
-                  : 'bg-green-50 dark:bg-green-900',
+                  ? 'border-border bg-background !text-foreground shadow-sm'
+                  : '!text-foreground bg-transparent',
             )}
           >
-            <p
-              className={`${isOneClickEnabled
-                  ? 'text-body-small-medium text-white'
-                  : orderSide === 'buy'
-                    ? 'text-body-small-medium text-green-500 dark:text-white'
-                    : 'text-body-small-medium text-green-500 dark:text-white'
-                }`}
-            >
-              {t('trade.buy')}
-            </p>
-            <p
-              className={`${isOneClickEnabled
-                  ? 'text-body-small-medium text-white'
-                  : orderSide === 'buy'
-                    ? 'text-body-small-medium text-green-500 dark:text-white'
-                    : 'text-body-small-medium text-green-500 dark:text-white'
-                }`}
-            >
-              {askText}
-            </p>
+            <p className="text-body-small-semibold">{t('trade.buy')}</p>
+            <p className="text-caption-regular">{askText}</p>
           </Button>
-          <div className="border-primary-500 bg-primary-500 pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded border px-2 py-0.5">
-            <p className="text-body-small-medium text-white">{spreadText}</p>
-          </div>
         </div>
+        {!hasBothPrices && (
+          <p className="rounded-md bg-amber-50 px-3 py-2 text-xs leading-4 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+            {t('trade.orderForm.noBidAskHint', {
+              defaultValue:
+                'There is not yet enough buy/sell liquidity for a market order. You can still place a limit order below and wait for it to match.',
+            })}
+          </p>
+        )}
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <TradeWebAsideOrderForm
@@ -314,6 +292,7 @@ export function TradeOrderPanelAside({
             orderSide={orderSide}
             oneClickMode={isOneClickEnabled && !isAsideLimitMode}
             asideLimitMode={isAsideLimitMode}
+            tradingLocked={disableOrderActions}
             onAsideQuantityChange={onAsideQuantityLabelChange}
           />
         </div>

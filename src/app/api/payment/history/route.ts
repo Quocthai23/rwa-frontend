@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     take: Number(searchParams.get('take')) || 20,
     skip: Number(searchParams.get('skip')) || 0,
   };
+  const accountId = searchParams.get('accountId');
+  if (accountId) parameters.accountId = accountId;
 
   const startDate = searchParams.get('startDate');
   if (startDate) parameters.startDate = startDate;

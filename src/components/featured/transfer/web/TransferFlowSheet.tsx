@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Check, ChevronDown, X } from '@untitledui/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -200,6 +200,7 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
         {
           purpose: 'TRANSFER',
           payload: {
+            accountId: fromAccountId,
             amount,
             toEmail: recipientEmail.trim(),
           },
@@ -237,6 +238,7 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
         {
           purpose: 'TRANSFER',
           payload: {
+            accountId: fromAccountId,
             amount,
             toEmail: recipientEmail.trim(),
           },
@@ -285,12 +287,14 @@ export default function TransferFlowSheet({ isOpen, onOpenChange }: TransferFlow
     [showError, t],
   );
 
-  const transferPayload: Omit<TransferPayload, 'idempotencyKey' | 'challengeId'> | null = fromAccountId
-    ? {
-        amount,
-        toEmail: recipientEmail.trim(),
-      }
-    : null;
+  const transferPayload: Omit<TransferPayload, 'idempotencyKey' | 'challengeId'> | null =
+    fromAccountId
+      ? {
+          accountId: fromAccountId,
+          amount,
+          toEmail: recipientEmail.trim(),
+        }
+      : null;
 
   const transferAmount = Number.parseFloat(amount);
   const trimmedRecipientEmail = recipientEmail.trim();

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { getCountryFlag } from '@/services/calendarService';
 
 export type CountryFlagProps = {
@@ -35,3 +35,4 @@ export const CountryFlag: React.FC<CountryFlagProps> = ({ countryCode, className
     </span>
   );
 };
+

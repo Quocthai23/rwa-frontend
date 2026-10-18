@@ -1,19 +1,14 @@
-import { ASSETS_ENDPOINTS } from '../constants/api';
-import type { Asset, AssetMarketData, Category, GetAssetsParams, GetAssetsResponse } from '../types';
+﻿import { ASSETS_ENDPOINTS } from '../constants/api';
+import type { Asset, AssetMarketData, Category } from '../types';
 import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
 const isServer = typeof window === 'undefined';
 
-function normalizeAssetsParameters(parameters: GetAssetsParams) {
-  const { skip = 0, take = 20, ...rest } = parameters;
-
-  return {
-    skip,
-    take,
-    ...rest,
-  };
-}
+type AssetOnboardingJsonValue = boolean | null | number | string;
+type AssetOnboardingPayload = {
+  [key: string]: AssetOnboardingPayload | AssetOnboardingJsonValue | AssetOnboardingJsonValue[];
+};
 
 export const getAssetCategories = async (): Promise<Category[]> => {
   if (isServer) {
@@ -80,11 +75,51 @@ export const getAssetMarketData = async (assetId: string): Promise<AssetMarketDa
   });
 };
 
+export type AssetHolderDistribution = {
+  totalSupply: string;
+  holderCount: number;
+  circulatingSupply: DistributionBucket;
+  issuerReserve: DistributionBucket;
+  primaryOffering: DistributionBucket;
+  liquidityProvider: DistributionBucket;
+  unallocated: DistributionBucket;
+  ledgerSurplus: DistributionBucket;
+  topHolders: Array<{
+    userId: string;
+    publicGuestNumber: number;
+    avatar: string | null;
+    amount: string;
+    percentage: string;
+  }>;
+  others: {
+    holderCount: number;
+    amount: string;
+    percentage: string;
+  };
+};
+
+type DistributionBucket = {
+  amount: string;
+  percentage: string;
+};
+
+export const getAssetHolders = async (assetId: string): Promise<AssetHolderDistribution> => {
+  if (isServer) {
+    return apiClient.get<AssetHolderDistribution>(ASSETS_ENDPOINTS.HOLDERS(assetId), undefined, {
+      skipAuth: true,
+    });
+  }
+  return apiClient.get<AssetHolderDistribution>(`/api/assets/${assetId}/holders`, undefined, {
+    baseUrl: CLIENT_BASE_URL,
+    skipAuth: true,
+  });
+};
+
 export const submitAssetOnboardingAPI = async (
   assetId: string,
-  data: any, // Use proper DTO type if available
+  data: AssetOnboardingPayload,
   authHeader?: string,
-): Promise<any> => {
+): Promise<unknown> => {
   if (isServer) {
     const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
     return apiClient.post(ASSETS_ENDPOINTS.ONBOARDING(assetId), data, {

@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     accountId: searchParams.get('accountId') || '',
     take: searchParams.get('take') ? parseInt(searchParams.get('take')!) : undefined,
     cursor: searchParams.get('cursor') || undefined,
-    symbol: searchParams.get('symbol') || undefined,
+    assetId: searchParams.get('assetId') || undefined,
     side: sideParam === 'BUY' || sideParam === 'SELL' ? sideParam : undefined,
     orderType:
       orderTypeParam === 'MARKET' || orderTypeParam === 'LIMIT' ? orderTypeParam : undefined,

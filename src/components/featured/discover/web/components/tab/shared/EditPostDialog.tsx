@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowLeft, CameraPlus, XClose } from '@untitledui/icons';
 import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
@@ -315,7 +315,7 @@ export function EditPostDialog({
                   onClick={() => setIsEmojiPickerOpen((prev) => !prev)}
                   aria-label={t('discover.web.addEmoji', 'Add emoji')}
                 >
-                  <span aria-hidden>😊</span>
+                  <span aria-hidden>đŸ˜</span>
                 </Button>
               </div>
               <div ref={emojiPickerContainerRef} className="relative">
@@ -467,3 +467,4 @@ export function EditPostDialog({
     </Dialog>
   );
 }
+

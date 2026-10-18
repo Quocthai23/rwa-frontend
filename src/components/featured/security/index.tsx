@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 import { ChevronRight } from '@untitledui/icons';
@@ -195,3 +195,4 @@ export default function SecurityCenter() {
     </div>
   );
 }
+

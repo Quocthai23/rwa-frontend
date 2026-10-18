@@ -1,4 +1,4 @@
-// src/components/featured/forgot-password/ForgotPasswordInput.tsx
+﻿// src/components/featured/forgot-password/ForgotPasswordInput.tsx
 
 'use client';
 
@@ -144,3 +144,4 @@ export default function ForgotPasswordInput({
     </div>
   );
 }
+

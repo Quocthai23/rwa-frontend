@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -134,3 +134,4 @@ export default function EditGender({ open, onOpenChange }: EditGenderProps) {
     </Sheet>
   );
 }
+

@@ -5,7 +5,6 @@ export enum FeedbackType {
   Deposit = 2,
   Others = 3,
   Events = 4,
-  CopyTrading = 5,
   Partnership = 6,
 }
 
@@ -57,3 +56,4 @@ export const feedbackApi = {
     });
   },
 };
+

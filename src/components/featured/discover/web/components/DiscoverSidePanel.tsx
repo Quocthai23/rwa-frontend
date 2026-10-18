@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useRef, useState, Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -403,3 +403,4 @@ export function DiscoverSidePanel({
     </aside>
   );
 }
+

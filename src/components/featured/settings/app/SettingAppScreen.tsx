@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   ChevronRight,
@@ -325,3 +325,4 @@ function SettingsPage() {
 }
 
 export default memo(SettingsPage);
+

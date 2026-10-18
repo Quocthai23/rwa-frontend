@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshCcw01 } from '@untitledui/icons';
@@ -215,3 +215,4 @@ export default function HomeCalendar({ scrollableList = false }: { scrollableLis
     </div>
   );
 }
+

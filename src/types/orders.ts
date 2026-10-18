@@ -38,8 +38,6 @@ export const ORDER_SIDES = ORDER_SIDES_API;
 export type CreateOrderPayload = {
   /** Asset UUID (required) */
   assetId: string;
-  /** Asset symbol (e.g. PROPX) */
-  symbol: string;
   /** Order side: 'BUY' or 'SELL' */
   side: 'BUY' | 'SELL';
   /** Order type: 'MARKET' or 'LIMIT' */
@@ -48,6 +46,14 @@ export type CreateOrderPayload = {
   quantity: string;
   /** Entry price for LIMIT orders (required for LIMIT, ignored for MARKET) */
   price?: string;
+  /** Client-generated UUID used to make retries safe */
+  idempotencyKey?: string;
+  /** Maximum quote amount that a MARKET BUY may spend */
+  maxTotalCost?: string;
+  /** Minimum quote amount that a MARKET SELL may receive */
+  minTotalProceeds?: string;
+  /** Selected trading account */
+  accountId: string;
 };
 
 export type CreateOrderResponse = {
@@ -65,7 +71,7 @@ export type GetOrdersParams = {
   sortBy?: OrdersSortBy; // default createdAt
   sortDir?: SortDir; // default desc
   status?: ('PENDING' | 'OPEN' | 'PARTIALLY_FILLED' | 'FILLED' | 'CANCELLED' | 'REJECTED')[];
-  symbol?: string;
+  assetId?: string;
   take?: number; // default 20
   cursor?: string;
   // Used for server-side time range filtering (YYYY-MM-DD)
@@ -76,7 +82,7 @@ export type GetOrdersParams = {
 export type GetOrdersResponse = {
   data: OrderItem[];
   total?: number;
-  nextCursor?: string;
+  nextCursor?: string | null;
 };
 
 export type OrderItem = {

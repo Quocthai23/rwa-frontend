@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import AppHeader from '@/components/shared/header/AppHeader';
@@ -148,3 +148,4 @@ export default function RegisterInput({
     </div>
   );
 }
+

@@ -178,3 +178,4 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     </LexicalComposer>
   );
 });
+

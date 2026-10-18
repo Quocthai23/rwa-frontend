@@ -9,7 +9,14 @@ import {
 } from '@/app/api/_utils/auth';
 import { authApi } from '@/services/auth';
 
-type AuthChallengePurpose = 'LOGIN' | 'SETUP_MFA' | 'DISABLE_MFA' | 'WITHDRAW' | 'TRANSFER';
+type AuthChallengePurpose =
+  | 'LOGIN'
+  | 'SETUP_MFA'
+  | 'DISABLE_MFA'
+  | 'WITHDRAW'
+  | 'TRANSFER'
+  | 'BUYOUT_ESCROW'
+  | 'BUYOUT_INSTALLMENT';
 
 const PURPOSE_MAP: Record<string, AuthChallengePurpose> = {
   LOGIN: 'LOGIN',
@@ -18,6 +25,8 @@ const PURPOSE_MAP: Record<string, AuthChallengePurpose> = {
   WITHDRAW: 'WITHDRAW',
   WITHDRAWAL: 'WITHDRAW',
   TRANSFER: 'TRANSFER',
+  BUYOUT_ESCROW: 'BUYOUT_ESCROW',
+  BUYOUT_INSTALLMENT: 'BUYOUT_INSTALLMENT',
 };
 
 type CreateAuthChallengePayload = {
@@ -47,6 +56,8 @@ export async function POST(request: Request) {
       purpose === 'SETUP_MFA' ||
       purpose === 'WITHDRAW' ||
       purpose === 'TRANSFER' ||
+      purpose === 'BUYOUT_ESCROW' ||
+      purpose === 'BUYOUT_INSTALLMENT' ||
       purpose === 'DISABLE_MFA';
     const accessToken = requiresAuth ? getAccessTokenFromRequest(request) : undefined;
 

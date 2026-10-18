@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+﻿import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 
 import { authApi } from '@/services/auth';
@@ -39,3 +39,4 @@ export function useAuth() {
 
   return { loginMutation, registerMutation, loginSocialMutation };
 }
+

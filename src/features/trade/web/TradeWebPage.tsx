@@ -3,10 +3,10 @@
 import TradeWebScreen from '@/components/featured/trade/web/TradeWebScreen';
 import { WebLayout } from '@/components/layouts/WebLayout';
 
-export function TradeWebPage() {
+export function TradeWebPage({ mode = 'standard' }: { mode?: 'standard' | 'buyout' }) {
   return (
     <WebLayout>
-      <TradeWebScreen />
+      <TradeWebScreen mode={mode} />
     </WebLayout>
   );
 }

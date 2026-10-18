@@ -136,22 +136,38 @@ export const userApi = {
     payload: UpsertUserRelationRequest,
     accessToken?: string,
   ): Promise<UpsertUserRelationResponse> => {
-    // Temporarily disabled/mocked relation API calls to avoid backend errors
-    return {
-      isBlockedBy: false,
-      isBlocking: false,
-      isFollowing: payload.action === 'follow',
-    };
+    if (isServer) {
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+      return apiClient.put<UpsertUserRelationResponse>(`user/${userId}/relation`, payload, {
+        headers,
+        skipAuth: !accessToken,
+      });
+    }
+
+    return apiClient.put<UpsertUserRelationResponse>(`/api/user/${userId}/relation`, payload, {
+      baseUrl: CLIENT_BASE_URL,
+      skipAuth: false,
+    });
   },
 
   listMyRelations: async (
     params: ListMyRelationsRequest,
     accessToken?: string,
   ): Promise<ListMyRelationsResponse> => {
-    // Temporarily disabled/mocked relations list API
-    return {
-      data: [],
-      total: 0,
-    };
+    const query = toMyRelationsQuery(params);
+
+    if (isServer) {
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+      return apiClient.get<ListMyRelationsResponse>(`user/${params.userId}/relations`, query, {
+        headers,
+        skipAuth: !accessToken,
+      });
+    }
+
+    return apiClient.get<ListMyRelationsResponse>(`/api/user/${params.userId}/relations`, query, {
+      baseUrl: CLIENT_BASE_URL,
+      skipAuth: false,
+    });
   },
 };
+

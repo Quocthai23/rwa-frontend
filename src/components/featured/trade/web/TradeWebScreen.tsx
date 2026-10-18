@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -24,6 +24,7 @@ import { toPositiveAssetNumber } from '@/components/shared/chart/components/web/
 import type { TradeWebAsideOrderFormHandle } from './components/TradeWebAsideOrderForm';
 import { TradeWebMainContent } from './components/TradeWebMainContent';
 import type { TradePanelSheetHandle } from '@/components/shared/chart/components/web/TradePanelWeb';
+import { BuyoutTradingOverview } from '../components/BuyoutTradingOverview';
 
 const TRADE_WEB_LAYOUT_STORAGE_KEY = 'trade-web-layout-v1';
 const TRADE_SYMBOL_SELECTED_EVENT = 'trade:web:select-symbol';
@@ -59,12 +60,11 @@ function readPersistedTradeWebLayoutState(): TradeWebLayoutState {
 }
 
 function normalizeTradeSymbol(value: string | null | undefined): string {
-  const normalized = String(value ?? '').trim();
-  return normalized || 'XAUUSD';
+  return String(value ?? '').trim();
 }
 
 function getTradeSymbolFromPathname(pathname: string): string | null {
-  const match = pathname.match(/^\/trade\/([^/?#]+)/i);
+  const match = pathname.match(/^\/(?:trade|buyout-trading)\/([^/?#]+)/i);
   if (!match?.[1]) return null;
   try {
     return decodeURIComponent(match[1]);
@@ -73,8 +73,9 @@ function getTradeSymbolFromPathname(pathname: string): string | null {
   }
 }
 
-export default function TradeWebScreen() {
+export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard' | 'buyout' }) {
   const { t } = useTranslation();
+  const isBuyoutMode = mode === 'buyout';
   const pathname = usePathname() || '/trade';
   const searchParams = useSearchParams();
   const initialPathSymbol = useMemo(
@@ -140,6 +141,14 @@ export default function TradeWebScreen() {
           label: t(`market.categoryOptions.${key}`, { defaultValue: category.name }),
         };
       });
+    if (isBuyoutMode) {
+      return [
+        {
+          id: 'all',
+          label: t('trade.buyoutTrading.assetList'),
+        },
+      ];
+    }
     return [
       {
         id: 'all',
@@ -147,7 +156,7 @@ export default function TradeWebScreen() {
       },
       ...fromApi,
     ];
-  }, [assetCategories, t]);
+  }, [assetCategories, isBuyoutMode, t]);
 
   const validCategoryTabIds = useMemo(
     () => new Set(marketAsideCategoryTabs.map((tab) => tab.id)),
@@ -235,11 +244,14 @@ export default function TradeWebScreen() {
   );
 
   const rows = useMemo(() => {
+    if (isBuyoutMode) {
+      return vm.getRowsByTab('buyout');
+    }
     if (effectiveLeftTab === 'all') {
       return vm.getRowsByTab('popular');
     }
     return vm.getRowsByTab(effectiveLeftTab);
-  }, [effectiveLeftTab, vm]);
+  }, [effectiveLeftTab, isBuyoutMode, vm]);
 
   const displayRows = useMemo(() => rows, [rows]);
   const leftPanelSymbols = useMemo(
@@ -258,12 +270,23 @@ export default function TradeWebScreen() {
         window.history.replaceState(
           window.history.state,
           '',
-          `/trade/${encodeURIComponent(normalizedSymbol)}`,
+          `/${isBuyoutMode ? 'buyout-trading' : 'trade'}/${encodeURIComponent(normalizedSymbol)}`,
         );
       }
     },
-    [currentSymbol],
+    [currentSymbol, isBuyoutMode],
   );
+
+  useEffect(() => {
+    if (displayRows.length === 0) return;
+    if (currentSymbol && displayRows.some((row) => row.symbol === currentSymbol)) return;
+
+    const storedSymbol =
+      typeof window !== 'undefined' ? window.localStorage.getItem('lastTradeSymbol') : null;
+    const nextSymbol =
+      displayRows.find((row) => row.symbol === storedSymbol)?.symbol ?? displayRows[0]?.symbol;
+    if (nextSymbol) handleSymbolSelect(nextSymbol);
+  }, [currentSymbol, displayRows, handleSymbolSelect]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -312,126 +335,133 @@ export default function TradeWebScreen() {
   const digit = normalizeDigits(symbolAsset?.digit ?? 2);
   const chg = hashToPercent(currentSymbol || '');
   const chgClass = chg >= 0 ? 'text-green-500' : 'text-red-500';
+  const buyoutBuyerLocked = Boolean(
+    symbolAsset?.buyoutSummary?.status === 'ACTIVE' && symbolAsset.buyoutSummary.viewerIsBuyer,
+  );
   return (
     <>
-      <div
-        className={cn(
-          'bg-muted/30 border-border relative grid h-[calc(100dvh-72px)] gap-0 transition-[grid-template-columns] duration-300 ease-in-out dark:bg-neutral-950',
-          isCompactTradeLayout
-            ? isOrderPanelExpanded
-              ? 'grid-cols-[minmax(0,1fr)_264px]'
-              : 'grid-cols-[minmax(0,1fr)_0px]'
-            : isMarketPanelExpanded && isOrderPanelExpanded
-              ? 'grid-cols-[264px_minmax(0,1fr)_264px]'
-              : isMarketPanelExpanded && !isOrderPanelExpanded
-                ? 'grid-cols-[264px_minmax(0,1fr)_0px]'
-                : !isMarketPanelExpanded && isOrderPanelExpanded
-                  ? 'grid-cols-[0px_minmax(0,1fr)_264px]'
-                  : 'grid-cols-[0px_minmax(0,1fr)_0px]',
-        )}
-      >
-        {isCompactTradeLayout ? (
-          <>
-            {isMarketPanelExpanded ? (
-              <button
-                type="button"
-                className="absolute inset-0 z-10 bg-black/20"
-                aria-label={t('trade.web.mainContent.collapseMarketPanel')}
-                onClick={() => setIsMarketPanelExpanded(false)}
-              />
-            ) : null}
-            <div
-              className={cn(
-                'absolute inset-y-0 left-0 z-20 w-[280px] transition-transform duration-300 ease-in-out',
-                isMarketPanelExpanded ? 'translate-x-0' : 'pointer-events-none -translate-x-full',
-              )}
-            >
-              <TradeWebMarketAside
-                expanded
-                categoryTabs={marketAsideCategoryTabs}
-                leftTab={effectiveLeftTab}
-                onLeftTabChange={setLeftTab}
-                displayRows={displayRows}
-                rtBySymbol={rtBySymbol}
-                initialSymbol={currentSymbol}
-                onSymbolSelect={handleSymbolSelect}
-              />
-            </div>
-          </>
-        ) : (
-          <TradeWebMarketAside
-            expanded={isMarketPanelExpanded}
-            categoryTabs={marketAsideCategoryTabs}
-            leftTab={effectiveLeftTab}
-            onLeftTabChange={setLeftTab}
-            displayRows={displayRows}
-            rtBySymbol={rtBySymbol}
-            initialSymbol={currentSymbol}
+      <div className="bg-muted/30 flex h-[calc(100dvh-72px)] min-h-0 flex-col dark:bg-neutral-950">
+        {isBuyoutMode ? <BuyoutTradingOverview asset={symbolAsset} /> : null}
+        <div
+          className={cn(
+            'border-border relative grid min-h-0 flex-1 gap-0 transition-[grid-template-columns] duration-300 ease-in-out',
+            isCompactTradeLayout
+              ? isOrderPanelExpanded
+                ? 'grid-cols-[minmax(0,1fr)_320px]'
+                : 'grid-cols-[minmax(0,1fr)_0px]'
+              : isMarketPanelExpanded && isOrderPanelExpanded
+                ? 'grid-cols-[264px_minmax(0,1fr)_320px]'
+                : isMarketPanelExpanded && !isOrderPanelExpanded
+                  ? 'grid-cols-[264px_minmax(0,1fr)_0px]'
+                  : !isMarketPanelExpanded && isOrderPanelExpanded
+                    ? 'grid-cols-[0px_minmax(0,1fr)_320px]'
+                    : 'grid-cols-[0px_minmax(0,1fr)_0px]',
+          )}
+        >
+          {isCompactTradeLayout ? (
+            <>
+              {isMarketPanelExpanded ? (
+                <button
+                  type="button"
+                  className="absolute inset-0 z-10 bg-black/20"
+                  aria-label={t('trade.web.mainContent.collapseMarketPanel')}
+                  onClick={() => setIsMarketPanelExpanded(false)}
+                />
+              ) : null}
+              <div
+                className={cn(
+                  'absolute inset-y-0 left-0 z-20 w-[280px] transition-transform duration-300 ease-in-out',
+                  isMarketPanelExpanded ? 'translate-x-0' : 'pointer-events-none -translate-x-full',
+                )}
+              >
+                <TradeWebMarketAside
+                  expanded
+                  categoryTabs={marketAsideCategoryTabs}
+                  leftTab={effectiveLeftTab}
+                  onLeftTabChange={setLeftTab}
+                  displayRows={displayRows}
+                  rtBySymbol={rtBySymbol}
+                  initialSymbol={currentSymbol}
+                  onSymbolSelect={handleSymbolSelect}
+                />
+              </div>
+            </>
+          ) : (
+            <TradeWebMarketAside
+              expanded={isMarketPanelExpanded}
+              categoryTabs={marketAsideCategoryTabs}
+              leftTab={effectiveLeftTab}
+              onLeftTabChange={setLeftTab}
+              displayRows={displayRows}
+              rtBySymbol={rtBySymbol}
+              initialSymbol={currentSymbol}
+              onSymbolSelect={handleSymbolSelect}
+            />
+          )}
+
+          <TradeWebMainContent
+            tradeShareCaptureRef={tradeShareCaptureRef}
+            isMarketPanelExpanded={isMarketPanelExpanded}
+            setIsMarketPanelExpanded={setIsMarketPanelExpanded}
+            isOrderPanelExpanded={isOrderPanelExpanded}
+            setIsOrderPanelExpanded={setIsOrderPanelExpanded}
+            isPositionPanelExpanded={isPositionPanelExpanded}
+            setIsPositionPanelExpanded={setIsPositionPanelExpanded}
+            toggleAsideLimitMode={toggleAsideLimitMode}
+            isAsideLimitMode={isAsideLimitMode}
+            isOneClickEnabled={isOneClickEnabled}
+            isAcceptedTerms={isAcceptedTerms}
+            onOneClickHeaderPress={handleOneClickHeaderPress}
+            currentSymbol={currentSymbol}
             onSymbolSelect={handleSymbolSelect}
+            symbolAssetId={symbolAsset?.id}
           />
-        )}
 
-        <TradeWebMainContent
-          tradeShareCaptureRef={tradeShareCaptureRef}
-          isMarketPanelExpanded={isMarketPanelExpanded}
-          setIsMarketPanelExpanded={setIsMarketPanelExpanded}
-          isOrderPanelExpanded={isOrderPanelExpanded}
-          setIsOrderPanelExpanded={setIsOrderPanelExpanded}
-          isPositionPanelExpanded={isPositionPanelExpanded}
-          setIsPositionPanelExpanded={setIsPositionPanelExpanded}
-          toggleAsideLimitMode={toggleAsideLimitMode}
-          isAsideLimitMode={isAsideLimitMode}
-          isOneClickEnabled={isOneClickEnabled}
-          isAcceptedTerms={isAcceptedTerms}
-          onOneClickHeaderPress={handleOneClickHeaderPress}
-          currentSymbol={currentSymbol}
-          onSymbolSelect={handleSymbolSelect}
-          symbolAssetId={symbolAsset?.id}
-        />
-
-        <TradeOrderPanelAside
-          assetId={symbolAsset?.id ?? ''}
-          isFavorite={symbolAsset?.isFavorite}
-          expanded={isOrderPanelExpanded}
-          selectedAssetName={selectedAssetName}
-          currentSymbol={currentSymbol}
-          ask={ask}
-          bid={bid}
-          lastPrice={lastPrice}
-          digit={digit}
-          chg={chg}
-          chgClass={chgClass}
-          limitPrice={limitPrice}
-          setLimitPrice={setLimitPrice}
-          tradePanelRef={tradePanelRef}
-          asideOrderFormRef={asideOrderFormRef}
-          isOneClickEnabled={isOneClickEnabled}
-          isAsideLimitMode={isAsideLimitMode}
-          orderSide={asideOrderSide}
-          onOrderSideChange={setAsideOrderSide}
-          onAsideQuantityLabelChange={setAsideQuantityLabel}
-          shareCaptureRef={tradeShareCaptureRef}
-        />
-
-        {!isOrderPanelExpanded ? (
-          <TradeFloatingOneClickBar
-            bid={bid}
+          <TradeOrderPanelAside
+            assetId={symbolAsset?.id ?? ''}
+            isFavorite={symbolAsset?.isFavorite}
+            expanded={isOrderPanelExpanded}
+            selectedAssetName={selectedAssetName}
+            currentSymbol={currentSymbol}
             ask={ask}
+            bid={bid}
+            lastPrice={lastPrice}
             digit={digit}
-            minTradeSize={minTradeSize}
-            maxTradeSize={maxTradeSize}
-            volume={asideQuantityLabel}
-            volumeInput={asideQuantityLabel}
+            chg={chg}
+            chgClass={chgClass}
+            limitPrice={limitPrice}
+            setLimitPrice={setLimitPrice}
+            tradePanelRef={tradePanelRef}
+            asideOrderFormRef={asideOrderFormRef}
             isOneClickEnabled={isOneClickEnabled}
             isAsideLimitMode={isAsideLimitMode}
-            asideOrderFormRef={asideOrderFormRef}
-            onOpenAsideForLimitOrder={(side) => {
-              setAsideOrderSide(side);
-              setIsAsideLimitMode(true);
-              setIsOrderPanelExpanded(true);
-            }}
+            disableOrderActions={buyoutBuyerLocked}
+            orderSide={asideOrderSide}
+            onOrderSideChange={setAsideOrderSide}
+            onAsideQuantityLabelChange={setAsideQuantityLabel}
+            shareCaptureRef={tradeShareCaptureRef}
           />
-        ) : null}
+
+          {!isOrderPanelExpanded && !buyoutBuyerLocked ? (
+            <TradeFloatingOneClickBar
+              bid={bid}
+              ask={ask}
+              digit={digit}
+              minTradeSize={minTradeSize}
+              maxTradeSize={maxTradeSize}
+              volume={asideQuantityLabel}
+              volumeInput={asideQuantityLabel}
+              isOneClickEnabled={isOneClickEnabled}
+              isAsideLimitMode={isAsideLimitMode}
+              asideOrderFormRef={asideOrderFormRef}
+              onOpenAsideForLimitOrder={(side) => {
+                setAsideOrderSide(side);
+                setIsAsideLimitMode(true);
+                setIsOrderPanelExpanded(true);
+              }}
+            />
+          ) : null}
+        </div>
       </div>
 
       <OneClickTrading

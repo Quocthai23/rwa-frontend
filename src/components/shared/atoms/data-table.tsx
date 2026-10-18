@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { ReactNode } from 'react';
 
@@ -216,3 +216,4 @@ export function DataTable<T, K extends string>({
     </Table>
   );
 }
+

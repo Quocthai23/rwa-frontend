@@ -1,4 +1,4 @@
-import { Check } from '@untitledui/icons';
+﻿import { Check } from '@untitledui/icons';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/shared/atoms/button';
@@ -215,3 +215,4 @@ export default function MarketFilterSheet({
     </Sheet>
   );
 }
+

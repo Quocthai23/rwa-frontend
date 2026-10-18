@@ -3,10 +3,10 @@
 import TradeAppScreen from '@/components/featured/trade/app/TradeAppScreen';
 import { AppLayout } from '@/components/layouts/AppLayout';
 
-export function TradeAppPage() {
+export function TradeAppPage({ mode = 'standard' }: { mode?: 'standard' | 'buyout' }) {
   return (
     <AppLayout>
-      <TradeAppScreen />
+      <TradeAppScreen mode={mode} />
     </AppLayout>
   );
 }

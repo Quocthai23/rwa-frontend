@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { InfoCircle } from '@untitledui/icons';
@@ -106,6 +106,7 @@ export default function WithdrawDetail() {
         {
           purpose: 'WITHDRAW',
           payload: {
+            accountId: selectedAccount?.id || '',
             amount,
             destinationAddress: normalizedAddress,
             chainId,
@@ -144,6 +145,7 @@ export default function WithdrawDetail() {
         {
           purpose: 'WITHDRAW',
           payload: {
+            accountId: selectedAccount?.id || '',
             amount,
             destinationAddress: normalizedAddress,
             chainId,
@@ -201,7 +203,7 @@ export default function WithdrawDetail() {
             <Image
               className="h-6 w-6 shrink-0"
               src="/assets/icons/Coin.svg"
-              alt={t('withdraw.common.usdt')}
+              alt={t('withdraw.common.VNDT')}
               width={24}
               height={24}
             />
@@ -213,7 +215,7 @@ export default function WithdrawDetail() {
           {/* Wallet EVM address */}
           <div className="mb-3 flex items-center">
             <span className="text-body-large-semibold text-foreground mr-1">
-              {t('withdraw.detail.walletUsdtAddress')}
+              {t('withdraw.detail.walletVNDTAddress')}
             </span>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -231,7 +233,7 @@ export default function WithdrawDetail() {
                 className="max-w-[min(18rem,calc(100vw-2rem))]"
               >
                 <p className="text-left leading-relaxed">
-                  <span className="font-semibold">{t('withdraw.detail.walletUsdtAddress')}</span>{' '}
+                  <span className="font-semibold">{t('withdraw.detail.walletVNDTAddress')}</span>{' '}
                   {t('withdraw.detail.walletAddressHelpDescription')}
                 </p>
               </TooltipContent>
@@ -413,6 +415,7 @@ export default function WithdrawDetail() {
               recipientEmail={userEmail}
               challengeId={challengeId}
               withdrawPayload={{
+                accountId: selectedAccount?.id || '',
                 amount,
                 destinationAddress: normalizedAddress,
                 chainId,

@@ -1,4 +1,4 @@
-import {
+﻿import {
   errorResponse,
   getErrorMessage,
   getErrorStatus,
@@ -44,21 +44,26 @@ export async function POST(request: Request) {
     }
 
     const accessTokenHeader = getAccessTokenFromRequest(request);
-    
+
     const backendUrl = API_BASE_URL || 'http://localhost:3001';
-    
-    const { data: response, response: backendResponse } = await apiClient.postWithResponse<VerifyAuthChallengeResponse>('auth/challenge/verify', {
-      challengeId,
-      factor,
-      code,
-    }, {
-      baseUrl: backendUrl,
-      skipAuth: !accessTokenHeader,
-      headers: accessTokenHeader ? { Authorization: `Bearer ${accessTokenHeader}` } : {},
-    });
+
+    const { data: response, response: backendResponse } =
+      await apiClient.postWithResponse<VerifyAuthChallengeResponse>(
+        'auth/challenge/verify',
+        {
+          challengeId,
+          factor,
+          code,
+        },
+        {
+          baseUrl: backendUrl,
+          skipAuth: !accessTokenHeader,
+          headers: accessTokenHeader ? { Authorization: `Bearer ${accessTokenHeader}` } : {},
+        },
+      );
 
     const nextResponse = successResponse(response, 200);
-    
+
     if (response.completed === true && 'accessToken' in response && response.accessToken) {
       const setCookies = backendResponse.headers.getSetCookie();
       setCookies.forEach((cookie) => {
@@ -67,6 +72,7 @@ export async function POST(request: Request) {
 
       setAuthCookies(nextResponse, {
         accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
       });
     }
 

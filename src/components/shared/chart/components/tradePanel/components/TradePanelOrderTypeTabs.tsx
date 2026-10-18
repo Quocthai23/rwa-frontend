@@ -1,4 +1,4 @@
-import { TABS } from '../utils/tradePanelUtils';
+﻿import { TABS } from '../utils/tradePanelUtils';
 
 type Tab = (typeof TABS)[number];
 
@@ -39,3 +39,4 @@ export function TradePanelOrderTypeTabs({
     </div>
   );
 }
+

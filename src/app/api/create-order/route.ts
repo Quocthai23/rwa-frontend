@@ -1,4 +1,4 @@
-import { ORDERS_ENDPOINTS } from '@/constants/api';
+﻿import { ORDERS_ENDPOINTS } from '@/constants/api';
 import { apiClient } from '@/services/apiClient';
 import type { CreateOrderPayload, CreateOrderResponse } from '@/types/orders';
 import { NextRequest, NextResponse } from 'next/server';
@@ -20,3 +20,4 @@ export async function POST(request: NextRequest) {
     (data) => NextResponse.json(data),
   );
 }
+

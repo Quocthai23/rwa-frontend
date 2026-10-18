@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { SearchLg } from '@untitledui/icons';
 import { usePathname, useRouter } from 'next/navigation';
@@ -377,3 +377,4 @@ export default function Search({
     </div>
   );
 }
+

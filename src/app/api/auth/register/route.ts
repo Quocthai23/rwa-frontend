@@ -47,11 +47,11 @@ export async function POST(request: Request) {
     if (body.referenceCode) payload.referenceCode = body.referenceCode;
     if (registerToken) payload.registerToken = registerToken;
 
-    const { data: response, response: backendResponse } = await apiClient.postWithResponse<RegisterApiResponse>('auth/register', payload, {
-      baseUrl: backendUrl,
-      skipAuth: true,
-    });
-
+    const { data: response, response: backendResponse } =
+      await apiClient.postWithResponse<RegisterApiResponse>('auth/register', payload, {
+        baseUrl: backendUrl,
+        skipAuth: true,
+      });
 
     const accessToken = response?.accessToken;
 
@@ -74,7 +74,10 @@ export async function POST(request: Request) {
       nextResponse.headers.append('Set-Cookie', cookie);
     });
 
-    setAuthCookies(nextResponse, { accessToken });
+    setAuthCookies(nextResponse, {
+      accessToken,
+      refreshToken: response?.refreshToken,
+    });
 
     return nextResponse;
   } catch (error) {

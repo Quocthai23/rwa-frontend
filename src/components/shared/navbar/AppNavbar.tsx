@@ -103,7 +103,9 @@ export default function AppNavbar() {
           const activePrefix = (item as { activePrefix?: string }).activePrefix;
           const isActive = activePrefix
             ? pathname.startsWith(activePrefix)
-            : pathname === item.href || pathname.startsWith(item.href);
+            // FIX 3.8: Use exact match OR sub-path match (/path/) to prevent false positives
+            // e.g. /market should NOT be active when at /market-cap
+            : pathname === item.href || pathname.startsWith(item.href + '/');
 
           return (
             <Link
@@ -145,3 +147,4 @@ export default function AppNavbar() {
     </nav>
   );
 }
+

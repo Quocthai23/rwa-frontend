@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { InfoCircle } from '@untitledui/icons';
 import { useTheme } from '@/theme';
@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 export type WithdrawData = {
   accountId: string;
-  address: string;
+  address?: string;
   amount: string;
   chainId: string;
 };
@@ -42,14 +42,6 @@ const WithdrawConfirm: React.FC<Props> = ({ withdrawData, isPending, onConfirm }
         </div>
 
         <div className="border-border mb-6 flex flex-col gap-3 rounded-lg border p-3">
-          <div className="flex items-start justify-between gap-4">
-            <span className="text-body-small-regular" style={{ color: colors.neutral500 }}>
-              {t('withdraw.confirm.walletAddress')}
-            </span>
-            <span className="text-right font-medium" style={{ color: colors.neutral900 }}>
-              {truncateAddress(withdrawData.address)}
-            </span>
-          </div>
           <div className="flex items-center justify-between">
             <span className="text-body-small-regular" style={{ color: colors.neutral500 }}>
               {t('withdraw.confirm.network')}
@@ -57,7 +49,7 @@ const WithdrawConfirm: React.FC<Props> = ({ withdrawData, isPending, onConfirm }
             <span className="font-medium" style={{ color: colors.neutral900 }}>
               {/* {CHAINS_NAME?.[network ?? 'Binance Smart Chain']} (
               {TOKEN_NAME?.[network ?? 'Binance Smart Chain']}) */}
-              {t('withdraw.confirm.usdtEthereum')}
+              {t('withdraw.confirm.VNDTEthereum')}
             </span>
           </div>
 
@@ -82,7 +74,7 @@ const WithdrawConfirm: React.FC<Props> = ({ withdrawData, isPending, onConfirm }
           <div className="flex items-center justify-between">
             <span style={{ color: colors.neutral500 }}>{t('withdraw.common.amountReceived')}</span>
             <span className="font-medium" style={{ color: colors.neutral900 }}>
-              {t('withdraw.common.amountWithUsdt', { amount: formatPriceDecimal(amountReceived) })}
+              {t('withdraw.common.amountWithVNDT', { amount: formatPriceDecimal(amountReceived) })}
             </span>
           </div>
         </div>
@@ -102,3 +94,4 @@ const WithdrawConfirm: React.FC<Props> = ({ withdrawData, isPending, onConfirm }
 };
 
 export default WithdrawConfirm;
+

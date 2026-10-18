@@ -1,4 +1,4 @@
-import { Minus, Plus } from '@untitledui/icons';
+﻿import { Minus, Plus } from '@untitledui/icons';
 import type { DecimalValue } from '@/types/decimal';
 
 import {
@@ -80,3 +80,4 @@ export function TradePanelLimitPriceField({
     </div>
   );
 }
+

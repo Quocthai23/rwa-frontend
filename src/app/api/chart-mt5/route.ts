@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+﻿import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export async function GET() {
@@ -25,3 +25,4 @@ export async function GET() {
     },
   });
 }
+

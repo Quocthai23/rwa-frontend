@@ -1,13 +1,13 @@
-import {
+﻿import {
   type CreateWalletPayload,
   type CreateWalletResponse,
-  type DepositDemoPayload,
-  type DepositDemoResponse,
   type WithdrawPayload,
   type WithdrawResponse,
   type GetPaymentHistoryParams,
   type GetPaymentHistoryResponse,
   type TransferPayload,
+  type PayosCheckoutPayload,
+  type PayosCheckoutResponse,
 } from '../types/payment';
 
 import { apiClient } from './apiClient';
@@ -16,22 +16,19 @@ import { CLIENT_BASE_URL } from './baseUrl';
 
 const isServer = typeof window === 'undefined';
 
-export const depositDemo = async (payload: DepositDemoPayload, accessToken?: string) => {
+export const payosCheckout = async (payload: PayosCheckoutPayload, accessToken?: string) => {
   if (isServer) {
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-
-    return apiClient.post<DepositDemoResponse>(PAYMENT_ENDPOINTS.DEPOSIT_DEMO, payload, {
+    return apiClient.post<PayosCheckoutResponse>('/payment/payos/checkout', payload, {
       headers,
       skipAuth: !accessToken,
     });
   }
-
-  return apiClient.post<DepositDemoResponse>('/api/payment/deposit-demo', payload, {
+  return apiClient.post<PayosCheckoutResponse>('/api/payment/payos/checkout', payload, {
     baseUrl: CLIENT_BASE_URL,
     skipAuth: false,
   });
 };
-
 export const createWallet = (payload: CreateWalletPayload, accessToken?: string) => {
   if (isServer) {
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;

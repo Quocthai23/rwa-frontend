@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   useCallback,
@@ -340,3 +340,4 @@ export function TradeWebMainContent({
     </main>
   );
 }
+

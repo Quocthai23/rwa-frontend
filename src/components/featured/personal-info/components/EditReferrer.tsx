@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -80,3 +80,4 @@ export default function EditReferrer() {
     </div>
   );
 }
+

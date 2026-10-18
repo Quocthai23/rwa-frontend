@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -316,10 +316,10 @@ function OrderHistoryTable({
                 {order.executedPrice ? formatDecimal(order.executedPrice) : '-'}
               </td>
               <td className="px-2 py-2 text-right tabular-nums" style={getColumnStyle('totalCost')}>
-                {order.totalCost ? `$${formatDecimal(order.totalCost)}` : '-'}
+                {order.totalCost ? `VNĐ${formatDecimal(order.totalCost)}` : '-'}
               </td>
               <td className="px-2 py-2 text-right tabular-nums" style={getColumnStyle('fee')}>
-                {order.fee ? `$${formatDecimal(order.fee)}` : '-'}
+                {order.fee ? `VNĐ${formatDecimal(order.fee)}` : '-'}
               </td>
               <td className="px-2 py-2 text-right" style={getColumnStyle('status')}>
                 <OrderStatusPill status={order.status} />
@@ -434,7 +434,7 @@ function OrderHistoryTable({
                     </p>
                     <p className="text-body-small-medium text-foreground">
                       {selectedOrder.totalCost
-                        ? `$${formatValue(selectedOrder.totalCost)}`
+                        ? `VNĐ${formatValue(selectedOrder.totalCost)}`
                         : '-'}
                     </p>
                   </div>
@@ -444,7 +444,7 @@ function OrderHistoryTable({
                     </p>
                     <p className="text-body-small-medium text-foreground">
                       {selectedOrder.fee
-                        ? `$${formatValue(selectedOrder.fee)}`
+                        ? `VNĐ${formatValue(selectedOrder.fee)}`
                         : '-'}
                     </p>
                   </div>
@@ -579,3 +579,4 @@ const MemoizedOrderHistoryTabContent = memo(OrderHistoryTabContent);
 MemoizedOrderHistoryTabContent.displayName = 'OrderHistoryTabContent';
 
 export default MemoizedOrderHistoryTabContent;
+

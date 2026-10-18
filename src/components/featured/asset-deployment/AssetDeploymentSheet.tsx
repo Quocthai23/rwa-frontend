@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -283,7 +283,7 @@ export function AssetDeploymentSheet({ open, onOpenChange }: AssetDeploymentShee
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground ml-1">Zoning / Planning (Quy hoạch)</label>
+          <label className="text-sm font-medium text-foreground ml-1">Zoning / Planning (Quy hoáº¡ch)</label>
           <Input 
             className="h-12 bg-muted/30"
             placeholder="Residential, Commercial..."
@@ -303,17 +303,17 @@ export function AssetDeploymentSheet({ open, onOpenChange }: AssetDeploymentShee
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground ml-1">Monthly Benefits (Lợi ích hàng tháng)</label>
+          <label className="text-sm font-medium text-foreground ml-1">Monthly Benefits (Lá»£i Ă­ch hĂ ng thĂ¡ng)</label>
           <textarea 
             className="flex min-h-[80px] w-full rounded-md border border-input bg-muted/30 px-3 py-2 text-sm"
-            placeholder="E.g. $5000/month rental income..."
+            placeholder="E.g. VNĐ5000/month rental income..."
             value={formData.monthlyBenefits}
             onChange={(e) => setFormData(prev => ({ ...prev, monthlyBenefits: e.target.value }))}
           />
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-semibold text-foreground ml-1">Title Deed Image (Sổ đỏ - Optional)</label>
+          <label className="text-sm font-semibold text-foreground ml-1">Title Deed Image (Sá»• Ä‘á» - Optional)</label>
           {formData.titleDeedImage ? (
             <div className="relative w-full h-40 rounded-xl overflow-hidden border border-border group">
               <Image src={formData.titleDeedImage} alt="Title Deed" fill className="object-cover" />
@@ -331,7 +331,7 @@ export function AssetDeploymentSheet({ open, onOpenChange }: AssetDeploymentShee
               <div className="bg-primary-50 dark:bg-primary-900/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
                 <Image01 size={24} className="text-primary-500" />
               </div>
-              <span className="text-sm font-medium text-foreground">Upload Title Deed / Sổ Đỏ</span>
+              <span className="text-sm font-medium text-foreground">Upload Title Deed / Sá»• Äá»</span>
               <span className="text-xs text-muted-foreground mt-1">JPG, PNG up to 10MB</span>
               <input type="file" ref={titleDeedInputRef} className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleTitleDeedUpload(e.target.files[0])} />
             </div>
@@ -403,7 +403,7 @@ export function AssetDeploymentSheet({ open, onOpenChange }: AssetDeploymentShee
         </div>
         
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground ml-1">{t('assetDeployment.form.tokenPrice', 'Price Per Token (USDT)')}</label>
+          <label className="text-sm font-medium text-foreground ml-1">{t('assetDeployment.form.tokenPrice', 'Price Per Token (VNDT)')}</label>
           <Input 
             type="number"
             className="h-12 bg-muted/30"
@@ -547,3 +547,4 @@ export function AssetDeploymentSheet({ open, onOpenChange }: AssetDeploymentShee
     </Sheet>
   );
 }
+

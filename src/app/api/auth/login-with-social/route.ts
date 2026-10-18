@@ -22,14 +22,19 @@ export async function POST(req: NextRequest) {
     }
 
     const backendUrl = API_BASE_URL || 'http://localhost:3001';
-    
-    const { data: response, response: backendResponse } = await apiClient.postWithResponse<LoginResponse>('auth/login-with-social', {
-      idToken,
-      provider: 'google',
-    }, {
-      baseUrl: backendUrl,
-      skipAuth: true,
-    });
+
+    const { data: response, response: backendResponse } =
+      await apiClient.postWithResponse<LoginResponse>(
+        'auth/login-with-social',
+        {
+          idToken,
+          provider: 'google',
+        },
+        {
+          baseUrl: backendUrl,
+          skipAuth: true,
+        },
+      );
 
     if ('status' in response && response.status === 'challenge_required') {
       return successResponse(response, 200);
@@ -51,6 +56,7 @@ export async function POST(req: NextRequest) {
 
       setAuthCookies(nextResponse, {
         accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
       });
 
       return nextResponse;
@@ -62,7 +68,11 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const message = getErrorMessage(error);
     const status =
-      getErrorStatus(error, 0) || (message.toLowerCase().includes('invalid id token') || message.toLowerCase().includes('login failed') ? 401 : 500);
+      getErrorStatus(error, 0) ||
+      (message.toLowerCase().includes('invalid id token') ||
+      message.toLowerCase().includes('login failed')
+        ? 401
+        : 500);
 
     return errorResponse(message, status, {
       code: 'auth-exchange-failed',

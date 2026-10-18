@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -502,3 +502,4 @@ export const TradeWebMarketAside = memo(function TradeWebMarketAside({
     </aside>
   );
 });
+

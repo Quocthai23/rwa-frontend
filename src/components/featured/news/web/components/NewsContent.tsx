@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -391,3 +391,4 @@ export default function NewsContent() {
     </div>
   );
 }
+

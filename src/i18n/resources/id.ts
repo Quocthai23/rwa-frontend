@@ -1,4 +1,4 @@
-const id = {
+﻿const id = {
   common: {
     search: 'Cari',
     all: 'Semua',
@@ -66,9 +66,9 @@ const id = {
     placeholderSymbol: 'Cari simbol',
     cancel: 'Batal',
     trendingTitle: 'Trending',
-    trendingItem1: '# Emas pecah rekor: Perdagangkan dalam 7 hari, klaim $79',
+    trendingItem1: '# Emas pecah rekor: Perdagangkan dalam 7 hari, klaim VNĐ79',
     trendingItem2: '# Perkembangan pasar di AUD, JPY, dan Tesla.',
-    trendingItem3: '# Perak rally: Perdagangkan sekarang, dapatkan cashback $55',
+    trendingItem3: '# Perak rally: Perdagangkan sekarang, dapatkan cashback VNĐ55',
     tabs: {
       all: 'Semua',
       fav: 'Favorit',
@@ -212,25 +212,25 @@ const id = {
     processingTime: 'Waktu pemrosesan',
     limit: 'Batasi',
     minDepositPrefix: 'Jumlah deposit minimal harus',
-    minDepositAmount: '$10 USDT',
+    minDepositAmount: 'VNĐ10 VNDT',
     depositQrAlt: 'Setor QR',
     copyAddressAria: 'Salin alamat',
     copySuccessTitle: 'Salin berhasil',
     copySuccessMessage: 'Alamat berhasil disalin ke clipboard.',
     shareSuccessTitle: 'Berbagi berhasil',
     shareSuccessMessage: 'Alamat berhasil dibagikan.',
-    sendOnlyPrefix: 'Kirim hanya USDT melalui',
+    sendOnlyPrefix: 'Kirim hanya VNDT melalui',
     networkSuffix: 'jaringan',
     fundsWarning: 'Dana yang salah dikirim tidak dapat dikembalikan.',
     copyAddress: 'Salin alamat',
     share: 'Bagikan',
     methods: {
-      tetherErc20: 'Tether (USDT ERC20)',
-      tetherBep20: 'Tether (USDT BEP20)',
+      tetherErc20: 'Tether (VNDT ERC20)',
+      tetherBep20: 'Tether (VNDT BEP20)',
       card: 'Kartu',
       instantTime15Min: 'Instan - 15 menit',
       instantTime2Min: 'Instan - 2 menit',
-      limit: '$10 - $200,000',
+      limit: 'VNĐ10 - VNĐ200,000',
     },
     walletShareMessage: 'Alamat dompet {{currency}} ({{network}}) saya: {{address}}',
   },
@@ -243,7 +243,7 @@ const id = {
       reason: 'Alasan',
       transferAmount: 'Jumlah transfer',
       amountWithCurrency: '{{amount}} Rp',
-      emptyValue: '—',
+      emptyValue: 'â€”',
       processing: 'Memproses...',
       confirmButton: 'Konfirmasikan',
     },
@@ -296,9 +296,9 @@ const id = {
   withdraw: {
     common: {
       usd: 'Rp',
-      usdt: 'USDT',
+      VNDT: 'VNDT',
       amountWithUsd: '{{amount}} Rp',
-      amountWithUsdt: '{{amount}} USDT',
+      amountWithVNDT: '{{amount}} VNDT',
       networkFee: 'Biaya jaringan',
       amountReceived: 'Jumlah yang diterima',
       processing: 'Memproses...',
@@ -308,20 +308,20 @@ const id = {
     method: {
       demoAccountError:
         'Akun demo tidak dapat melakukan penarikan. Silakan top up akun Anda terlebih dahulu.',
-      usdtErc20Alt: 'USDT ERC20',
-      usdtBep20Alt: 'USDT BEP20',
-      usdt: 'Tether (USDT)',
+      VNDTErc20Alt: 'VNDT ERC20',
+      VNDTBep20Alt: 'VNDT BEP20',
+      VNDT: 'Tether (VNDT)',
       instantTime15Min: 'Instan - 15 menit',
-      limit: '$10 - $200,000',
+      limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'Pilih jaringan dan token untuk melanjutkan penarikan',
       processingTime: 'Waktu pemrosesan',
       limitLabel: 'Batas',
     },
     detail: {
-      walletUsdtAddress: 'Alamat dompet USDT',
-      walletAddressHelpAria: 'Apa itu alamat Dompet USDT?',
+      walletVNDTAddress: 'Alamat dompet VNDT',
+      walletAddressHelpAria: 'Apa itu alamat Dompet VNDT?',
       walletAddressHelpDescription:
-        'adalah tempat kami mengirimkan USDT Anda secara on-chain (misalnya TRC20). Gunakan alamat dompet Anda sendiri untuk jaringan yang benar—alamat atau jaringan yang salah dapat berarti kehilangan dana.',
+        'adalah tempat kami mengirimkan VNDT Anda secara on-chain (misalnya TRC20). Gunakan alamat dompet Anda sendiri untuk jaringan yang benarâ€”alamat atau jaringan yang salah dapat berarti kehilangan dana.',
       enterWalletAddress: 'Masukkan alamat dompet',
       paste: 'Tempel',
       max: 'Maks',
@@ -341,9 +341,9 @@ const id = {
       description: 'Pastikan semua informasi di bawah ini benar',
       walletAddress: 'Alamat dompet',
       network: 'Jaringan',
-      usdtEthereum: 'USDT(Ethereum)',
+      VNDTEthereum: 'VNDT(Ethereum)',
       withdrawalAmount: 'Jumlah penarikan',
-      networkFeeValue: '0,1 USDT',
+      networkFeeValue: '0,1 VNDT',
     },
     verifyOtp: {
       title: 'Verifikasi Transaksi Anda',
@@ -884,7 +884,7 @@ const id = {
         'Harga stop jual {{price}} harus lebih rendah dari Bid saat ini {{bid}}',
       marketClosedTitle: 'Pasar tutup',
       marketClosedForexMessage:
-        'Selain kripto (biasanya 24/7), Forex, logam, indeks, dan sebagian besar pasar non-kripto mengikuti jeda mingguan ini (UTC standar, waktu sama global). Coba lagi saat buka. Hari libur berbeda—pialang yang memutuskan akhir.',
+        'Selain kripto (biasanya 24/7), Forex, logam, indeks, dan sebagian besar pasar non-kripto mengikuti jeda mingguan ini (UTC standar, waktu sama global). Coba lagi saat buka. Hari libur berbedaâ€”pialang yang memutuskan akhir.',
       failedCreateOrder: 'Gagal membuat pesanan. Silakan coba lagi.',
       orderPlacementFailedTitle: 'Gagal menempatkan pesanan',
     },
@@ -1300,7 +1300,7 @@ const id = {
     copyFailedMessage: 'Tidak dapat menyalin kode referensi. Silakan coba lagi.',
     title: 'Referensikan teman',
     history: 'Riwayat rujukan',
-    bannerTitle: 'Hasilkan hingga $10 untuk setiap lot yang diperdagangkan teman Anda',
+    bannerTitle: 'Hasilkan hingga VNĐ10 untuk setiap lot yang diperdagangkan teman Anda',
     filteredNoReferralsAlt: 'Tidak ada posisi yang direferensikan pada periode ini',
     filteredEmptyTitle: 'Tidak ada posisi yang direferensikan pada periode ini.',
     filteredEmptyDescription: 'Coba rentang tanggal lain untuk melihat hadiah referensi.',
@@ -1312,7 +1312,7 @@ const id = {
     stepTradeTitle: 'Mereka mendaftar & berdagang',
     stepTradeDesc: 'Selesaikan 1 Lot',
     stepRewardTitle: 'Anda mendapat imbalan',
-    stepRewardDesc: 'Hasilkan hingga $10 per Lot',
+    stepRewardDesc: 'Hasilkan hingga VNĐ10 per Lot',
     referrals: 'Referensi',
     commission30d: 'Komisi 30D',
     totalCommission30d: 'Total Komisi 30H',
@@ -1325,7 +1325,7 @@ const id = {
     viewMyReferral: 'Lihat referral saya',
     rewardStructure: {
       title: 'Struktur Penghargaan',
-      heroTitle: 'Hasilkan hingga $10,00 per lot',
+      heroTitle: 'Hasilkan hingga VNĐ10,00 per lot',
       heroSubtitle: 'Hadiahnya bergantung pada instrumen dan spread. Per lot standar.',
       heroImageAlt: 'Struktur penghargaan',
       categoriesTitle: 'Kategori Hadiah',
@@ -1794,6 +1794,44 @@ const id = {
     onlyUnread: 'Hanya tampilkan yang belum dibaca',
     unreadLabel: 'Belum dibaca',
   },
+  assetManagement: {
+  title: "Asset Management",
+  tabs: {
+    rental: "Rental (Green)",
+    buyout: "Buyout (Yellow)",
+    voting: "DAO Voting"
+  },
+  rental: {
+    title: "Rental NFT (Green Assets)",
+    desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
+    selectAsset: "Select Asset",
+    depositAmount: "Deposit Amount (VNDT)",
+    mintBtn: "Mint Rental NFT"
+  },
+  buyout: {
+    title: "Buyout Mechanism (Yellow Assets)",
+    desc: "Meet the current ownership threshold and the minimum continuous-holding period to propose a buyout.",
+    selectAsset: "Select Asset to Buyout",
+    eligibleAsset: "Eligible Asset",
+    yourHolding: "Your Holding",
+    holdingDuration: "Holding Duration",
+    notVerified: "Holdings not verified yet.",
+    verifyBtn: "Verify Eligibility",
+    mintBtn: "Mint Temporary Ownership NFT"
+  },
+  voting: {
+    title: "Buyout Proposal",
+    proposedBy: "Proposed by Shark",
+    active: "Voting Active",
+    duration: "Duration",
+    premium: "Premium",
+    fixedPrice: "Fixed Price",
+    penalty: "Penalty Deposit",
+    voteYes: "Vote YES",
+    voteNo: "Vote NO",
+    noProposals: "No active buyout proposals at the moment."
+  }
+}
 };
-
 export default id;
+

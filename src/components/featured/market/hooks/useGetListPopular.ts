@@ -1,4 +1,4 @@
-import { API_CHART_URL } from '@/constants/env';
+﻿import { API_CHART_URL } from '@/constants/env';
 import { useEffect, useState } from 'react';
 
 type IDataPopular = {
@@ -153,3 +153,4 @@ export const useGetListPopular = (keywordOverride?: string) => {
     setPage,
   };
 };
+

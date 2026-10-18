@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   X,
@@ -321,3 +321,4 @@ const TransactionCardDetails = ({ transaction, isVisible, onClose }: Props) => {
 };
 
 export default TransactionCardDetails;
+

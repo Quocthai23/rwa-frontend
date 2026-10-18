@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -197,7 +197,7 @@ export const HomeStrategy = ({
                             : 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-300'
                         }`}
                       >
-                        <span className="text-base leading-none">{isDown ? '↓' : '↑'}</span>
+                        <span className="text-base leading-none">{isDown ? 'â†“' : 'â†‘'}</span>
                         <span className="truncate">{symbolDisplay}</span>
                       </span>
 
@@ -264,3 +264,4 @@ export const HomeStrategy = ({
     </div>
   );
 };
+

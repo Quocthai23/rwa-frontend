@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Button } from '@/components/shared/atoms/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/shared/atoms/dialog';
@@ -416,3 +416,4 @@ function ShareModal({ imageUri, onClose, onShareToDiscover, visible }: ShareModa
 }
 
 export default ShareModal;
+

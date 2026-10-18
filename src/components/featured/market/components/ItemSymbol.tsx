@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { memo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -105,3 +105,4 @@ function ItemSymbol({
 }
 
 export default memo(ItemSymbol);
+

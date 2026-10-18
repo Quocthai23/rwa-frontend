@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowDown, ArrowUp, Check, Copy03, Plus } from '@untitledui/icons';
 import dayjs from 'dayjs';
@@ -267,3 +267,4 @@ export default function SupportScreenWeb({ onOpenChat, onCreateChat }: SupportSc
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Example: Trading Dashboard Component (REFACTORED)
  * 
  * Real-time trading data from unified /trading namespace
@@ -59,7 +59,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
           <p className="text-sm text-gray-600">Real-time trading dashboard</p>
         </div>
         <div className={`px-3 py-1 rounded text-sm font-semibold ${isConnected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {isConnected ? '✅ Connected to /trading' : '❌ Disconnected'}
+          {isConnected ? 'âœ… Connected to /trading' : 'âŒ Disconnected'}
         </div>
       </div>
 
@@ -157,7 +157,7 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
       <div className="bg-blue-50 p-3 rounded text-xs text-blue-700 border border-blue-200">
         <p className="font-semibold mb-1">Data Source:</p>
         <p>
-          Backend: OrderMatchingService (trade_matched) → RealtimeGateway (emit
+          Backend: OrderMatchingService (trade_matched) â†’ RealtimeGateway (emit
           to /trading namespace)
         </p>
         <p>WebSocket: ws://localhost:3001/trading</p>
@@ -166,3 +166,4 @@ export const TradingDashboard: React.FC<TradingDashboardProps> = ({
     </div>
   );
 };
+

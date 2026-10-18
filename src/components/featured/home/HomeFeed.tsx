@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { Plus } from '@untitledui/icons';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -619,7 +619,9 @@ function DiscoverSubTabFeed({
                           return;
                         }
 
-                        router.push(`/profile/${creator.id}`);
+                        router.push(
+                          `/discover?tab=profile?userId=${encodeURIComponent(creator.id)}`,
+                        );
                       }}
                     >
                       <Image
@@ -846,7 +848,7 @@ export function HomeFeed() {
       params.delete('userId');
       router.replace(`${DISCOVER_BASE_PATH}?${params.toString()}`, { scroll: false });
     } else {
-      router.push(`/profile/${normalizedAuthorId}`);
+      router.push(`/discover?tab=profile?userId=${encodeURIComponent(normalizedAuthorId)}`);
     }
   };
 

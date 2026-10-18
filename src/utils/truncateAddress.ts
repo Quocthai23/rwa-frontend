@@ -1,4 +1,4 @@
-export function truncateAddress(
+﻿export function truncateAddress(
   addr: string,
   options?: { headChars?: number; tailChars?: number; minLength?: number },
 ): string {
@@ -7,3 +7,4 @@ export function truncateAddress(
   if (!addr || addr.length < minLength) return addr;
   return `${addr.slice(0, headChars)}...${addr.slice(-tailChars)}`;
 }
+

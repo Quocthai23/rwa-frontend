@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -36,6 +36,7 @@ import SplashLogo from '../../SplashLogo';
 import { i } from 'framer-motion/client';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
 import { useAccountBalance } from '@/hook/useAccountBalance';
+import { usePortfolioItem } from '@/hook/usePortfolio';
 import { formatBalance } from '@/utils/currency';
 
 const MiniBidAskChart = dynamic(() => import('./MiniBidAskChart'), {
@@ -169,6 +170,13 @@ function TradePanel({
   const submitLockRef = useRef(false);
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
   const { data: accountBalance } = useAccountBalance(selectedAccount?.id || '');
+  const { data: portfolioItem } = usePortfolioItem({
+    accountId: selectedAccount?.id || '',
+    assetId: symbolAsset?.id,
+  });
+  const baseAvailableQuantity = Number(
+    portfolioItem?.availableQuantity ?? portfolioItem?.quantity ?? 0,
+  );
   const sellPrice = rt?.bid ?? 0;
   const buyPrice = rt?.ask ?? 0;
   const { data: openOrdersData, refetch: refetchOrders } = useInfiniteOrders({
@@ -177,7 +185,9 @@ function TradePanel({
   });
   const MAX_OPEN_ORDERS = 10;
   const openOrdersCount = openOrdersData?.pages?.[0]
-    ? (('total' in openOrdersData.pages[0] ? (openOrdersData.pages[0].total as number) : openOrdersData.pages[0].data.length) ?? 0)
+    ? (('total' in openOrdersData.pages[0]
+        ? (openOrdersData.pages[0].total as number)
+        : openOrdersData.pages[0].data.length) ?? 0)
     : 0;
   const hasReachedMaxOpenPositions = openOrdersCount >= MAX_OPEN_ORDERS;
   const { availableBalance } = useAccountSummaryMetrics();
@@ -206,9 +216,7 @@ function TradePanel({
   const totalCost = useMemo(() => {
     const qty = Number(quantity);
     const priceForTotal =
-      activeTab === 'Market'
-        ? referencePriceNumber || currentPrice
-        : limitPriceNumber;
+      activeTab === 'Market' ? referencePriceNumber || currentPrice : limitPriceNumber;
     if (!Number.isFinite(qty) || qty <= 0 || priceForTotal <= 0) return 0;
     return qty * priceForTotal;
   }, [activeTab, quantity, referencePriceNumber, currentPrice, limitPriceNumber]);
@@ -305,9 +313,10 @@ function TradePanel({
         symbol,
         sellPrice,
         buyPrice,
-        calculatedAvailableBalance: availableBalance.toNumber(),
+        quoteAvailableBalance: availableBalance.toNumber(),
+        baseAvailableQuantity,
+        accountId: selectedAccount?.id,
         limitPrice,
-        rt,
         createOrder,
         refetchOrders,
         tradePanelRef,
@@ -334,8 +343,9 @@ function TradePanel({
       sellPrice,
       buyPrice,
       availableBalance,
+      baseAvailableQuantity,
+      selectedAccount?.id,
       limitPrice,
-      rt,
       createOrder,
       refetchOrders,
       tradePanelRef,
@@ -367,8 +377,9 @@ function TradePanel({
           onInteractOutside={(e) => {
             if (!isModal) e.preventDefault();
           }}
-          className={`bg-sheet text-foreground flex flex-col border-none p-0 ${sheetHeightClass} ${variant === 'full' ? 'rounded-t' : 'rounded-t'
-            }`}
+          className={`bg-sheet text-foreground flex flex-col border-none p-0 ${sheetHeightClass} ${
+            variant === 'full' ? 'rounded-t' : 'rounded-t'
+          }`}
         >
           <div className="border-border flex h-full flex-col overflow-hidden border-b shadow-[0_2px_10px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
             <div
@@ -435,10 +446,12 @@ function TradePanel({
                 )}
               </div>
 
-              <div className="mt-3 px-4 flex items-center justify-between">
+              <div className="mt-3 flex items-center justify-between px-4">
                 <p className="text-body-small-regular text-[#0158ff]">
                   {t('trade.totalCost', { defaultValue: 'Total Cost' })}:{' '}
-                  <span className="text-foreground font-semibold">≈{formatBalance(totalCost)}</span>
+                  <span className="text-foreground font-semibold">
+                    â‰ˆ{formatBalance(totalCost)}
+                  </span>
                 </p>
                 {activeTab === 'Market' && referencePriceNumber > 0 && (
                   <p className="text-body-small-regular text-muted-foreground">
@@ -471,8 +484,9 @@ function TradePanel({
                 availableBalanceLabel={t('trade.availableBalance', {
                   defaultValue: 'Available',
                 })}
-                availableBalanceValue={`${formatBalance(accountBalance?.currentBalance ?? '0')} ${symbolAsset?.marginCurrency ?? 'USD'
-                  }`}
+                availableBalanceValue={`${formatBalance(accountBalance?.currentBalance ?? '0')} ${
+                  symbolAsset?.marginCurrency ?? 'USD'
+                }`}
                 onSell={() => {
                   setTransactionType('sell');
                   handleSubmitOrder(ORDER_SIDES.SELL);

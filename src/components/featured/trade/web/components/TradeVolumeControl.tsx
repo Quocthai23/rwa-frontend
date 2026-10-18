@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from '@untitledui/icons';
@@ -216,3 +216,4 @@ export function TradeVolumeControl({
     </div>
   );
 }
+

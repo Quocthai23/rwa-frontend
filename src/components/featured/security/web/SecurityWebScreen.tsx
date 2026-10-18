@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import {
@@ -143,7 +143,7 @@ export default function SecurityWebScreen() {
   const passwordValidation: PasswordValidation = useMemo(() => {
     return {
       hasMinLength: changeNewPassword.length >= 8,
-      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(changeNewPassword),
+      hasSpecialChar: /[!@#VNĐ%^&*(),.?":{}|<>]/.test(changeNewPassword),
       hasUpperCase: /[A-Z]/.test(changeNewPassword),
       hasLowerCase: /[a-z]/.test(changeNewPassword),
       hasDigit: /\d/.test(changeNewPassword),
@@ -346,7 +346,7 @@ export default function SecurityWebScreen() {
       );
       return;
     }
-    if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(changeNewPassword)) {
+    if (!/(?=.*[!@#VNĐ%^&*(),.?":{}|<>])/.test(changeNewPassword)) {
       showError(
         t('security.resetPassword.changeFailedTitle', { defaultValue: 'Change password failed' }),
         t('security.resetPassword.passwordNeedsSpecial'),
@@ -942,3 +942,4 @@ export default function SecurityWebScreen() {
     </div>
   );
 }
+

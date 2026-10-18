@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -59,3 +59,4 @@ export default function StrategyNews({ scrollableList = false }: StrategyNewsPro
     </div>
   );
 }
+

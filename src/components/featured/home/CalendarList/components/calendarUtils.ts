@@ -1,19 +1,19 @@
-// Get country flag from currency
+﻿// Get country flag from currency
 export const getCurrencyFlag = (currency: string): string => {
   const flagMap: Record<string, string> = {
-    USD: '🇺🇸',
-    EUR: '🇪🇺',
-    GBP: '🇬🇧',
-    JPY: '🇯🇵',
-    AUD: '🇦🇺',
-    CAD: '🇨🇦',
-    CHF: '🇨🇭',
-    CNY: '🇨🇳',
-    NZD: '🇳🇿',
-    INR: '🇮🇳',
+    USD: 'đŸ‡ºđŸ‡¸',
+    EUR: 'đŸ‡ªđŸ‡º',
+    GBP: 'đŸ‡¬đŸ‡§',
+    JPY: 'đŸ‡¯đŸ‡µ',
+    AUD: 'đŸ‡¦đŸ‡º',
+    CAD: 'đŸ‡¨đŸ‡¦',
+    CHF: 'đŸ‡¨đŸ‡­',
+    CNY: 'đŸ‡¨đŸ‡³',
+    NZD: 'đŸ‡³đŸ‡¿',
+    INR: 'đŸ‡®đŸ‡³',
   };
 
-  return flagMap[currency] || '🌍';
+  return flagMap[currency] || 'đŸŒ';
 };
 
 // Format time from ISO date string
@@ -31,3 +31,4 @@ export const formatTime = (dateString: string): string => {
     return '--:--';
   }
 };
+

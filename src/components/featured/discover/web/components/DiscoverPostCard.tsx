@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Bookmark,
@@ -462,7 +462,7 @@ function RepostPreviewCard({
           {relativeTime ? (
             <>
               <span className="text-muted-foreground text-xs" aria-hidden="true">
-                •
+                â€¢
               </span>
               <span className="text-muted-foreground text-body-small-regular">{relativeTime}</span>
             </>
@@ -880,7 +880,7 @@ export function DiscoverPostCard({
       }
     };
 
-    // Dùng capture phase để event chạy trước Focus Trap của Dialog
+    // DĂ¹ng capture phase Ä‘á»ƒ event cháº¡y trÆ°á»›c Focus Trap cá»§a Dialog
     document.addEventListener('keydown', handleKeyDown, { capture: true });
     return () => document.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [selectedImageIndex, zoomImageList.length]);
@@ -1193,7 +1193,7 @@ export function DiscoverPostCard({
               {postRelativeTime ? (
                 <>
                   <span className="text-muted-foreground text-xs" aria-hidden="true">
-                    •
+                    â€¢
                   </span>
                   <span className="text-muted-foreground text-body-small-regular">
                     {postRelativeTime}
@@ -1284,7 +1284,7 @@ export function DiscoverPostCard({
           ))}
           {post.status === 'PENDING' ? (
             <div className="absolute inset-0 z-40 flex items-center justify-center rounded-sm bg-black/60 px-4 text-center text-sm font-semibold text-white sm:text-base">
-              {t('discover.web.pendingApproval', 'Đang chờ phê duyệt')}
+              {t('discover.web.pendingApproval', 'Äang chá» phĂª duyá»‡t')}
             </div>
           ) : null}
         </div>
@@ -1439,7 +1439,7 @@ export function DiscoverPostCard({
                         {postRelativeTime ? (
                           <>
                             <span className="text-muted-foreground text-xs" aria-hidden="true">
-                              •
+                              â€¢
                             </span>
                             <span className="text-muted-foreground text-body-small-regular">
                               {postRelativeTime}
@@ -1843,7 +1843,7 @@ export function DiscoverPostCard({
                     onClick={() => setIsCommentEmojiPickerOpen((prev) => !prev)}
                     aria-label={t('discover.web.addEmoji', 'Add emoji')}
                   >
-                    <span aria-hidden>😊</span>
+                    <span aria-hidden>đŸ˜</span>
                   </Button>
                   {isCommentEmojiPickerOpen ? (
                     <div className="absolute right-0 bottom-11 z-50">
@@ -1975,7 +1975,7 @@ export function DiscoverPostCard({
                   {postRelativeTime ? (
                     <>
                       <span className="text-muted-foreground text-xs" aria-hidden="true">
-                        •
+                        â€¢
                       </span>
                       <span className="text-muted-foreground text-body-small-regular">
                         {postRelativeTime}
@@ -2181,3 +2181,4 @@ export function DiscoverPostCard({
     </article>
   );
 }
+

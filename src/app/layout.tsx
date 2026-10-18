@@ -14,7 +14,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'MTX Trading',
+  title: 'MTX Trading – Nền tảng giao dịch tài sản thực (RWA)',
+  description:
+    'MTX Trading là nền tảng tokenization tài sản thực hàng đầu Việt Nam. Mua bán, giao dịch token bất động sản và tài sản có giá trị một cách minh bạch trên blockchain.',
+  keywords: 'RWA, tokenization, real world assets, bất động sản, trading, MTX, blockchain, PropX',
+  openGraph: {
+    title: 'MTX Trading – RWA Tokenization Platform',
+    description: 'Giao dịch tài sản thực được tokenized trên blockchain',
+    type: 'website',
+  },
   icons: {
     icon: [{ url: '/logo/logo-web.svg', type: 'image/svg+xml' }],
     shortcut: '/logo/logo-web.svg',
@@ -22,12 +30,12 @@ export const metadata: Metadata = {
   },
 };
 
+// FIX 2.5: Remove maximumScale and userScalable – WCAG 2.1 SC 1.4.4 compliance
+// Users must be able to zoom up to 400% without loss of content/functionality
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // minimumScale, maximumScale, userScalable intentionally omitted
 };
 
 export default function RootLayout({
@@ -36,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
+    <html lang="vi" className={inter.className} suppressHydrationWarning>
       <BodyWrapper>
         <Providers>
           <ExperienceSync />

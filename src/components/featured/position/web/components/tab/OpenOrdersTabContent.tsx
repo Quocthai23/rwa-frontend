@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -331,7 +331,7 @@ function OrdersTable({
                 className="px-2 py-2 text-right tabular-nums"
                 style={getColumnStyle('totalCost')}
               >
-                {order.totalCost ? `$${formatDecimal(order.totalCost)}` : '-'}
+                {order.totalCost ? `VNĐ${formatDecimal(order.totalCost)}` : '-'}
               </td>
               <td className="px-2 py-2 text-right" style={getColumnStyle('status')}>
                 <OrderStatusPill status={order.status} />
@@ -437,7 +437,7 @@ function OrdersTable({
                     {t('position.modal.totalCost', { defaultValue: 'Total Cost' })}:
                   </p>
                   <p className="text-body-small-medium text-foreground font-medium tabular-nums">
-                    {selectedOrder.totalCost ? `$${formatDecimal(selectedOrder.totalCost)}` : '-'}
+                    {selectedOrder.totalCost ? `VNĐ${formatDecimal(selectedOrder.totalCost)}` : '-'}
                   </p>
                 </div>
                 <div className="flex flex-row justify-between">
@@ -543,3 +543,4 @@ export default function OpenOrdersTabContent({ accountId }: { accountId: string 
     </div>
   );
 }
+

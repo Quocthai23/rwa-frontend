@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { InfoCircle } from '@untitledui/icons';
 import { useTheme } from '@/theme';
@@ -61,7 +61,7 @@ const WithdrawConfirm: React.FC<Props> = ({ withdrawData, isPending, onConfirm }
             <span className="font-medium" style={{ color: colors.neutral900 }}>
               {/* {CHAINS_NAME?.[network ?? 'Binance Smart Chain']} (
               {TOKEN_NAME?.[network ?? 'Binance Smart Chain']}) */}
-              {t('withdraw.confirm.usdtEthereum')}
+              {t('withdraw.confirm.VNDTEthereum')}
             </span>
           </div>
 
@@ -88,7 +88,7 @@ const WithdrawConfirm: React.FC<Props> = ({ withdrawData, isPending, onConfirm }
               {t('withdraw.common.amountReceived')}
             </span>
             <span className="font-medium" style={{ color: colors.neutral900 }}>
-              {t('withdraw.common.amountWithUsdt', { amount: formatPriceDecimal(amountReceived) })}
+              {t('withdraw.common.amountWithVNDT', { amount: formatPriceDecimal(amountReceived) })}
             </span>
           </div>
         </div>
@@ -107,3 +107,4 @@ const WithdrawConfirm: React.FC<Props> = ({ withdrawData, isPending, onConfirm }
 };
 
 export default WithdrawConfirm;
+

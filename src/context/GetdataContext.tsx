@@ -1,6 +1,7 @@
 'use client';
 
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
+import { IS_APP_PRODUCTION } from '@/constants/env';
 import { useAccounts } from '@/hook/useAccount';
 import { useAuthHydrated } from '@/hook/useAuthHydrated';
 import { authApi } from '@/services/auth';
@@ -47,7 +48,8 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
 
         return result;
       },
-      queryKey: ['assets'],
+      enabled: hasHydratedAuth,
+      queryKey: ['assets', authUser?.id ?? (isAuthenticated ? 'authenticated' : 'guest')],
     });
   };
 
@@ -92,17 +94,23 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
   }, [me, updateAuthUser]);
 
   useEffect(() => {
-    if (accounts && accounts.length > 0) {
-      setAccounts(accounts);
+    if (accounts) {
+      const availableAccounts = IS_APP_PRODUCTION
+        ? accounts.filter((account) => account.accountTypeId !== ACCOUNT_TYPES_ID.DEMO)
+        : accounts;
+      setAccounts(availableAccounts);
 
-      // Sync leverage preferences for current account list only.
-      // This prunes stale account ids from previous users/sessions.
+      if (availableAccounts.length === 0) {
+        return;
+      }
 
-      const isSelectedValid = selectedAccount && accounts.some((a) => a.id === selectedAccount.id);
+      const isSelectedValid =
+        selectedAccount && availableAccounts.some((a) => a.id === selectedAccount.id);
 
       if (!selectedAccount || !isSelectedValid) {
         const accountLive =
-          accounts.find((a) => a.accountTypeId === ACCOUNT_TYPES_ID.STANDARD) || accounts[0];
+          availableAccounts.find((a) => a.accountTypeId === ACCOUNT_TYPES_ID.STANDARD) ||
+          availableAccounts[0];
         selectAccount(accountLive);
       }
     }

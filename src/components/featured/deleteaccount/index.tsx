@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { AlertTriangle } from '@untitledui/icons';
 import { useCallback, useState } from 'react';
@@ -139,3 +139,4 @@ export default function DeleteAccount() {
     </div>
   );
 }
+

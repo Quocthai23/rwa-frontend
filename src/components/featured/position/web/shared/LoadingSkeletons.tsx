@@ -1,4 +1,4 @@
-export function LoadingMoreTableSkeleton({
+﻿export function LoadingMoreTableSkeleton({
   rows = 4,
   columns = 1,
 }: {
@@ -20,3 +20,4 @@ export function LoadingMoreTableSkeleton({
     </div>
   );
 }
+

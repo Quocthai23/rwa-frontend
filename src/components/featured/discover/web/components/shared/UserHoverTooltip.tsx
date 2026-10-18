@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { CheckVerified01 } from '@untitledui/icons';
 import Image from 'next/image';
@@ -130,7 +130,7 @@ export function UserHoverTooltip({
             <span>
               {safeFollowing.toLocaleString()} {t('discover.web.following', 'following')}
             </span>
-            <span className="mx-1">•</span>
+            <span className="mx-1">â€¢</span>
             <span>
               {safeFollowers.toLocaleString()} {t('discover.web.followers', 'followers')}
             </span>
@@ -140,3 +140,4 @@ export function UserHoverTooltip({
     </Tooltip>
   );
 }
+

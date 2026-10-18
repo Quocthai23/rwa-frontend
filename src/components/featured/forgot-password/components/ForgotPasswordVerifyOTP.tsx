@@ -1,4 +1,4 @@
-// src/components/featured/forgot-password/ForgotPasswordVerifyOTP.tsx
+﻿// src/components/featured/forgot-password/ForgotPasswordVerifyOTP.tsx
 
 'use client';
 
@@ -247,3 +247,4 @@ export default function ForgotPasswordVerifyOTP({
     </div>
   );
 }
+

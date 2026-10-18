@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Attachment02, CurrencyDollarCircle, X, XClose } from '@untitledui/icons';
 import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
@@ -525,7 +525,7 @@ export function CreatePostScreen() {
                       aria-label={t('discover.web.addEmoji', 'Add emoji')}
                     >
                       <span aria-hidden className="text-base leading-none">
-                        😊
+                        đŸ˜
                       </span>
                     </Button>
 
@@ -683,3 +683,4 @@ export function CreatePostScreen() {
     </Sheet>
   );
 }
+

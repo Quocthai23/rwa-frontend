@@ -1,4 +1,4 @@
-import { ACCOUNTS_ENDPOINTS } from '../constants/api';
+﻿import { ACCOUNTS_ENDPOINTS } from '../constants/api';
 import type {
   Account,
   AccountType,
@@ -101,3 +101,4 @@ export const archiveAccount = async (id: string): Promise<Account> => {
     throw error;
   }
 };
+
