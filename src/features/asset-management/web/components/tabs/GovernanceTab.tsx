@@ -3,12 +3,15 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { ChevronDown, ChevronUp } from '@untitledui/icons';
 
-import { Button } from '@/components/shared/atoms/button';
+import { AssetManagementButton as Button } from '@/features/asset-management/web/components/AssetManagementButton';
 import { Input } from '@/components/shared/atoms/input';
 import { Skeleton } from '@/components/shared/atoms/skeleton';
 import {
   useAssetProposals,
+  useAssetStatus,
+  useCreateRentalEnablementProposal,
   useBuyoutQuote,
   useCreateProposal,
   useCreateGovernanceProposal,
@@ -20,6 +23,11 @@ import type { Asset } from '@/types/assets';
 import { formatBalance } from '@/utils/currency';
 import { BuyoutEscrowActions } from '../BuyoutEscrowActions';
 import { localizeApiError } from '@/i18n/apiErrors';
+import {
+  GovernanceTermsFields,
+  emptyGovernanceTerms,
+  governanceTermsPayload,
+} from '../GovernanceTermsFields';
 
 type VoteIntent = { proposalId: string; isFor: boolean; title: string } | null;
 type ProposalKind =
@@ -28,19 +36,43 @@ type ProposalKind =
   | 'OPERATOR_CHANGE'
   | 'RENT_CHANGE'
   | 'ASSET_SALE'
-  | 'BUYOUT';
+  | 'BUYOUT'
+  | 'RENTAL_ENABLEMENT';
 
 const BUYOUT_BANDS = [
-  { months: 6, min: 3, max: 5 }, { months: 12, min: 5, max: 8 },
-  { months: 18, min: 7, max: 11 }, { months: 24, min: 9, max: 14 },
-  { months: 36, min: 13, max: 20 }, { months: 48, min: 17, max: 26 },
+  { months: 6, min: 3, max: 5 },
+  { months: 12, min: 5, max: 8 },
+  { months: 18, min: 7, max: 11 },
+  { months: 24, min: 9, max: 14 },
+  { months: 36, min: 13, max: 20 },
+  { months: 48, min: 17, max: 26 },
 ] as const;
 
 export default function GovernanceTab({ asset }: { asset: Asset }) {
   const { t, i18n } = useTranslation();
   const { data: eligibility, isLoading: loadingEligibility } = useEligibility(asset.id);
-  const { data: proposals = [], isLoading: loadingProposals } = useAssetProposals(asset.id);
+  const proposalsQuery = useAssetProposals(asset.id);
+  const { data: proposals = [], isLoading: loadingProposals } = proposalsQuery;
   const createMutation = useCreateProposal(asset.id);
+  const statusQuery = useAssetStatus(asset.id);
+  const createRental = useCreateRentalEnablementProposal(asset.id);
+  const openingVoteDays = Math.min(5, Math.max(3, Number(statusQuery.data?.rentalVoteDays ?? 3)));
+  const [openedAt] = useState(() => Date.now());
+  const activeLease = ['PENDING_FUNDING', 'ACTIVE', 'DELINQUENT', 'SUSPENDED'].includes(
+    statusQuery.data?.rentalContract?.status ?? '',
+  );
+  const rentalOpened = Boolean(statusQuery.data?.rentalEnabledUntil || activeLease);
+  const rentalEnabled =
+    activeLease ||
+    Boolean(
+      statusQuery.data?.rentalEnabledUntil &&
+      new Date(String(statusQuery.data.rentalEnabledUntil)).getTime() > openedAt,
+    );
+  const openingVote = proposals.some(
+    (proposal) => proposal.type === 'RENTAL_ENABLEMENT' && proposal.status === 'ACTIVE',
+  );
+  const [terms, setTerms] = useState(emptyGovernanceTerms);
+  const [purposes, setPurposes] = useState<string[]>(['COMMERCIAL']);
   const createGovernanceMutation = useCreateGovernanceProposal(asset.id);
   const voteMutation = useVoteProposal();
   const [title, setTitle] = useState('');
@@ -62,6 +94,7 @@ export default function GovernanceTab({ asset }: { asset: Asset }) {
     RENT_CHANGE: t('assetManagement.createProposal.typeRentChange'),
     ASSET_SALE: t('assetManagement.createProposal.typeAssetSale'),
     BUYOUT: t('assetManagement.createProposal.typeBuyout'),
+    RENTAL_ENABLEMENT: t('assetManagement.rentalOperations.openEnablementVote'),
   };
   const quoteQuery = useBuyoutQuote(asset.id, safeDuration, premiumPercent, isBuyout);
   const quote = quoteQuery.data;
@@ -97,11 +130,26 @@ export default function GovernanceTab({ asset }: { asset: Asset }) {
       onError: (error: Error) =>
         toast.error(localizeApiError(error, t, 'assetManagement.createProposal.errorMsg')),
     };
-    if (isBuyout) {
+    if (proposalKind === 'RENT_CHANGE' && !rentalOpened) return;
+    if (proposalKind === 'RENTAL_ENABLEMENT') {
+      if (rentalEnabled || openingVote) return;
+      createRental.mutate(
+        {
+          title: title.trim(),
+          expectedMonthlyRentVnd: terms.monthlyRentVnd,
+          expectedDepositVnd: terms.depositVnd,
+          allowedPurposeSectors: purposes,
+          description: description.trim(),
+        },
+        callbacks,
+      );
+    } else if (isBuyout) {
       createMutation.mutate(
         {
-          title: title.trim(), description: description.trim(),
-          durationMonths: safeDuration, premiumPercent,
+          title: title.trim(),
+          description: description.trim(),
+          durationMonths: safeDuration,
+          premiumPercent,
         },
         callbacks,
       );
@@ -114,6 +162,7 @@ export default function GovernanceTab({ asset }: { asset: Asset }) {
           endDate: new Date(Date.now() + votingDays * 24 * 60 * 60 * 1000).toISOString(),
           type: 'GENERAL' as const,
           category: proposalKind,
+          ...governanceTermsPayload(proposalKind, terms),
         },
         callbacks,
       );
@@ -136,6 +185,46 @@ export default function GovernanceTab({ asset }: { asset: Asset }) {
 
   return (
     <div className="space-y-8">
+      <section>
+        <h2 className="text-foreground mb-3 text-base font-semibold">
+          {t('assetManagement.governance.proposals')}
+        </h2>
+        {proposalsQuery.isError ? (
+          <div className="border-border rounded-lg border p-5 text-sm text-amber-600">
+            <p>
+              {t('assetManagement.governance.loadError', {
+                defaultValue: 'Unable to load proposals.',
+              })}
+            </p>
+            <Button
+              variant="neutral-outline"
+              className="mt-3"
+              onClick={() => proposalsQuery.refetch()}
+            >
+              {t('common.retry', { defaultValue: 'Retry' })}
+            </Button>
+          </div>
+        ) : !Array.isArray(proposals) || proposals.length === 0 ? (
+          <div className="border-border text-muted-foreground border border-dashed px-4 py-12 text-center text-sm">
+            {t('assetManagement.votingList.noProposals')}
+          </div>
+        ) : (
+          <div className="border-border border">
+            {proposals.map((proposal) => (
+              <ProposalRow
+                key={proposal.id}
+                proposal={proposal}
+                locale={i18n.language}
+                onVote={(isFor) =>
+                  setVoteIntent({ proposalId: proposal.id, isFor, title: proposal.title })
+                }
+                votePending={voteMutation.isPending}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -180,243 +269,318 @@ export default function GovernanceTab({ asset }: { asset: Asset }) {
         </div>
       </section>
 
-      <section>
-        <div className="mb-4">
-          <h2 className="text-foreground text-base font-semibold">
-            {t('assetManagement.createProposal.title')}
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
+      <details className="group border-border overflow-hidden rounded-xl border">
+        <summary className="text-foreground hover:bg-muted/30 flex cursor-pointer list-none items-center gap-3 px-5 py-4 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+          <ChevronDown
+            aria-hidden="true"
+            size={18}
+            className="text-muted-foreground shrink-0 group-open:hidden"
+          />
+          <ChevronUp
+            aria-hidden="true"
+            size={18}
+            className="text-muted-foreground hidden shrink-0 group-open:block"
+          />
+          {t('assetManagement.createProposal.title')}
+        </summary>
+        <div className="border-border border-t p-4 sm:p-5">
+          <p className="text-muted-foreground mb-4 text-sm">
             {t('assetManagement.createProposal.explanation')}
           </p>
-        </div>
-        <form
-          onSubmit={submit}
-          className="border-border grid border lg:grid-cols-[minmax(0,1fr)_340px]"
-        >
-          <div className="space-y-4 p-4 sm:p-5">
-            <div>
-              <label className="text-muted-foreground mb-1.5 block text-xs">
-                {t('assetManagement.createProposal.proposalType')}
-              </label>
-              <select
-                value={proposalKind}
-                onChange={(event) => setProposalKind(event.target.value as ProposalKind)}
-                className="border-border bg-background text-foreground h-10 w-full rounded border px-3 text-sm"
-              >
-                <option value="GENERAL">{proposalKindLabels.GENERAL}</option>
-                <option value="MAINTENANCE">{proposalKindLabels.MAINTENANCE}</option>
-                <option value="OPERATOR_CHANGE">{proposalKindLabels.OPERATOR_CHANGE}</option>
-                <option value="RENT_CHANGE">{proposalKindLabels.RENT_CHANGE}</option>
-                <option value="ASSET_SALE">{proposalKindLabels.ASSET_SALE}</option>
-                <option value="BUYOUT" disabled={!eligibility?.eligible}>
-                  {proposalKindLabels.BUYOUT}
-                  {!eligibility?.eligible
-                    ? ` — ${t('assetManagement.createProposal.buyoutLocked')}`
-                    : ''}
-                </option>
-              </select>
-            </div>
-            <div className="grid gap-4 md:grid-cols-[1fr_180px]">
+          <form
+            onSubmit={submit}
+            className="border-border grid border lg:grid-cols-[minmax(0,1fr)_340px]"
+          >
+            <div className="space-y-4 p-4 sm:p-5">
               <div>
                 <label className="text-muted-foreground mb-1.5 block text-xs">
-                  {t('assetManagement.createProposal.proposalTitle')}
-                </label>
-                <Input
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder={t('assetManagement.createProposal.proposalTitlePlaceholder')}
-                  disabled={isBuyout && !eligibility?.eligible}
-                  maxLength={160}
-                />
-              </div>
-              <div>
-                <label className="text-muted-foreground mb-1.5 block text-xs">
-                  {isBuyout
-                    ? t('assetManagement.createProposal.durationMonths')
-                    : t('assetManagement.createProposal.votingDays')}
+                  {t('assetManagement.createProposal.proposalType')}
                 </label>
                 <select
-                  value={isBuyout ? safeDuration : votingDays}
-                  onChange={(event) =>
-                    isBuyout
-                      ? (() => {
-                          const nextMonths = Number(event.target.value);
-                          const nextBand = BUYOUT_BANDS.find((item) => item.months === nextMonths) ?? BUYOUT_BANDS[1];
-                          setDurationMonths(nextMonths);
-                          setPremiumPercent((nextBand.min + nextBand.max) / 2);
-                        })()
-                      : setVotingDays(Number(event.target.value))
-                  }
-                  disabled={isBuyout && !eligibility?.eligible}
+                  value={proposalKind}
+                  onChange={(event) => {
+                    const next = event.target.value as ProposalKind;
+                    setProposalKind(next);
+                    if (next === 'RENT_CHANGE')
+                      setTerms((current) => ({
+                        ...current,
+                        monthlyRentVnd:
+                          current.monthlyRentVnd ||
+                          String(statusQuery.data?.rentalExpectedMonthlyVnd ?? ''),
+                        depositVnd:
+                          current.depositVnd ||
+                          String(statusQuery.data?.rentalExpectedDepositVnd ?? ''),
+                      }));
+                  }}
                   className="border-border bg-background text-foreground h-10 w-full rounded border px-3 text-sm"
                 >
-                  {(isBuyout ? durationOptions : [3, 7, 14, 30]).map((item) => (
-                    <option key={item} value={item}>
-                      {item} {isBuyout ? t('common.monthUnit') : t('common.dayUnit')}
+                  <option value="GENERAL">{proposalKindLabels.GENERAL}</option>
+                  <option value="MAINTENANCE">{proposalKindLabels.MAINTENANCE}</option>
+                  <option value="OPERATOR_CHANGE">{proposalKindLabels.OPERATOR_CHANGE}</option>
+                  {!rentalEnabled && (
+                    <option
+                      value="RENTAL_ENABLEMENT"
+                      disabled={openingVote || statusQuery.isLoading}
+                    >
+                      {proposalKindLabels.RENTAL_ENABLEMENT}
                     </option>
-                  ))}
+                  )}
+                  {rentalOpened && (
+                    <option value="RENT_CHANGE">{proposalKindLabels.RENT_CHANGE}</option>
+                  )}
+                  <option value="ASSET_SALE">{proposalKindLabels.ASSET_SALE}</option>
+                  <option value="BUYOUT" disabled={!eligibility?.eligible}>
+                    {proposalKindLabels.BUYOUT}
+                    {!eligibility?.eligible
+                      ? ` — ${t('assetManagement.createProposal.buyoutLocked')}`
+                      : ''}
+                  </option>
                 </select>
               </div>
-            </div>
-            {isBuyout && (
-              <label className="block">
-                <span className="text-muted-foreground mb-1.5 flex justify-between text-xs">
-                  <span>{t('assetManagement.buyout.totalPremium')}</span>
-                  <strong className="text-foreground">{premiumPercent}%</strong>
-                </span>
-                <input
-                  type="range"
-                  min={premiumBand.min}
-                  max={premiumBand.max}
-                  step="0.1"
-                  value={premiumPercent}
-                  onChange={(event) => setPremiumPercent(Number(event.target.value))}
-                  className="accent-primary-500 w-full"
-                />
-                <span className="text-muted-foreground flex justify-between text-xs">
-                  <span>{premiumBand.min}%</span><span>{premiumBand.max}%</span>
-                </span>
-              </label>
-            )}
-            <div>
-              <label className="text-muted-foreground mb-1.5 block text-xs">
-                {t('assetManagement.createProposal.description')}
-              </label>
-              <textarea
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                placeholder={t('assetManagement.createProposal.descriptionPlaceholder')}
-                disabled={isBuyout && !eligibility?.eligible}
-                rows={7}
-                maxLength={5000}
-                className="border-border bg-background text-foreground focus:border-primary-500 w-full rounded border p-3 text-sm outline-none"
-              />
-              <p className="text-muted-foreground mt-1 text-right text-xs">
-                {description.length}/5000
-              </p>
-            </div>
-            <div className="border-border border-t pt-4">
-              <p className="text-muted-foreground text-xs">
-                {t('assetManagement.createProposal.commitmentNotice')}
-              </p>
-              <Button
-                type="submit"
-                className="mt-3"
-                disabled={
-                  (isBuyout && !eligibility?.eligible) ||
-                  (isBuyout && (quoteQuery.isLoading || quoteQuery.isError)) ||
-                  createMutation.isPending ||
-                  createGovernanceMutation.isPending
-                }
-              >
-                {createMutation.isPending || createGovernanceMutation.isPending
-                  ? t('assetManagement.createProposal.submitting')
-                  : t('assetManagement.createProposal.submit')}
-              </Button>
-            </div>
-          </div>
-
-          <aside className="border-border bg-muted/20 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
-            {!isBuyout ? (
-              <>
-                <h3 className="text-foreground text-sm font-semibold">
-                  {t('assetManagement.createProposal.generalFlowTitle')}
-                </h3>
-                <p className="text-muted-foreground mt-2 text-xs leading-5">
-                  {t('assetManagement.createProposal.generalFlowDescription')}
+              {openingVote && !rentalEnabled && (
+                <p className="text-muted-foreground text-xs">
+                  {t('assetManagement.terms.openingVoteInProgress')}
                 </p>
-                <div className="border-border mt-4 border-t pt-4 text-xs">
-                  <p className="text-muted-foreground">
-                    {t('assetManagement.createProposal.selectedType')}
-                  </p>
-                  <p className="text-foreground mt-1 font-medium">
-                    {proposalKindLabels[proposalKind]}
-                  </p>
-                  <p className="text-muted-foreground mt-4">Thời hạn biểu quyết</p>
-                  <p className="text-foreground mt-1 font-medium">{votingDays} ngày</p>
+              )}
+              <GovernanceTermsFields kind={proposalKind} values={terms} onChange={setTerms} />
+              {proposalKind === 'RENTAL_ENABLEMENT' && (
+                <fieldset>
+                  <legend className="text-muted-foreground mb-2 text-xs">
+                    {t('assetManagement.rentalOperations.allowedPurposes')}
+                  </legend>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {[
+                      'COMMERCIAL',
+                      'HOSPITALITY',
+                      'RESIDENTIAL',
+                      'SERVICES',
+                      'PRODUCTION',
+                      'OTHER',
+                    ].map((purpose) => (
+                      <label key={purpose} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={purposes.includes(purpose)}
+                          onChange={(event) =>
+                            setPurposes((current) =>
+                              event.target.checked
+                                ? [...current, purpose]
+                                : current.filter((item) => item !== purpose),
+                            )
+                          }
+                        />
+                        {t(`rentalPurposes.sectors.${purpose}`)}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+              <div className="grid gap-4 md:grid-cols-[1fr_180px]">
+                <div>
+                  <label className="text-muted-foreground mb-1.5 block text-xs">
+                    {t('assetManagement.createProposal.proposalTitle')}
+                  </label>
+                  <Input
+                    required
+                    minLength={3}
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder={t('assetManagement.createProposal.proposalTitlePlaceholder')}
+                    disabled={isBuyout && !eligibility?.eligible}
+                    maxLength={160}
+                  />
                 </div>
-              </>
-            ) : (
-              <>
-            <h3 className="text-foreground text-sm font-semibold">
-              {t('assetManagement.createProposal.quoteTitle')}
-            </h3>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {t('assetManagement.createProposal.quoteDescription')}
-            </p>
-            {quoteQuery.isLoading ? (
-              <Skeleton className="mt-4 h-64 w-full" />
-            ) : quoteQuery.isError || !quote ? (
-              <p className="mt-4 text-xs text-amber-600">
-                {t('assetManagement.createProposal.quoteError')}
-              </p>
-            ) : (
-              <div className="border-border mt-4 divide-y border-y">
-                <Term
-                  label={t('assetManagement.createProposal.remainingTokens')}
-                  value={`${formatBalance(quote.terms.minorityTokenAmount)} token`}
-                />
-                <Term
-                  label={t('assetManagement.createProposal.referenceUnitPrice')}
-                  value={`${formatBalance(quote.terms.unitPrice)} VND`}
-                />
-                <Term
-                  label={t('assetManagement.createProposal.premium')}
-                  value={`${formatBalance(quote.terms.premiumPercent)}%`}
-                />
-                <Term
-                  label={t('assetManagement.createProposal.totalCompensation')}
-                  value={`${formatBalance(quote.terms.totalConsideration)} VND`}
-                  strong
-                />
-                <Term
-                  label={t('assetManagement.createProposal.requiredDeposit')}
-                  value={`${formatBalance(quote.terms.depositAmount)} VND`}
-                />
-                <Term
-                  label={t('assetManagement.createProposal.monthlyPayment')}
-                  value={`${formatBalance(quote.terms.firstMonthlyPayment)} VND`}
-                />
-                <Term
-                  label={t('assetManagement.buyout.monthlyWaitingRate')}
-                  value={`${formatBalance(quote.terms.monthlyWaitingRatePercent)}%`}
-                />
-                <Term
-                  label={t('assetManagement.createProposal.votingWindow')}
-                  value={`${quote.votingWindowDays} ${t('common.dayUnit')}`}
-                />
+                <div>
+                  <label className="text-muted-foreground mb-1.5 block text-xs">
+                    {isBuyout
+                      ? t('assetManagement.createProposal.durationMonths')
+                      : t('assetManagement.createProposal.votingDays')}
+                  </label>
+                  <select
+                    value={
+                      isBuyout
+                        ? safeDuration
+                        : proposalKind === 'RENTAL_ENABLEMENT'
+                          ? openingVoteDays
+                          : votingDays
+                    }
+                    onChange={(event) =>
+                      isBuyout
+                        ? (() => {
+                            const nextMonths = Number(event.target.value);
+                            const nextBand =
+                              BUYOUT_BANDS.find((item) => item.months === nextMonths) ??
+                              BUYOUT_BANDS[1];
+                            setDurationMonths(nextMonths);
+                            setPremiumPercent((nextBand.min + nextBand.max) / 2);
+                          })()
+                        : setVotingDays(Number(event.target.value))
+                    }
+                    disabled={isBuyout && !eligibility?.eligible}
+                    className="border-border bg-background text-foreground h-10 w-full rounded border px-3 text-sm"
+                  >
+                    {(isBuyout
+                      ? durationOptions
+                      : proposalKind === 'RENTAL_ENABLEMENT'
+                        ? [openingVoteDays]
+                        : [3, 7, 14, 30]
+                    ).map((item) => (
+                      <option key={item} value={item}>
+                        {item} {isBuyout ? t('common.monthUnit') : t('common.dayUnit')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            )}
-              </>
-            )}
-          </aside>
-        </form>
-      </section>
+              {isBuyout && (
+                <label className="block">
+                  <span className="text-muted-foreground mb-1.5 flex justify-between text-xs">
+                    <span>{t('assetManagement.buyout.totalPremium')}</span>
+                    <strong className="text-foreground">{premiumPercent}%</strong>
+                  </span>
+                  <input
+                    type="range"
+                    min={premiumBand.min}
+                    max={premiumBand.max}
+                    step="0.1"
+                    value={premiumPercent}
+                    onChange={(event) => setPremiumPercent(Number(event.target.value))}
+                    className="accent-primary-500 w-full"
+                  />
+                  <span className="text-muted-foreground flex justify-between text-xs">
+                    <span>{premiumBand.min}%</span>
+                    <span>{premiumBand.max}%</span>
+                  </span>
+                </label>
+              )}
+              <div>
+                <label className="text-muted-foreground mb-1.5 block text-xs">
+                  {t('assetManagement.createProposal.description')}
+                </label>
+                <textarea
+                  required
+                  minLength={10}
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  placeholder={t('assetManagement.createProposal.descriptionPlaceholder')}
+                  disabled={isBuyout && !eligibility?.eligible}
+                  rows={7}
+                  maxLength={proposalKind === 'RENTAL_ENABLEMENT' ? 2000 : 5000}
+                  className="border-border bg-background text-foreground focus:border-primary-500 w-full rounded border p-3 text-sm outline-none"
+                />
+                <p className="text-muted-foreground mt-1 text-right text-xs">
+                  {description.length}/{proposalKind === 'RENTAL_ENABLEMENT' ? 2000 : 5000}
+                </p>
+              </div>
+              <div className="border-border border-t pt-4">
+                <p className="text-muted-foreground text-xs">
+                  {t('assetManagement.createProposal.commitmentNotice')}
+                </p>
+                <Button
+                  type="submit"
+                  className="mt-3"
+                  disabled={
+                    (proposalKind === 'RENTAL_ENABLEMENT' &&
+                      (rentalEnabled || openingVote || purposes.length === 0)) ||
+                    (proposalKind === 'RENT_CHANGE' && !rentalOpened) ||
+                    (isBuyout && !eligibility?.eligible) ||
+                    (isBuyout && (quoteQuery.isLoading || quoteQuery.isError)) ||
+                    createMutation.isPending ||
+                    createGovernanceMutation.isPending ||
+                    createRental.isPending
+                  }
+                >
+                  {createMutation.isPending ||
+                  createGovernanceMutation.isPending ||
+                  createRental.isPending
+                    ? t('assetManagement.createProposal.submitting')
+                    : t('assetManagement.createProposal.submit')}
+                </Button>
+              </div>
+            </div>
 
-      <section>
-        <h2 className="text-foreground mb-3 text-base font-semibold">
-          {t('assetManagement.governance.proposals')}
-        </h2>
-        {!Array.isArray(proposals) || proposals.length === 0 ? (
-          <div className="border-border text-muted-foreground border border-dashed px-4 py-12 text-center text-sm">
-            {t('assetManagement.votingList.noProposals')}
-          </div>
-        ) : (
-          <div className="border-border border">
-            {proposals.map((proposal) => (
-              <ProposalRow
-                key={proposal.id}
-                proposal={proposal}
-                locale={i18n.language}
-                onVote={(isFor) =>
-                  setVoteIntent({ proposalId: proposal.id, isFor, title: proposal.title })
-                }
-                votePending={voteMutation.isPending}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+            <aside className="border-border bg-muted/20 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
+              {!isBuyout ? (
+                <>
+                  <h3 className="text-foreground text-sm font-semibold">
+                    {t('assetManagement.createProposal.generalFlowTitle')}
+                  </h3>
+                  <p className="text-muted-foreground mt-2 text-xs leading-5">
+                    {t('assetManagement.createProposal.generalFlowDescription')}
+                  </p>
+                  <div className="border-border mt-4 border-t pt-4 text-xs">
+                    <p className="text-muted-foreground">
+                      {t('assetManagement.createProposal.selectedType')}
+                    </p>
+                    <p className="text-foreground mt-1 font-medium">
+                      {proposalKindLabels[proposalKind]}
+                    </p>
+                    <p className="text-muted-foreground mt-4">
+                      {t('assetManagement.createProposal.votingDays')}
+                    </p>
+                    <p className="text-foreground mt-1 font-medium">
+                      {proposalKind === 'RENTAL_ENABLEMENT' ? openingVoteDays : votingDays}{' '}
+                      {t('common.dayUnit')}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-foreground text-sm font-semibold">
+                    {t('assetManagement.createProposal.quoteTitle')}
+                  </h3>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {t('assetManagement.createProposal.quoteDescription')}
+                  </p>
+                  {quoteQuery.isLoading ? (
+                    <Skeleton className="mt-4 h-64 w-full" />
+                  ) : quoteQuery.isError || !quote ? (
+                    <p className="mt-4 text-xs text-amber-600">
+                      {t('assetManagement.createProposal.quoteError')}
+                    </p>
+                  ) : (
+                    <div className="border-border mt-4 divide-y border-y">
+                      <Term
+                        label={t('assetManagement.createProposal.remainingTokens')}
+                        value={`${formatBalance(quote.terms.minorityTokenAmount)} token`}
+                      />
+                      <Term
+                        label={t('assetManagement.createProposal.referenceUnitPrice')}
+                        value={`${formatBalance(quote.terms.unitPrice)} VND`}
+                      />
+                      <Term
+                        label={t('assetManagement.createProposal.premium')}
+                        value={`${formatBalance(quote.terms.premiumPercent)}%`}
+                      />
+                      <Term
+                        label={t('assetManagement.createProposal.totalCompensation')}
+                        value={`${formatBalance(quote.terms.totalConsideration)} VND`}
+                        strong
+                      />
+                      <Term
+                        label={t('assetManagement.createProposal.requiredDeposit')}
+                        value={`${formatBalance(quote.terms.depositAmount)} VND`}
+                      />
+                      <Term
+                        label={t('assetManagement.createProposal.monthlyPayment')}
+                        value={`${formatBalance(quote.terms.firstMonthlyPayment)} VND`}
+                      />
+                      <Term
+                        label={t('assetManagement.buyout.monthlyWaitingRate')}
+                        value={`${formatBalance(quote.terms.monthlyWaitingRatePercent)}%`}
+                      />
+                      <Term
+                        label={t('assetManagement.createProposal.votingWindow')}
+                        value={`${quote.votingWindowDays} ${t('common.dayUnit')}`}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </aside>
+          </form>
+        </div>
+      </details>
 
       {voteIntent ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
@@ -488,14 +652,16 @@ function ProposalRow({
           <p className="text-muted-foreground mt-1 max-w-3xl text-xs">{proposal.description}</p>
         </div>
         <span className="bg-muted text-muted-foreground px-2 py-1 text-xs font-medium">
-          {proposal.type === 'BUYOUT_PROPOSAL'
-            ? t('assetManagement.createProposal.typeBuyout')
-            : t(
-                `assetManagement.createProposal.type${proposalCategoryKey(
-                  String(proposal.metadata?.governanceCategory ?? 'GENERAL'),
-                )}`,
-                { defaultValue: t('assetManagement.createProposal.typeGeneral') },
-              )}
+          {proposal.type === 'RENTAL_ENABLEMENT' || proposal.type === 'RENTAL_APPLICATION'
+            ? t('assetManagement.governance.rentalProposal', { defaultValue: 'Rental proposal' })
+            : proposal.type === 'BUYOUT_PROPOSAL'
+              ? t('assetManagement.createProposal.typeBuyout')
+              : t(
+                  `assetManagement.createProposal.type${proposalCategoryKey(
+                    String(proposal.metadata?.governanceCategory ?? 'GENERAL'),
+                  )}`,
+                  { defaultValue: t('assetManagement.createProposal.typeGeneral') },
+                )}
           {' · '}
           {t(`assetManagement.statuses.${proposal.status}`, { defaultValue: proposal.status })}
         </span>
@@ -505,6 +671,32 @@ function ProposalRow({
           {t('assetManagement.votingList.endsAt')}:{' '}
           {new Date(proposal.endDate).toLocaleString(locale)}
         </p>
+      ) : null}
+      {proposal.metadata?.terms && typeof proposal.metadata.terms === 'object' ? (
+        <dl className="border-border mt-4 grid gap-3 rounded-lg border p-3 sm:grid-cols-2">
+          {Object.entries(proposal.metadata.terms)
+            .filter(([key]) =>
+              [
+                'monthlyRentVnd',
+                'depositVnd',
+                'maintenanceBudgetVnd',
+                'operatorName',
+                'operatorContact',
+                'salePriceVnd',
+                'salePlan',
+              ].includes(key),
+            )
+            .map(([key, value]) => (
+              <div key={key}>
+                <dt className="text-muted-foreground text-xs">
+                  {t(`assetManagement.terms.${key}`)}
+                </dt>
+                <dd className="mt-1 text-sm font-medium break-words">
+                  {key.endsWith('Vnd') ? `${formatBalance(String(value))} VND` : String(value)}
+                </dd>
+              </div>
+            ))}
+        </dl>
       ) : null}
       <div className="bg-muted mt-4 flex h-1.5 overflow-hidden">
         <div className="bg-emerald-500" style={{ width: `${yesPercent}%` }} />
@@ -521,7 +713,7 @@ function ProposalRow({
           {t('assetManagement.votingList.eligiblePower')}: {formatBalance(eligiblePower)}
         </span>
       </div>
-      {proposal.status === 'ACTIVE' ? (
+      {proposal.status === 'ACTIVE' && proposal.viewerCanVote === true ? (
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="neutral-outline" disabled={votePending} onClick={() => onVote(false)}>
             {t('assetManagement.votingList.voteNo')}
@@ -531,6 +723,13 @@ function ProposalRow({
           </Button>
         </div>
       ) : null}
+      {proposal.viewerHasVoted ? (
+        <p className="mt-3 text-xs text-emerald-600">
+          {t('assetManagement.governance.alreadyVoted', {
+            defaultValue: 'Your vote has been recorded.',
+          })}
+        </p>
+      ) : null}
       {proposal.type === 'BUYOUT_PROPOSAL' ? (
         <BuyoutEscrowActions proposalId={proposal.id} proposalStatus={proposal.status} />
       ) : null}
@@ -539,13 +738,15 @@ function ProposalRow({
 }
 
 function proposalCategoryKey(category: string) {
-  return {
-    GENERAL: 'General',
-    MAINTENANCE: 'Maintenance',
-    OPERATOR_CHANGE: 'OperatorChange',
-    RENT_CHANGE: 'RentChange',
-    ASSET_SALE: 'AssetSale',
-  }[category] ?? 'General';
+  return (
+    {
+      GENERAL: 'General',
+      MAINTENANCE: 'Maintenance',
+      OPERATOR_CHANGE: 'OperatorChange',
+      RENT_CHANGE: 'RentChange',
+      ASSET_SALE: 'AssetSale',
+    }[category] ?? 'General'
+  );
 }
 
 function Value({ label, value }: { label: string; value: string }) {

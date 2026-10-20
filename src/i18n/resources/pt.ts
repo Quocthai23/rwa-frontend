@@ -1,4 +1,4 @@
-﻿const pt = {
+const pt = {
   common: {
     search: 'Pesquisar',
     all: 'Todos',
@@ -59,7 +59,24 @@
     save: 'Salvar',
     share: 'Share',
     noData: 'Sem dados',
-  },
+  
+
+  "back": "Voltar",
+  "description": "Descrição",
+  "loadMore": "Carregar mais",
+  "loading": "A carregar…",
+  "unknown": "Desconhecido",
+  "viewDetails": "Ver detalhes",
+  "processing": "A processar…",
+  "dayUnit": "dias",
+  "monthUnit": "meses",
+  "retry": "Tentar novamente"
+,
+
+
+  "next": "Continuar"
+,
+},
   search: {
     marketWatch: 'ObservaĂ§Ă£o de Mercado',
     placeholder: 'Pesquisar',
@@ -211,21 +228,21 @@
     processingTime: 'Tempo de processamento',
     limit: 'Limite',
     minDepositPrefix: 'O valor do depĂ³sito deve ser de pelo menos',
-    minDepositAmount: 'USVNĐ 10 VNDT',
+    minDepositAmount: 'USVNĐ 10 VND',
     depositQrAlt: 'QR de depĂ³sito',
     copyAddressAria: 'Copiar endereĂ§o',
     copySuccessTitle: 'CĂ³pia bem-sucedida',
     copySuccessMessage: 'EndereĂ§o copiado para a Ă¡rea de transferĂªncia com sucesso.',
     shareSuccessTitle: 'Compartilhar com sucesso',
     shareSuccessMessage: 'EndereĂ§o compartilhado com sucesso.',
-    sendOnlyPrefix: 'Envie apenas VNDT via',
+    sendOnlyPrefix: 'Envie apenas VND via',
     networkSuffix: 'rede',
     fundsWarning: 'Os fundos enviados incorretamente nĂ£o podem ser recuperados.',
     copyAddress: 'Copiar endereĂ§o',
     share: 'Compartilhar',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'CartĂ£o',
       instantTime15Min: 'InstantĂ¢neo - 15 min',
       instantTime2Min: 'InstantĂ¢neo - 2 min',
@@ -295,9 +312,9 @@
   withdraw: {
     common: {
       usd: 'USD',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}} USD',
-      amountWithVNDT: '{{amount}}VNDT',
+      amountWithVND: '{{amount}}VND',
       networkFee: 'Taxa de rede',
       amountReceived: 'Valor recebido',
       processing: 'Processando...',
@@ -307,9 +324,9 @@
     method: {
       demoAccountError:
         'As contas demo nĂ£o podem realizar saques. Por favor, recarregue sua conta primeiro.',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDTBEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VNDBEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'InstantĂ¢neo - 15 min',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'Selecione a rede e o token para continuar o saque',
@@ -317,10 +334,10 @@
       limitLabel: 'Limite',
     },
     detail: {
-      walletVNDTAddress: 'EndereĂ§o VNDT da carteira',
-      walletAddressHelpAria: 'O que Ă© um endereĂ§o Wallet VNDT?',
+      walletVNDAddress: 'EndereĂ§o VND da carteira',
+      walletAddressHelpAria: 'O que Ă© um endereĂ§o Wallet VND?',
       walletAddressHelpDescription:
-        'Ă© para onde enviamos seu VNDT on-chain (por exemplo, TRC20). Use seu prĂ³prio endereĂ§o de carteira para a rede correta â€“ endereĂ§o ou rede errada pode significar perda de fundos.',
+        'Ă© para onde enviamos seu VND on-chain (por exemplo, TRC20). Use seu prĂ³prio endereĂ§o de carteira para a rede correta â€“ endereĂ§o ou rede errada pode significar perda de fundos.',
       enterWalletAddress: 'Insira o endereĂ§o da carteira',
       paste: 'Colar',
       max: 'MĂ¡x.',
@@ -340,9 +357,9 @@
       description: 'Por favor, certifique-se de que todas as informaĂ§Ăµes abaixo estĂ£o corretas',
       walletAddress: 'EndereĂ§o da carteira',
       network: 'Rede',
-      VNDTEthereum: 'VNDT(EtĂ©reo)',
+      VNDEthereum: 'VND(EtĂ©reo)',
       withdrawalAmount: 'Valor da retirada',
-      networkFeeValue: '0,1 VNDT',
+      networkFeeValue: '0,1 VND',
     },
     verifyOtp: {
       title: 'Verifique sua transaĂ§Ă£o',
@@ -1487,8 +1504,24 @@
       orderTypeStopLimit: 'Stop limite',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} a {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} a preĂ§o de mercado',
-    },
+    
+
+  "avgFillPrice": "Preço médio de execução",
+  "totalCost": "Valor total"
+,
+},
+  
+
+  "orders": {
+    "loadError": "Não foi possível carregar as ordens abertas",
+    "loadErrorDescription": "O servidor não devolveu as ordens. Tente novamente."
   },
+  "orderHistory": {
+    "loadError": "Não foi possível carregar o histórico de ordens",
+    "loadErrorDescription": "O servidor não devolveu o histórico. Tente novamente."
+  }
+,
+},
   account: {
     assetOverview: 'VisĂ£o geral de ativos',
     equity: 'PatrimĂ´nio (USD)',
@@ -1802,7 +1835,28 @@
   notifications: {
     onlyUnread: 'Mostrar apenas nĂ£o lidas',
     unreadLabel: 'NĂ£o lidas',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "Aluguel disponível para receber",
+      "description": "{{asset}}: {{amount}} de aluguel para receber."
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "Pagamento de aquisição disponível",
+      "description": "{{asset}}: {{amount}} da aquisição para receber."
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "Uma proposta aguarda seu voto",
+      "description": "{{asset}} tem uma proposta ativa em que você ainda não votou."
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "É preciso adicionar saldo para o aluguel",
+      "description": "{{asset}}: aluguel de {{amount}} vencido; saldo disponível insuficiente."
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1814,7 +1868,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1827,7 +1881,17 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "Período {{count}}",
+  "pendingPeriods": "Ver {{count}} períodos por receber",
+  "claimedHistory": "Histórico recebido ({{count}} períodos)"
+,
+
+
+  "status": "Estado"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1840,7 +1904,215 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "Renda mensal proposta (VND)",
+    "depositVnd": "Caução proposta (VND)",
+    "maintenanceBudgetVnd": "Orçamento de manutenção (VND)",
+    "operatorName": "Novo operador",
+    "operatorContact": "Contacto do operador",
+    "salePriceVnd": "Preço de venda proposto (VND)",
+    "salePlan": "Plano de venda e distribuição",
+    "nextRentalOnly": "As condições aprovadas aplicam-se a novos arrendamentos. Os contratos atuais mantêm a renda e a caução acordadas.",
+    "approvedRentalTerms": "Condições de arrendamento aprovadas",
+    "openingVoteInProgress": "Já decorre uma votação de autorização de arrendamento.",
+    "invalid": "Preencha as condições deste tipo de proposta."
+  }
+,
+
+
+  "assetNotFound": "Imóvel não encontrado",
+  "manageAsset": "Gerir imóvel",
+  "navigation": "Navegação de gestão imobiliária",
+  "expectedApy": "Rentabilidade anual esperada",
+  "price": "Preço de referência",
+  "property": "Imóvel tokenizado",
+  "tradeAsset": "Negociar tokens",
+  "portfolioDesc": "Acompanhe a operação, os fluxos, a liquidez e a governação de cada imóvel.",
+  "emptyOwned": "Esta conta não detém tokens imobiliários.",
+  "sections": {
+    "overview": "Resumo",
+    "rental": "Arrendamento",
+    "liquidity": "Liquidez",
+    "governance": "Governação",
+    "cashFlow": "Fluxo de caixa"
+  },
+  "actions": {
+    "pending": "{{count}} ações pendentes"
+  },
+  "operations": {
+    "available": "Disponível para arrendamento",
+    "rented": "Arrendado"
+  },
+  "status": {
+    "active": "Em funcionamento",
+    "inactive": "Suspenso",
+    "open": "Negociação aberta",
+    "paused": "Negociação suspensa"
+  },
+  "overview": {
+    "activeProposals": "{{count}} propostas em curso",
+    "buyoutProgress": "Progresso da elegibilidade para aquisição",
+    "buyoutStatus": "Elegibilidade para aquisição",
+    "operation": "Estado operacional",
+    "yourOwnership": "Os seus tokens"
+  },
+  "rentalOperations": {
+    "title": "Gestão de arrendamento",
+    "applicantList": "Candidatos ao arrendamento",
+    "claimRent": "Receber rendimentos de renda",
+    "claimed": "Recebido",
+    "unclaimed": "Por receber",
+    "noEntitlement": "Sem direito neste período",
+    "contractWallet": "Saldo disponível de arrendamento",
+    "reservedForClaims": "Reservado para distribuições",
+    "expectedDeposit": "Caução prevista (VND)",
+    "expectedRent": "Renda mensal prevista (VND)",
+    "guestName": "Convidado {{number}}",
+    "historyError": "Não foi possível carregar os pagamentos.",
+    "incomeHistoryTitle": "Histórico de rendas",
+    "incomeHistoryDescription": "Cada linha representa um período pago com os direitos dos detentores registados.",
+    "awaitingPaymentExplanation": "O inquilino ainda não financiou a distribuição. O botão aparece quando houver um valor por receber.",
+    "manageRentPayment": "Gerir pagamentos de renda",
+    "monthlyRentVnd": "Renda mensal (VND)",
+    "nextCollection": "Próxima cobrança",
+    "noApplications": "Não há candidaturas.",
+    "noIncomeHistory": "Ainda não há períodos pagos.",
+    "paymentPeriod": "Período de renda",
+    "periodTotal": "Total pago",
+    "status": "Estado do arrendamento",
+    "tenant": "Inquilino atual",
+    "unknownApplicant": "Candidato",
+    "yourShare": "A sua parte",
+    "yourAmount": "O seu direito a receber",
+    "allocatedAmount": "Distribuído aos detentores",
+    "grossAmount": "Total de renda pago",
+    "allowedPurposes": "Utilizações permitidas",
+    "daoDescription": "Os detentores votam a autorização e as candidaturas de arrendamento.",
+    "enablementSubmitted": "Proposta de arrendamento enviada.",
+    "openEnablementVote": "Propor abertura ao arrendamento",
+    "privateVoteNotice": "Só é mostrado o peso agregado. As escolhas individuais são privadas.",
+    "submitToDao": "Enviar proposta",
+    "transactionDetails": "Detalhes do pagamento de renda",
+    "voteNow": "Ver e votar",
+    "voters": "{{count}} votantes"
+  },
+  "governance": {
+    "alreadyVoted": "O seu voto foi registado.",
+    "continuousHolding": "Detenção contínua exigida",
+    "currentHolding": "Detenção atual",
+    "eligibilityTitle": "Elegibilidade para aquisição do imóvel",
+    "eligibilityDescription": "A elegibilidade depende do saldo e do histórico de detenção contínua.",
+    "loadError": "Não foi possível carregar as propostas. Tente novamente.",
+    "proposals": "Propostas da comunidade",
+    "rentalProposal": "Proposta de arrendamento",
+    "requiredHolding": "Participação de controlo exigida"
+  },
+  "createProposal": {
+    "description": "Descrição"
+  ,
+
+  "typeGeneral": "Proposta geral",
+  "typeMaintenance": "Plano de manutenção",
+  "typeOperatorChange": "Alterar operador",
+  "typeRentChange": "Alterar aluguel e caução",
+  "typeAssetSale": "Venda do ativo",
+  "typeBuyout": "Aquisição",
+  "proposalType": "Tipo de proposta",
+  "proposalTitle": "Título da proposta",
+  "submit": "Enviar proposta",
+  "submitting": "Enviando…",
+  "successMsg": "Proposta enviada",
+  "errorMsg": "Não foi possível enviar a proposta",
+  "required": "Preencha o título e a descrição",
+  "votingWindow": "Prazo de votação",
+  "selectedType": "Tipo selecionado",
+  "votingDays": "Prazo de votação"
+,
+},
+  "details": {
+    "action": "AĂ§Ă£o",
+    "buy": "Comprar",
+    "close": "Fechar",
+    "no": "NĂ£o",
+    "sell": "Vender",
+    "side": "Lado",
+    "viewDetails": "Ver detalhes",
+    "metadataLabels": {
+      "price": "PreĂ§o",
+      "quantity": "Quantidade"
+    ,
+
+  "proposalType": "Tipo selecionado"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "Quantidade"
+  },
+  "portfolioTitle": "PosiĂ§Ăµes",
+  "processing": "A processar…",
+  "properties": "imóveis",
+  "statuses": {
+    "COMPLETED": "ConcluĂ­do",
+    "PENDING": "Pendente",
+    "REJECTED": "Rejeitada",
+    "CANCELLED": "Cancelada",
+    "FAILED": "Falhado",
+    "OPEN": "Aberto"
+  },
+  "transactionHistory": {
+    "price": "PreĂ§o",
+    "quantity": "Quantidade",
+    "status": "Estado",
+    "time": "Tempo",
+    "type": "Tipo"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "Governação",
+      "CASH_FLOW": "Fluxo de caixa",
+      "LIQUIDITY": "Liquidez"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "Comprar / Vender",
+      "viewProperty": "Ver imóvel"
+    },
+    "ownership": {
+      "title": "Imóveis detidos",
+      "description": "A participação é calculada pelo saldo de tokens registado na conta.",
+      "properties": "imóveis"
+    ,
+
+  "returnSincePurchase": "{{percent}}% sobre o custo",
+  "noCostBasis": "Custo indisponível",
+  "returnBasis": "Retorno não realizado sobre o custo médio, sem taxas e aluguéis."
+,
+},
+    "empty": {
+      "title": "Ainda não detém imóveis",
+      "description": "Os tokens imobiliários adquiridos aparecerão aqui."
+    },
+    "table": {
+      "actions": "Ações do imóvel",
+      "asset": "Código do ativo",
+      "avgBuyPrice": "Participação",
+      "currentPrice": "Valor por token",
+      "quantity": "Tokens detidos",
+      "totalValue": "Valor da participação"
+    }
+  },
+  "rentalListing": {
+    "months": "meses"
+  }
+,
 };
 export default pt;
 

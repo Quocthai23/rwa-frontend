@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { InfoCircle } from '@untitledui/icons';
@@ -203,7 +203,7 @@ export default function WithdrawDetail() {
             <Image
               className="h-6 w-6 shrink-0"
               src="/assets/icons/Coin.svg"
-              alt={t('withdraw.common.VNDT')}
+              alt={t('withdraw.common.VND')}
               width={24}
               height={24}
             />
@@ -215,7 +215,7 @@ export default function WithdrawDetail() {
           {/* Wallet EVM address */}
           <div className="mb-3 flex items-center">
             <span className="text-body-large-semibold text-foreground mr-1">
-              {t('withdraw.detail.walletVNDTAddress')}
+              {t('withdraw.detail.walletVNDAddress')}
             </span>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -233,7 +233,7 @@ export default function WithdrawDetail() {
                 className="max-w-[min(18rem,calc(100vw-2rem))]"
               >
                 <p className="text-left leading-relaxed">
-                  <span className="font-semibold">{t('withdraw.detail.walletVNDTAddress')}</span>{' '}
+                  <span className="font-semibold">{t('withdraw.detail.walletVNDAddress')}</span>{' '}
                   {t('withdraw.detail.walletAddressHelpDescription')}
                 </p>
               </TooltipContent>

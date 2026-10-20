@@ -1,4 +1,4 @@
-﻿const id = {
+const id = {
   common: {
     search: 'Cari',
     all: 'Semua',
@@ -59,7 +59,24 @@
     save: 'Simpan',
     share: 'Share',
     noData: 'Tidak ada data',
-  },
+  
+
+  "back": "Kembali",
+  "description": "Deskripsi",
+  "loadMore": "Muat lagi",
+  "loading": "Memuat…",
+  "unknown": "Tidak diketahui",
+  "viewDetails": "Lihat detail",
+  "processing": "Memproses…",
+  "dayUnit": "hari",
+  "monthUnit": "bulan",
+  "retry": "Coba lagi"
+,
+
+
+  "next": "Lanjutkan"
+,
+},
   search: {
     marketWatch: 'Pengawasan Pasar',
     placeholder: 'Cari',
@@ -212,21 +229,21 @@
     processingTime: 'Waktu pemrosesan',
     limit: 'Batasi',
     minDepositPrefix: 'Jumlah deposit minimal harus',
-    minDepositAmount: 'VNĐ10 VNDT',
+    minDepositAmount: 'VNĐ10 VND',
     depositQrAlt: 'Setor QR',
     copyAddressAria: 'Salin alamat',
     copySuccessTitle: 'Salin berhasil',
     copySuccessMessage: 'Alamat berhasil disalin ke clipboard.',
     shareSuccessTitle: 'Berbagi berhasil',
     shareSuccessMessage: 'Alamat berhasil dibagikan.',
-    sendOnlyPrefix: 'Kirim hanya VNDT melalui',
+    sendOnlyPrefix: 'Kirim hanya VND melalui',
     networkSuffix: 'jaringan',
     fundsWarning: 'Dana yang salah dikirim tidak dapat dikembalikan.',
     copyAddress: 'Salin alamat',
     share: 'Bagikan',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'Kartu',
       instantTime15Min: 'Instan - 15 menit',
       instantTime2Min: 'Instan - 2 menit',
@@ -296,9 +313,9 @@
   withdraw: {
     common: {
       usd: 'Rp',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}} Rp',
-      amountWithVNDT: '{{amount}} VNDT',
+      amountWithVND: '{{amount}} VND',
       networkFee: 'Biaya jaringan',
       amountReceived: 'Jumlah yang diterima',
       processing: 'Memproses...',
@@ -308,9 +325,9 @@
     method: {
       demoAccountError:
         'Akun demo tidak dapat melakukan penarikan. Silakan top up akun Anda terlebih dahulu.',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'Instan - 15 menit',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'Pilih jaringan dan token untuk melanjutkan penarikan',
@@ -318,10 +335,10 @@
       limitLabel: 'Batas',
     },
     detail: {
-      walletVNDTAddress: 'Alamat dompet VNDT',
-      walletAddressHelpAria: 'Apa itu alamat Dompet VNDT?',
+      walletVNDAddress: 'Alamat dompet VND',
+      walletAddressHelpAria: 'Apa itu alamat Dompet VND?',
       walletAddressHelpDescription:
-        'adalah tempat kami mengirimkan VNDT Anda secara on-chain (misalnya TRC20). Gunakan alamat dompet Anda sendiri untuk jaringan yang benarâ€”alamat atau jaringan yang salah dapat berarti kehilangan dana.',
+        'adalah tempat kami mengirimkan VND Anda secara on-chain (misalnya TRC20). Gunakan alamat dompet Anda sendiri untuk jaringan yang benarâ€”alamat atau jaringan yang salah dapat berarti kehilangan dana.',
       enterWalletAddress: 'Masukkan alamat dompet',
       paste: 'Tempel',
       max: 'Maks',
@@ -341,9 +358,9 @@
       description: 'Pastikan semua informasi di bawah ini benar',
       walletAddress: 'Alamat dompet',
       network: 'Jaringan',
-      VNDTEthereum: 'VNDT(Ethereum)',
+      VNDEthereum: 'VND(Ethereum)',
       withdrawalAmount: 'Jumlah penarikan',
-      networkFeeValue: '0,1 VNDT',
+      networkFeeValue: '0,1 VND',
     },
     verifyOtp: {
       title: 'Verifikasi Transaksi Anda',
@@ -1478,8 +1495,24 @@
       orderTypeStopLimit: 'Batas Stop',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} pada {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} di pasar',
-    },
+    
+
+  "avgFillPrice": "Harga eksekusi rata-rata",
+  "totalCost": "Nilai total"
+,
+},
+  
+
+  "orders": {
+    "loadError": "Gagal memuat pesanan terbuka",
+    "loadErrorDescription": "Server tidak mengembalikan pesanan. Coba lagi."
   },
+  "orderHistory": {
+    "loadError": "Gagal memuat riwayat pesanan",
+    "loadErrorDescription": "Server tidak mengembalikan riwayat. Coba lagi."
+  }
+,
+},
   account: {
     assetOverview: 'Ikhtisar Aset',
     equity: 'Ekuitas (USD)',
@@ -1793,7 +1826,28 @@
   notifications: {
     onlyUnread: 'Hanya tampilkan yang belum dibaca',
     unreadLabel: 'Belum dibaca',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "Pendapatan sewa siap diklaim",
+      "description": "{{asset}}: pendapatan sewa {{amount}} siap diklaim."
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "Dana pengambilalihan siap diklaim",
+      "description": "{{asset}}: dana pengambilalihan {{amount}} siap diklaim."
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "Usulan menunggu suara Anda",
+      "description": "{{asset}} memiliki usulan aktif yang belum Anda pilih."
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "Perlu isi saldo untuk membayar sewa",
+      "description": "{{asset}}: sewa {{amount}} jatuh tempo dan saldo tersedia tidak mencukupi."
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1805,7 +1859,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1818,7 +1872,13 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "Periode {{count}}",
+  "pendingPeriods": "Lihat {{count}} periode belum diterima",
+  "claimedHistory": "Riwayat diterima ({{count}} periode)"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1831,7 +1891,214 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "Usulan sewa bulanan (VND)",
+    "depositVnd": "Usulan uang jaminan (VND)",
+    "maintenanceBudgetVnd": "Anggaran pemeliharaan (VND)",
+    "operatorName": "Operator baru",
+    "operatorContact": "Kontak operator",
+    "salePriceVnd": "Usulan harga jual (VND)",
+    "salePlan": "Rencana penjualan dan pembagian dana",
+    "nextRentalOnly": "Ketentuan yang disetujui berlaku untuk sewa baru. Sewa dan jaminan kontrak berjalan tetap sama.",
+    "approvedRentalTerms": "Ketentuan sewa yang disetujui",
+    "openingVoteInProgress": "Pemungutan suara izin sewa sedang berlangsung.",
+    "invalid": "Lengkapi ketentuan jenis proposal ini."
+  }
+,
+
+
+  "assetNotFound": "Properti tidak ditemukan",
+  "manageAsset": "Kelola properti",
+  "navigation": "Navigasi pengelolaan properti",
+  "expectedApy": "Imbal hasil tahunan perkiraan",
+  "price": "Harga referensi",
+  "property": "Properti tertokenisasi",
+  "tradeAsset": "Perdagangkan token",
+  "portfolioDesc": "Pantau operasional, arus kas, likuiditas, dan tata kelola setiap properti.",
+  "emptyOwned": "Akun ini tidak memiliki token properti.",
+  "sections": {
+    "overview": "Ringkasan",
+    "rental": "Sewa",
+    "liquidity": "Likuiditas",
+    "governance": "Tata kelola",
+    "cashFlow": "Arus kas"
+  },
+  "actions": {
+    "pending": "{{count}} tindakan tertunda"
+  },
+  "operations": {
+    "available": "Tersedia untuk disewa",
+    "rented": "Sedang disewakan"
+  },
+  "status": {
+    "active": "Beroperasi",
+    "inactive": "Dijeda",
+    "open": "Perdagangan dibuka",
+    "paused": "Perdagangan dijeda"
+  },
+  "overview": {
+    "activeProposals": "{{count}} proposal aktif",
+    "buyoutProgress": "Progres kelayakan akuisisi",
+    "buyoutStatus": "Kelayakan akuisisi",
+    "operation": "Status operasional",
+    "yourOwnership": "Token milik Anda"
+  },
+  "rentalOperations": {
+    "title": "Pengelolaan sewa",
+    "applicantList": "Pemohon sewa",
+    "claimRent": "Terima pendapatan sewa",
+    "claimed": "Sudah diterima",
+    "unclaimed": "Belum diterima",
+    "noEntitlement": "Tidak berhak untuk periode ini",
+    "contractWallet": "Saldo dompet sewa tersedia",
+    "reservedForClaims": "Dicadangkan untuk pemegang saham",
+    "expectedDeposit": "Perkiraan jaminan (VND)",
+    "expectedRent": "Perkiraan sewa bulanan (VND)",
+    "guestName": "Tamu {{number}}",
+    "historyError": "Gagal memuat pembayaran sewa.",
+    "incomeHistoryTitle": "Riwayat pendapatan sewa",
+    "incomeHistoryDescription": "Setiap baris adalah periode yang didanai dengan kepemilikan token tercatat.",
+    "awaitingPaymentExplanation": "Penyewa belum mendanai distribusi. Tombol penerimaan muncul saat ada hak yang belum diterima.",
+    "manageRentPayment": "Kelola pembayaran sewa",
+    "monthlyRentVnd": "Sewa bulanan (VND)",
+    "nextCollection": "Penagihan sewa berikutnya",
+    "noApplications": "Belum ada permohonan sewa.",
+    "noIncomeHistory": "Belum ada periode sewa yang didanai.",
+    "paymentPeriod": "Periode sewa",
+    "periodTotal": "Total dibayar",
+    "status": "Status sewa",
+    "tenant": "Penyewa saat ini",
+    "unknownApplicant": "Pemohon",
+    "yourShare": "Bagian Anda",
+    "yourAmount": "Hak penerimaan Anda",
+    "allocatedAmount": "Dialokasikan kepada pemegang saham",
+    "grossAmount": "Total sewa dibayar",
+    "allowedPurposes": "Penggunaan yang diizinkan",
+    "daoDescription": "Pemegang token memutuskan izin sewa dan permohonan melalui voting.",
+    "enablementSubmitted": "Proposal sewa dikirim.",
+    "openEnablementVote": "Usulkan pembukaan sewa",
+    "privateVoteNotice": "Hanya kekuatan suara agregat ditampilkan. Pilihan tiap pemegang saham tetap privat.",
+    "submitToDao": "Kirim proposal",
+    "transactionDetails": "Detail pembayaran sewa",
+    "voteNow": "Lihat dan pilih",
+    "voters": "{{count}} pemilih"
+  },
+  "governance": {
+    "alreadyVoted": "Suara Anda sudah dicatat.",
+    "continuousHolding": "Syarat kepemilikan berkelanjutan",
+    "currentHolding": "Kepemilikan saat ini",
+    "eligibilityTitle": "Kelayakan akuisisi properti",
+    "eligibilityDescription": "Kelayakan dihitung dari saldo token dan riwayat kepemilikan berkelanjutan.",
+    "loadError": "Gagal memuat proposal. Coba lagi.",
+    "proposals": "Proposal komunitas",
+    "rentalProposal": "Proposal sewa",
+    "requiredHolding": "Kepemilikan pengendali yang diperlukan"
+  },
+  "createProposal": {
+    "description": "Deskripsi"
+  ,
+
+  "typeGeneral": "Usulan umum",
+  "typeMaintenance": "Rencana pemeliharaan",
+  "typeOperatorChange": "Ganti pengelola",
+  "typeRentChange": "Ubah sewa dan deposit",
+  "typeAssetSale": "Penjualan aset",
+  "typeBuyout": "Pengambilalihan",
+  "proposalType": "Jenis usulan",
+  "proposalTitle": "Judul usulan",
+  "submit": "Kirim usulan",
+  "submitting": "Mengirim…",
+  "successMsg": "Usulan terkirim",
+  "errorMsg": "Tidak dapat mengirim usulan",
+  "required": "Isi judul dan deskripsi",
+  "votingWindow": "Periode pemungutan suara",
+  "selectedType": "Jenis terpilih",
+  "votingDays": "Periode pemungutan suara"
+,
+},
+  "details": {
+    "action": "Aksi",
+    "buy": "Beli",
+    "close": "Tutup",
+    "no": "Tidak",
+    "sell": "Jual",
+    "side": "Sisi",
+    "viewDetails": "Lihat detail",
+    "metadataLabels": {
+      "price": "Harga",
+      "quantity": "Kuantitas"
+    ,
+
+  "proposalType": "Jenis terpilih"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "Kuantitas"
+  },
+  "portfolioTitle": "Posisi",
+  "processing": "Memproses…",
+  "properties": "properti",
+  "statuses": {
+    "COMPLETED": "Selesai",
+    "PENDING": "Tertunda",
+    "REJECTED": "Ditolak",
+    "CANCELLED": "Dibatalkan",
+    "FAILED": "Gagal",
+    "OPEN": "Terbuka"
+  },
+  "transactionHistory": {
+    "price": "Harga",
+    "quantity": "Kuantitas",
+    "time": "Waktu",
+    "type": "Tipe"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "Tata kelola",
+      "CASH_FLOW": "Arus kas",
+      "LIQUIDITY": "Likuiditas"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "Beli / Jual",
+      "viewProperty": "Lihat properti"
+    },
+    "ownership": {
+      "title": "Properti yang dimiliki",
+      "description": "Kepemilikan dihitung dari saldo token pada buku besar akun.",
+      "properties": "properti"
+    ,
+
+  "returnSincePurchase": "{{percent}}% dari harga beli",
+  "noCostBasis": "Harga beli tidak tersedia",
+  "returnBasis": "Laba rugi belum terealisasi dari harga beli rata-rata, tanpa biaya dan pendapatan sewa."
+,
+},
+    "empty": {
+      "title": "Anda belum memiliki properti",
+      "description": "Token properti yang dibeli akan muncul di sini."
+    },
+    "table": {
+      "actions": "Tindakan properti",
+      "asset": "Kode aset",
+      "avgBuyPrice": "Porsi kepemilikan",
+      "currentPrice": "Valuasi token",
+      "quantity": "Token yang dimiliki",
+      "totalValue": "Nilai kepemilikan"
+    }
+  },
+  "rentalListing": {
+    "months": "bulan"
+  }
+,
 };
 export default id;
 

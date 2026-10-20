@@ -70,7 +70,7 @@ export default function AssetOverview({
           <div key={label} className="px-4 py-3 first:pl-0 last:pr-0">
             <div className="text-muted-foreground mb-1 text-xs">{label}</div>
             <p className="text-foreground text-lg font-semibold tabular-nums">
-              {formatBalance(value)} <span className="text-muted-foreground text-xs">VNDT</span>
+              {formatBalance(value)} <span className="text-muted-foreground text-xs">VND</span>
             </p>
           </div>
         ))}

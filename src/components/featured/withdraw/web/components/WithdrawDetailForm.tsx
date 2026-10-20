@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ArrowLeft, InfoCircle } from '@untitledui/icons';
 import { useTranslation } from 'react-i18next';
@@ -58,7 +58,7 @@ export default function WithdrawDetailForm({
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <div className="mb-3 flex items-center gap-1">
           <span className="text-body-large-semibold text-foreground">
-            {t('withdraw.detail.walletVNDTAddress')}
+            {t('withdraw.detail.walletVNDAddress')}
           </span>
           <InfoCircle size={14} className="text-muted-foreground" />
         </div>

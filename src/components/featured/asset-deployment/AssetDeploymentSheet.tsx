@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -403,7 +403,7 @@ export function AssetDeploymentSheet({ open, onOpenChange }: AssetDeploymentShee
         </div>
         
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground ml-1">{t('assetDeployment.form.tokenPrice', 'Price Per Token (VNDT)')}</label>
+          <label className="text-sm font-medium text-foreground ml-1">{t('assetDeployment.form.tokenPrice', 'Price Per Token (VND)')}</label>
           <Input 
             type="number"
             className="h-12 bg-muted/30"

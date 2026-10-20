@@ -3,9 +3,12 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
+import { useAssetActionCounts } from '@/hook/useAssetActionCounts';
+import { AssetActionBadge } from '@/features/asset-management/web/components/AssetActionBadge';
+
 import { ArrowLeft } from '@untitledui/icons';
 
-import { Button } from '@/components/shared/atoms/button';
+import { AssetManagementButton as Button } from '@/features/asset-management/web/components/AssetManagementButton';
 import { cn } from '@/lib/utils';
 import { useActiveAssets } from '@/hook/useAssets';
 import GovernanceTab from './components/tabs/GovernanceTab';
@@ -40,6 +43,7 @@ export default function AssetDetailWebScreen({
 }) {
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: actionCounts } = useAssetActionCounts();
   const { data: assets = [], isLoading } = useActiveAssets();
   const asset = assets.find((item) => item.id === assetId);
 
@@ -93,8 +97,8 @@ export default function AssetDetailWebScreen({
   const active = asset.isActive !== false;
 
   return (
-    <div className="bg-background flex h-full min-h-0 w-full flex-col">
-      <header className="border-border bg-background sticky top-0 z-30 border-b">
+    <div className="bg-background flex h-[calc(100dvh-72px)] min-h-0 w-full flex-col overflow-hidden">
+      <header className="border-border bg-background z-30 shrink-0 border-b">
         <div className="mx-auto flex w-full max-w-[1480px] items-center justify-between gap-5 px-5 py-4 lg:px-8">
           <div className="flex min-w-0 items-center gap-4">
             <Button
@@ -157,7 +161,7 @@ export default function AssetDetailWebScreen({
         </div>
 
         <nav
-          className="mx-auto flex w-full max-w-[1480px] gap-7 overflow-x-auto px-5 lg:px-8"
+          className="mx-auto flex w-full max-w-[1480px] gap-7 overflow-x-auto scrollbar-neutral-slim px-5 lg:px-8"
           aria-label={t('assetManagement.navigation', {
             defaultValue: 'Điều hướng quản lý tài sản',
           })}
@@ -175,6 +179,7 @@ export default function AssetDetailWebScreen({
               )}
             >
               {tab.label}
+              <AssetActionBadge count={actionCounts?.[asset.id]?.[tab.id as 'rental' | 'governance']} />
               {section === tab.id && (
                 <span className="bg-primary absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full" />
               )}
@@ -183,7 +188,7 @@ export default function AssetDetailWebScreen({
         </nav>
       </header>
 
-      <main className="bg-background min-h-0 flex-1 overflow-y-auto">
+      <main className="bg-background min-h-0 flex-1 overflow-y-auto scrollbar-neutral-slim">
         <div className="mx-auto min-h-[500px] w-full max-w-[1480px] px-5 py-7 lg:px-8 lg:py-9">
           {section === 'overview' && <AssetOverviewTab asset={asset} />}
           {section === 'rental' && <RentalOperationsTab asset={asset} />}

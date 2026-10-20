@@ -14,7 +14,7 @@ const WEB_EXPERIENCE_ROUTES = new Set([
   '/settings',
   '/login',
 ]);
-const WEB_EXPERIENCE_PREFIXES = ['/trade/', '/position', '/discover/'];
+const WEB_EXPERIENCE_PREFIXES = ['/trade/', '/buyout-trading/', '/position', '/discover/'];
 
 function normalizePathname(pathname: string): string {
   if (!pathname) return '/';

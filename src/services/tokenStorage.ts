@@ -1,4 +1,14 @@
-﻿const LEGACY_ACCESS_TOKEN_KEY = 'access_token';
+const LEGACY_ACCESS_TOKEN_KEY = 'access_token_bridge';
+let socketTokenRequest: Promise<string | undefined> | undefined;
+export const getSocketAccessToken = (): Promise<string | undefined> => {
+  if (!socketTokenRequest) {
+    socketTokenRequest = fetch('/api/auth/socket-token', { credentials: 'include', cache: 'no-store' })
+      .then(async (response) => response.ok ? (await response.json()).data?.accessToken as string | undefined : undefined)
+      .catch(() => undefined)
+      .finally(() => { socketTokenRequest = undefined; });
+  }
+  return socketTokenRequest;
+};
 
 const clearCookie = (name: string): void => {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;

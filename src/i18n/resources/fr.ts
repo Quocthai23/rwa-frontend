@@ -1,4 +1,4 @@
-﻿const fr = {
+const fr = {
   common: {
     search: 'Recherche',
     all: 'Tous',
@@ -59,7 +59,24 @@
     save: 'Enregistrer',
     share: 'Share',
     noData: 'Aucune donnĂ©e',
-  },
+  
+
+  "back": "Retour",
+  "description": "Description",
+  "loadMore": "Charger plus",
+  "loading": "Chargement…",
+  "unknown": "Inconnu",
+  "viewDetails": "Voir les détails",
+  "processing": "Traitement…",
+  "dayUnit": "jours",
+  "monthUnit": "mois",
+  "retry": "RĂ©essayer"
+,
+
+
+  "next": "Continuer"
+,
+},
   search: {
     marketWatch: 'Surveillance du marchĂ©',
     placeholder: 'Rechercher',
@@ -219,14 +236,14 @@
     copySuccessMessage: 'Adresse copiĂ©e avec succĂ¨s dans le presse-papiers.',
     shareSuccessTitle: 'Partage rĂ©ussi',
     shareSuccessMessage: 'Adresse partagĂ©e avec succĂ¨s.',
-    sendOnlyPrefix: 'Envoyez uniquement des VNDT via',
+    sendOnlyPrefix: 'Envoyez uniquement des VND via',
     networkSuffix: 'rĂ©seau',
     fundsWarning: 'Les fonds envoyĂ©s incorrectement ne peuvent pas Ăªtre rĂ©cupĂ©rĂ©s.',
     copyAddress: "Copier l'adresse",
     share: 'Partager',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'Carte',
       instantTime15Min: 'InstantanĂ© - 15 min',
       instantTime2Min: 'InstantanĂ© - 2 min',
@@ -296,9 +313,9 @@
   withdraw: {
     common: {
       usd: 'USD',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}}Â USD',
-      amountWithVNDT: '{{amount}} VNDT',
+      amountWithVND: '{{amount}} VND',
       networkFee: 'Frais de rĂ©seau',
       amountReceived: 'Montant reĂ§u',
       processing: 'Traitement...',
@@ -308,9 +325,9 @@
     method: {
       demoAccountError:
         "Les comptes dĂ©mo ne peuvent pas effectuer de retraits. Veuillez d'abord recharger votre compte.",
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'InstantanĂ© - 15 min',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'SĂ©lectionnez le rĂ©seau et le jeton pour continuer le retrait',
@@ -318,10 +335,10 @@
       limitLabel: 'Limite',
     },
     detail: {
-      walletVNDTAddress: 'Adresse VNDT du portefeuille',
-      walletAddressHelpAria: "Qu'est-ce qu'une adresse Wallet VNDTÂ ?",
+      walletVNDAddress: 'Adresse VND du portefeuille',
+      walletAddressHelpAria: "Qu'est-ce qu'une adresse Wallet VNDÂ ?",
       walletAddressHelpDescription:
-        "C'est lĂ  que nous envoyons votre VNDT en chaĂ®ne (par exemple TRC20). Utilisez votre propre adresse de portefeuille pour le bon rĂ©seauÂ : une mauvaise adresse ou un mauvais rĂ©seau peut entraĂ®ner une perte de fonds.",
+        "C'est lĂ  que nous envoyons votre VND en chaĂ®ne (par exemple TRC20). Utilisez votre propre adresse de portefeuille pour le bon rĂ©seauÂ : une mauvaise adresse ou un mauvais rĂ©seau peut entraĂ®ner une perte de fonds.",
       enterWalletAddress: "Entrez l'adresse du portefeuille",
       paste: 'Coller',
       max: 'Max.',
@@ -341,9 +358,9 @@
       description: 'Veuillez vous assurer que toutes les informations ci-dessous sont correctes',
       walletAddress: 'Adresse du portefeuille',
       network: 'RĂ©seau',
-      VNDTEthereum: 'VNDT(Ethereum)',
+      VNDEthereum: 'VND(Ethereum)',
       withdrawalAmount: 'Montant du retrait',
-      networkFeeValue: '0,1 VNDT',
+      networkFeeValue: '0,1 VND',
     },
     verifyOtp: {
       title: 'VĂ©rifiez votre transaction',
@@ -1493,8 +1510,24 @@
       orderTypeStopLimit: 'Stop limite',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} Ă  {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} au prix du marchĂ©',
-    },
+    
+
+  "avgFillPrice": "Prix moyen d’exécution",
+  "totalCost": "Valeur totale"
+,
+},
+  
+
+  "orders": {
+    "loadError": "Impossible de charger les ordres ouverts",
+    "loadErrorDescription": "Le serveur n’a pas renvoyé vos ordres. Réessayez."
   },
+  "orderHistory": {
+    "loadError": "Impossible de charger l’historique des ordres",
+    "loadErrorDescription": "Le serveur n’a pas renvoyé votre historique. Réessayez."
+  }
+,
+},
   account: {
     assetOverview: 'AperĂ§u des actifs',
     equity: 'Ă‰quitĂ© (USD)',
@@ -1814,7 +1847,28 @@
   notifications: {
     onlyUnread: 'Afficher uniquement les non lues',
     unreadLabel: 'Non lues',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "Loyers disponibles",
+      "description": "{{asset}} : {{amount}} de loyers à recevoir."
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "Versement de rachat disponible",
+      "description": "{{asset}} : {{amount}} de rachat à recevoir."
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "Une proposition attend votre vote",
+      "description": "{{asset}} a une proposition en cours à laquelle vous n’avez pas voté."
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "Approvisionnement nécessaire pour le loyer",
+      "description": "{{asset}} : loyer de {{amount}} à échéance, avec un solde disponible insuffisant."
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1826,7 +1880,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1839,7 +1893,17 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "Échéance {{count}}",
+  "pendingPeriods": "Voir {{count}} échéances à percevoir",
+  "claimedHistory": "Historique perçu ({{count}} échéances)"
+,
+
+
+  "status": "Statut"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1852,7 +1916,214 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "Loyer mensuel proposé (VND)",
+    "depositVnd": "Dépôt de garantie proposé (VND)",
+    "maintenanceBudgetVnd": "Budget d’entretien (VND)",
+    "operatorName": "Nouvel exploitant",
+    "operatorContact": "Coordonnées de l’exploitant",
+    "salePriceVnd": "Prix de vente proposé (VND)",
+    "salePlan": "Plan de vente et de répartition",
+    "nextRentalOnly": "Les conditions approuvées s’appliquent aux nouvelles locations. Les contrats en cours conservent leur loyer et leur dépôt.",
+    "approvedRentalTerms": "Conditions de location approuvées",
+    "openingVoteInProgress": "Un vote d’autorisation de location est déjà en cours.",
+    "invalid": "Veuillez renseigner les conditions de ce type de proposition."
+  }
+,
+
+
+  "assetNotFound": "Bien introuvable",
+  "manageAsset": "Gérer le bien",
+  "navigation": "Navigation de gestion du bien",
+  "expectedApy": "Rendement annuel attendu",
+  "price": "Prix de référence",
+  "property": "Bien tokenisé",
+  "tradeAsset": "Échanger des jetons",
+  "portfolioDesc": "Suivez l’exploitation, les flux, la liquidité et la gouvernance de chaque bien.",
+  "emptyOwned": "Ce compte ne détient aucun jeton immobilier.",
+  "sections": {
+    "overview": "Vue d’ensemble",
+    "rental": "Location",
+    "liquidity": "Liquidité",
+    "governance": "Gouvernance",
+    "cashFlow": "Flux de trésorerie"
+  },
+  "actions": {
+    "pending": "{{count}} actions à traiter"
+  },
+  "operations": {
+    "available": "Disponible à la location",
+    "rented": "Actuellement loué"
+  },
+  "status": {
+    "active": "En exploitation",
+    "inactive": "Suspendu",
+    "open": "Négociation ouverte",
+    "paused": "Négociation suspendue"
+  },
+  "overview": {
+    "activeProposals": "{{count}} propositions en cours",
+    "buyoutProgress": "Progression d’éligibilité au rachat",
+    "buyoutStatus": "Éligibilité au rachat",
+    "operation": "État d’exploitation",
+    "yourOwnership": "Vos jetons"
+  },
+  "rentalOperations": {
+    "title": "Gestion locative",
+    "applicantList": "Candidats à la location",
+    "claimRent": "Percevoir les loyers",
+    "claimed": "Perçu",
+    "unclaimed": "À percevoir",
+    "noEntitlement": "Aucun droit pour cette échéance",
+    "contractWallet": "Solde locatif disponible",
+    "reservedForClaims": "Réservé aux distributions",
+    "expectedDeposit": "Dépôt prévu (VND)",
+    "expectedRent": "Loyer mensuel prévu (VND)",
+    "guestName": "Invité {{number}}",
+    "historyError": "Impossible de charger les loyers.",
+    "incomeHistoryTitle": "Historique des loyers",
+    "incomeHistoryDescription": "Chaque ligne est une période financée dont les droits des détenteurs sont fixés.",
+    "awaitingPaymentExplanation": "Le locataire n’a pas encore financé la distribution. Le bouton apparaît lorsqu’un montant vous est dû.",
+    "manageRentPayment": "Gérer les paiements de loyer",
+    "monthlyRentVnd": "Loyer mensuel (VND)",
+    "nextCollection": "Prochain encaissement",
+    "noApplications": "Aucune candidature déposée.",
+    "noIncomeHistory": "Aucune période n’a encore été financée.",
+    "paymentPeriod": "Période de location",
+    "periodTotal": "Total payé",
+    "status": "État de la location",
+    "tenant": "Locataire actuel",
+    "unknownApplicant": "Candidat",
+    "yourShare": "Votre part",
+    "yourAmount": "Votre droit à percevoir",
+    "allocatedAmount": "Attribué aux détenteurs",
+    "grossAmount": "Total des loyers payés",
+    "allowedPurposes": "Usages autorisés",
+    "daoDescription": "Les détenteurs votent l’autorisation de louer et les candidatures.",
+    "enablementSubmitted": "Proposition de location envoyée.",
+    "openEnablementVote": "Proposer la mise en location",
+    "privateVoteNotice": "Seul le poids total est affiché. Les choix individuels restent privés.",
+    "submitToDao": "Soumettre la proposition",
+    "transactionDetails": "Détails du paiement de loyer",
+    "voteNow": "Voir et voter",
+    "voters": "{{count}} votants"
+  },
+  "governance": {
+    "alreadyVoted": "Votre vote est enregistré.",
+    "continuousHolding": "Durée de détention requise",
+    "currentHolding": "Détention actuelle",
+    "eligibilityTitle": "Éligibilité au rachat du bien",
+    "eligibilityDescription": "L’éligibilité dépend du solde de jetons et de leur durée de détention.",
+    "loadError": "Impossible de charger les propositions. Réessayez.",
+    "proposals": "Propositions de la communauté",
+    "rentalProposal": "Proposition de location",
+    "requiredHolding": "Détention de contrôle requise"
+  },
+  "createProposal": {
+    "description": "Description"
+  ,
+
+  "typeGeneral": "Proposition générale",
+  "typeMaintenance": "Plan de maintenance",
+  "typeOperatorChange": "Changer d’exploitant",
+  "typeRentChange": "Modifier le loyer et la caution",
+  "typeAssetSale": "Vente de l’actif",
+  "typeBuyout": "Rachat",
+  "proposalType": "Type de proposition",
+  "proposalTitle": "Titre de la proposition",
+  "submit": "Soumettre la proposition",
+  "submitting": "Envoi en cours…",
+  "successMsg": "Proposition soumise",
+  "errorMsg": "Impossible de soumettre la proposition",
+  "required": "Renseignez le titre et la description",
+  "votingWindow": "Durée du vote",
+  "selectedType": "Type sélectionné",
+  "votingDays": "Durée du vote"
+,
+},
+  "details": {
+    "buy": "Acheter",
+    "close": "Fermer",
+    "no": "Non",
+    "sell": "Vendre",
+    "side": "Sens",
+    "viewDetails": "Voir les détails",
+    "metadataLabels": {
+      "price": "Prix",
+      "quantity": "QuantitĂ©"
+    ,
+
+  "proposalType": "Type sélectionné"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "QuantitĂ©"
+  },
+  "portfolioTitle": "Postes",
+  "processing": "Traitement…",
+  "properties": "biens",
+  "statuses": {
+    "COMPLETED": "TerminĂ©",
+    "PENDING": "En attente",
+    "REJECTED": "RejetĂ©e",
+    "CANCELLED": "AnnulĂ©e",
+    "FAILED": "Ă‰chouĂ©",
+    "OPEN": "Ouvert"
+  },
+  "transactionHistory": {
+    "price": "Prix",
+    "quantity": "QuantitĂ©",
+    "status": "Statut",
+    "time": "Temps",
+    "type": "Taper"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "Gouvernance",
+      "CASH_FLOW": "Flux de trésorerie",
+      "LIQUIDITY": "Liquidité"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "Acheter / Vendre",
+      "viewProperty": "Voir le bien"
+    },
+    "ownership": {
+      "title": "Biens détenus",
+      "description": "La quote-part est calculée à partir du solde de jetons du compte.",
+      "properties": "biens"
+    ,
+
+  "returnSincePurchase": "{{percent}}% par rapport au coût",
+  "noCostBasis": "Coût indisponible",
+  "returnBasis": "Plus-value latente sur votre coût moyen, hors frais et loyers."
+,
+},
+    "empty": {
+      "title": "Vous ne détenez aucun bien",
+      "description": "Les jetons immobiliers achetés apparaîtront ici."
+    },
+    "table": {
+      "actions": "Actions sur le bien",
+      "asset": "Code de l’actif",
+      "avgBuyPrice": "Quote-part",
+      "currentPrice": "Valeur par jeton",
+      "quantity": "Jetons détenus",
+      "totalValue": "Valeur de la participation"
+    }
+  },
+  "rentalListing": {
+    "months": "mois"
+  }
+,
 };
 export default fr;
 

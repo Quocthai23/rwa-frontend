@@ -14,7 +14,7 @@ export const useInfiniteOrders = (
     enabled: !!params.accountId,
     initialPageParam: null as string | null,
     queryKey: [
-      'infinite-orders',
+      'infinite-orders-v2',
       queryScope,
       params.accountId,
       params.sortBy,
@@ -49,7 +49,10 @@ export const useInfiniteOrders = (
       // Use nextCursor from API response for pagination
       return lastPage.nextCursor || undefined;
     },
-    staleTime: Infinity,
+    staleTime: 15_000,
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -78,7 +81,7 @@ export const useCancelOrders = (accountId: string) => {
     },
     onSuccess: () => {
       // Refresh orders and portfolio data after cancellation
-      queryClient.invalidateQueries({ queryKey: ['infinite-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['infinite-orders-v2'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['portfolio-overview'] });
       queryClient.invalidateQueries({ queryKey: ['infinite-portfolio-items'] });

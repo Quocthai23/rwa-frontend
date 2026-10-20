@@ -1,4 +1,4 @@
-﻿const ko = {
+const ko = {
   common: {
     search: '́°¾ë‹¤',
     all: '́ „́²´',
@@ -59,7 +59,24 @@
     save: '́ €́¥',
     share: 'Share',
     noData: 'ë°́´í„° ́—†́Œ',
-  },
+  
+
+  "back": "뒤로",
+  "description": "설명",
+  "loadMore": "더 보기",
+  "loading": "불러오는 중…",
+  "unknown": "알 수 없음",
+  "viewDetails": "상세 보기",
+  "processing": "처리 중…",
+  "dayUnit": "일",
+  "monthUnit": "개월",
+  "retry": "ë‹¤́‹œ ́‹œë„"
+,
+
+
+  "next": "계속"
+,
+},
   search: {
     marketWatch: '́‹œ́¥ ê°́‹œ',
     placeholder: 'ê²€́ƒ‰',
@@ -206,21 +223,21 @@
     processingTime: '́²˜ë¦¬ ́‹œê°„',
     limit: 'í•œê³„',
     minDepositPrefix: '́…ê¸ˆ́•¡́€ ́µœ́†Œ',
-    minDepositAmount: 'VNĐ10 VNDT',
+    minDepositAmount: 'VNĐ10 VND',
     depositQrAlt: '́…ê¸ˆ QR',
     copyAddressAria: '́£¼́†Œ ë³µ́‚¬',
     copySuccessTitle: 'ë³µ́‚¬ ́„±ê³µ',
     copySuccessMessage: '́£¼́†Œê°€ í´ë¦½ë³´ë“œ́— ́„±ê³µ́ ́œ¼ë¡œ ë³µ́‚¬ë˜́—ˆ́µë‹ˆë‹¤.',
     shareSuccessTitle: 'ê³µ́œ  ́„±ê³µ',
     shareSuccessMessage: '́£¼́†Œê°€ ê³µ́œ ë˜́—ˆ́µë‹ˆë‹¤.',
-    sendOnlyPrefix: 'VNDTë§Œ ë³´ë‚´́„¸́”.',
+    sendOnlyPrefix: 'VNDë§Œ ë³´ë‚´́„¸́”.',
     networkSuffix: 'ë„¤í¸́›Œí¬',
     fundsWarning: '́˜ëª» ́†¡ê¸ˆëœ ́ê¸ˆ́€ ë³µêµ¬í•  ́ˆ˜ ́—†́µë‹ˆë‹¤.',
     copyAddress: '́£¼́†Œ ë³µ́‚¬',
     share: 'ê³µ́œ í•˜ë‹¤',
     methods: {
-      tetherErc20: 'í…Œë” (VNDT ERC20)',
-      tetherBep20: 'í…Œë” (VNDT BEP20)',
+      tetherErc20: 'í…Œë” (VND ERC20)',
+      tetherBep20: 'í…Œë” (VND BEP20)',
       card: '́¹´ë“œ',
       instantTime15Min: '́¸́¤í„´í¸ - 15ë¶„',
       instantTime2Min: '́¸́¤í„´í¸ - 2ë¶„',
@@ -288,9 +305,9 @@
   withdraw: {
     common: {
       usd: 'USD',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}} USD',
-      amountWithVNDT: '{{amount}} VNDT',
+      amountWithVND: '{{amount}} VND',
       networkFee: 'ë„¤í¸́›Œí¬ ́ˆ˜́ˆ˜ë£Œ',
       amountReceived: 'ë°›́€ ê¸ˆ́•¡',
       processing: '́²˜ë¦¬ ́¤‘...',
@@ -299,9 +316,9 @@
     },
     method: {
       demoAccountError: 'ë°ëª¨ ê³„́¢Œë” ́¶œê¸ˆ́„ ́ˆ˜í–‰í•  ́ˆ˜ ́—†́µë‹ˆë‹¤. ë¨¼́ € ê³„́ •́„ ́¶©́ „í•´́£¼́„¸́”.',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: '́¸́¤í„´í¸ - 15ë¶„',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: '́¶œê¸ˆ́„ ê³„́†í•˜ë ¤ë©´ ë„¤í¸́›Œí¬́™€ í† í°́„ ́„ íƒí•˜́„¸́”',
@@ -309,10 +326,10 @@
       limitLabel: 'í•œë„',
     },
     detail: {
-      walletVNDTAddress: '́§€ê°‘ VNDT ́£¼́†Œ',
-      walletAddressHelpAria: '́›”ë › VNDT ́£¼́†Œë€ ë¬´́—‡́¸ê°€́”?',
+      walletVNDAddress: '́§€ê°‘ VND ́£¼́†Œ',
+      walletAddressHelpAria: '́›”ë › VND ́£¼́†Œë€ ë¬´́—‡́¸ê°€́”?',
       walletAddressHelpDescription:
-        'VNDTë¥¼ ́˜΅²´́¸́œ¼ë¡œ ë³´ë‚´ë” ê³³́…ë‹ˆë‹¤(́˜ˆ: TRC20). ́˜¬ë°”ë¥¸ ë„¤í¸́›Œí¬ë¥¼ ́œ„í•´ ́́‹ ́˜ ́§€ê°‘ ́£¼́†Œë¥¼ ́‚¬́©í•˜́„¸́”. ́˜ëª»ëœ ́£¼́†Œë‚˜ ë„¤í¸́›Œí¬ë” ́ê¸ˆ ́†́‹¤́„ ́˜ë¯¸í•  ́ˆ˜ ́ˆ́µë‹ˆë‹¤.',
+        'VNDë¥¼ ́˜΅²´́¸́œ¼ë¡œ ë³´ë‚´ë” ê³³́…ë‹ˆë‹¤(́˜ˆ: TRC20). ́˜¬ë°”ë¥¸ ë„¤í¸́›Œí¬ë¥¼ ́œ„í•´ ́́‹ ́˜ ́§€ê°‘ ́£¼́†Œë¥¼ ́‚¬́©í•˜́„¸́”. ́˜ëª»ëœ ́£¼́†Œë‚˜ ë„¤í¸́›Œí¬ë” ́ê¸ˆ ́†́‹¤́„ ́˜ë¯¸í•  ́ˆ˜ ́ˆ́µë‹ˆë‹¤.',
       enterWalletAddress: '́§€ê°‘ ́£¼́†Œë¥¼ ́…ë ¥í•˜́„¸́”',
       paste: 'ë¶™́—¬ë„£ê¸°',
       max: '́µœëŒ€',
@@ -332,9 +349,9 @@
       description: '́•„ë˜ ́ •ë³´ê°€ ëª¨ë‘ ́˜¬ë°”ë¥¸́§€ í™•́¸í•˜́„¸́”.',
       walletAddress: '́§€ê°‘ ́£¼́†Œ',
       network: 'íŒë¡œë§',
-      VNDTEthereum: 'VNDT(́´ë”ë¦¬́›€)',
+      VNDEthereum: 'VND(́´ë”ë¦¬́›€)',
       withdrawalAmount: '́¶œê¸ˆê¸ˆ́•¡',
-      networkFeeValue: '0.1VNDT',
+      networkFeeValue: '0.1VND',
     },
     verifyOtp: {
       title: 'ê±°ë˜ í™•́¸',
@@ -1484,8 +1501,24 @@
       orderTypeStopLimit: '́¤í†± ́§€́ •ê°€',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} @ {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} @ ́‹œ́¥ê°€',
-    },
+    
+
+  "avgFillPrice": "평균 체결가",
+  "totalCost": "총 금액"
+,
+},
+  
+
+  "orders": {
+    "loadError": "미체결 주문을 불러올 수 없습니다",
+    "loadErrorDescription": "서버에서 주문을 받지 못했습니다. 다시 시도하세요."
   },
+  "orderHistory": {
+    "loadError": "주문 내역을 불러올 수 없습니다",
+    "loadErrorDescription": "서버에서 주문 내역을 받지 못했습니다. 다시 시도하세요."
+  }
+,
+},
   account: {
     assetOverview: '́́‚° ê°œ́”',
     equity: '́ë³¸ (USD)',
@@ -1798,7 +1831,28 @@
   notifications: {
     onlyUnread: '́½́§€ ́•́Œë§Œ í‘œ́‹œ',
     unreadLabel: '́½́§€ ́•́Œ',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "임대 수익 수령 가능",
+      "description": "{{asset}}: 임대 수익 {{amount}} 수령 가능."
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "인수 대금 수령 가능",
+      "description": "{{asset}}: 인수 대금 {{amount}} 수령 가능."
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "투표 대기 중인 제안",
+      "description": "{{asset}}에 아직 투표하지 않은 진행 중인 제안이 있습니다."
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "임대료 납부를 위한 충전 필요",
+      "description": "{{asset}}: 임대료 {{amount}} 납부 기한이며 임대 지갑의 가용 잔액이 부족합니다."
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1810,7 +1864,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1823,7 +1877,17 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "{{count}}회차",
+  "pendingPeriods": "미수령 {{count}}개 회차 보기",
+  "claimedHistory": "수령 내역 ({{count}}개 회차)"
+,
+
+
+  "status": "́ƒíƒœ"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1836,7 +1900,215 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "제안 월 임대료 (VND)",
+    "depositVnd": "제안 보증금 (VND)",
+    "maintenanceBudgetVnd": "유지보수 예산 (VND)",
+    "operatorName": "신규 운영사",
+    "operatorContact": "운영사 연락처",
+    "salePriceVnd": "제안 매각가 (VND)",
+    "salePlan": "매각 및 대금 배분 계획",
+    "nextRentalOnly": "승인된 조건은 신규 임대에 적용됩니다. 기존 계약의 임대료와 보증금은 유지됩니다.",
+    "approvedRentalTerms": "승인된 임대 조건",
+    "openingVoteInProgress": "임대 개시 승인 투표가 진행 중입니다.",
+    "invalid": "이 제안 유형의 조건을 모두 입력하세요."
+  }
+,
+
+
+  "assetNotFound": "부동산을 찾을 수 없습니다",
+  "manageAsset": "부동산 관리",
+  "navigation": "부동산 관리 메뉴",
+  "expectedApy": "예상 연 수익률",
+  "price": "기준 가격",
+  "property": "토큰화 부동산",
+  "tradeAsset": "토큰 거래",
+  "portfolioDesc": "각 부동산의 운영, 현금흐름, 유동성 및 거버넌스를 확인합니다.",
+  "emptyOwned": "이 계좌는 부동산 토큰을 보유하지 않습니다.",
+  "sections": {
+    "overview": "개요",
+    "rental": "임대",
+    "liquidity": "유동성",
+    "governance": "거버넌스",
+    "cashFlow": "현금흐름"
+  },
+  "actions": {
+    "pending": "처리할 작업 {{count}}개"
+  },
+  "operations": {
+    "available": "임대 가능",
+    "rented": "임대 중"
+  },
+  "status": {
+    "active": "운영 중",
+    "inactive": "일시 중지",
+    "open": "거래 가능",
+    "paused": "거래 중지"
+  },
+  "overview": {
+    "activeProposals": "진행 중인 제안 {{count}}개",
+    "buyoutProgress": "인수 자격 달성도",
+    "buyoutStatus": "인수 자격",
+    "operation": "운영 상태",
+    "yourOwnership": "내 보유 토큰"
+  },
+  "rentalOperations": {
+    "title": "임대 관리",
+    "applicantList": "임대 신청자",
+    "claimRent": "임대 수익 수령",
+    "claimed": "수령 완료",
+    "unclaimed": "미수령",
+    "noEntitlement": "이 회차의 수령 권한 없음",
+    "contractWallet": "임대 지갑 가용 잔액",
+    "reservedForClaims": "주주 배분용 예치금",
+    "expectedDeposit": "예상 보증금 (VND)",
+    "expectedRent": "예상 월 임대료 (VND)",
+    "guestName": "게스트 {{number}}",
+    "historyError": "임대료 내역을 불러올 수 없습니다.",
+    "incomeHistoryTitle": "임대 수익 배분 내역",
+    "incomeHistoryDescription": "각 행은 임대료가 납부되고 토큰 소유 비율이 확정된 기간입니다.",
+    "awaitingPaymentExplanation": "아직 배분할 임대료가 납부되지 않았습니다. 입금 후 미수령 권리가 있으면 수령 버튼이 표시됩니다.",
+    "manageRentPayment": "임대료 납부 관리",
+    "monthlyRentVnd": "월 임대료 (VND)",
+    "nextCollection": "다음 임대료 수납",
+    "noApplications": "임대 신청이 없습니다.",
+    "noIncomeHistory": "납부된 임대료 기간이 없습니다.",
+    "paymentPeriod": "임대 기간",
+    "periodTotal": "총 납부액",
+    "status": "임대 상태",
+    "tenant": "현재 임차인",
+    "unknownApplicant": "신청자",
+    "yourShare": "내 몫",
+    "yourAmount": "수령 권리 금액",
+    "allocatedAmount": "주주 배분액",
+    "grossAmount": "납부된 임대료 총액",
+    "allowedPurposes": "허용된 사용 목적",
+    "daoDescription": "임대 승인과 임차인 신청은 토큰 보유자의 투표로 결정합니다.",
+    "enablementSubmitted": "임대 제안을 제출했습니다.",
+    "openEnablementVote": "임대 개시 제안",
+    "privateVoteNotice": "총 투표권만 표시하며 개인의 투표 선택은 공개하지 않습니다.",
+    "submitToDao": "제안 제출",
+    "transactionDetails": "임대료 배분 상세",
+    "voteNow": "확인 및 투표",
+    "voters": "투표자 {{count}}명"
+  },
+  "governance": {
+    "alreadyVoted": "투표가 기록되었습니다.",
+    "continuousHolding": "연속 보유 요건",
+    "currentHolding": "현재 보유량",
+    "eligibilityTitle": "부동산 인수 자격",
+    "eligibilityDescription": "자격은 토큰 잔액과 연속 보유 내역으로 계산됩니다.",
+    "loadError": "제안을 불러올 수 없습니다. 다시 시도하세요.",
+    "proposals": "커뮤니티 제안",
+    "rentalProposal": "임대 제안",
+    "requiredHolding": "필요한 지배 지분"
+  },
+  "createProposal": {
+    "description": "설명"
+  ,
+
+  "typeGeneral": "일반 제안",
+  "typeMaintenance": "유지보수 계획",
+  "typeOperatorChange": "운영사 변경",
+  "typeRentChange": "임대료 및 보증금 변경",
+  "typeAssetSale": "자산 매각",
+  "typeBuyout": "인수",
+  "proposalType": "제안 유형",
+  "proposalTitle": "제안 제목",
+  "submit": "제안 제출",
+  "submitting": "제출 중…",
+  "successMsg": "제안이 제출되었습니다",
+  "errorMsg": "제안을 제출할 수 없습니다",
+  "required": "제목과 설명을 입력하세요",
+  "votingWindow": "투표 기간",
+  "selectedType": "선택한 유형",
+  "votingDays": "투표 기간"
+,
+},
+  "details": {
+    "action": "ë™́‘",
+    "buy": "ë§¤́ˆ˜",
+    "close": "́²­́‚°",
+    "no": "́•„ë‹ˆ́˜¤",
+    "sell": "ë§¤ë„",
+    "side": "ë°©í–¥",
+    "viewDetails": "상세 보기",
+    "metadataLabels": {
+      "price": "ê°€ê²©",
+      "quantity": "́ˆ˜ëŸ‰"
+    ,
+
+  "proposalType": "선택한 유형"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "́ˆ˜ëŸ‰"
+  },
+  "portfolioTitle": "í¬́§€́…˜",
+  "processing": "처리 중…",
+  "properties": "개 부동산",
+  "statuses": {
+    "COMPLETED": "́™„ë£Œ",
+    "PENDING": "ëŒ€ê¸° ́¤‘",
+    "REJECTED": "ê±°ë¶€ë¨",
+    "CANCELLED": "́·΅†Œë¨",
+    "FAILED": "́‹¤íŒ¨",
+    "OPEN": "́—´ë¦¼"
+  },
+  "transactionHistory": {
+    "price": "ê°€ê²©",
+    "quantity": "́ˆ˜ëŸ‰",
+    "status": "́ƒíƒœ",
+    "time": "́‹œê°„",
+    "type": "́œ í˜•"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "거버넌스",
+      "CASH_FLOW": "현금흐름",
+      "LIQUIDITY": "유동성"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "매수 / 매도",
+      "viewProperty": "부동산 보기"
+    },
+    "ownership": {
+      "title": "보유 부동산",
+      "description": "소유 지분은 계좌 원장의 토큰 잔액으로 계산합니다.",
+      "properties": "개 부동산"
+    ,
+
+  "returnSincePurchase": "매입 원가 대비 {{percent}}%",
+  "noCostBasis": "매입 원가 없음",
+  "returnBasis": "평균 매입 원가 기준 미실현 손익이며 수수료와 임대 수익은 제외됩니다."
+,
+},
+    "empty": {
+      "title": "보유한 부동산이 없습니다",
+      "description": "구매한 부동산 토큰이 여기에 표시됩니다."
+    },
+    "table": {
+      "actions": "부동산 작업",
+      "asset": "자산 코드",
+      "avgBuyPrice": "소유 지분",
+      "currentPrice": "토큰 평가액",
+      "quantity": "보유 토큰",
+      "totalValue": "보유 지분 가치"
+    }
+  },
+  "rentalListing": {
+    "months": "개월"
+  }
+,
 };
 export default ko;
 

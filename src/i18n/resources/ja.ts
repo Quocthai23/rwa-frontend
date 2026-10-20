@@ -1,4 +1,4 @@
-﻿const ja = {
+const ja = {
   common: {
     search: 'æ¤œç´¢',
     all: 'ă™ă¹ă¦',
@@ -59,7 +59,24 @@
     save: 'ä¿å­˜',
     share: 'Share',
     noData: 'ăƒ‡ăƒ¼ă‚¿ăªă—',
-  },
+  
+
+  "back": "戻る",
+  "description": "説明",
+  "loadMore": "さらに表示",
+  "loading": "読み込み中…",
+  "unknown": "不明",
+  "viewDetails": "詳細を見る",
+  "processing": "処理中…",
+  "dayUnit": "日",
+  "monthUnit": "か月",
+  "retry": "ăƒªăƒˆăƒ©ă‚¤"
+,
+
+
+  "next": "続ける"
+,
+},
   search: {
     marketWatch: 'ăƒăƒ¼ă‚±ăƒƒăƒˆă‚¦ă‚©ăƒƒăƒ',
     placeholder: 'æ¤œç´¢',
@@ -206,21 +223,21 @@
     processingTime: 'å‡¦ç†æ™‚é–“',
     limit: 'é™ç•Œ',
     minDepositPrefix: 'å…¥é‡‘é¡ă¯å°‘ăªăă¨ă‚‚',
-    minDepositAmount: 'VNĐ10 VNDT',
+    minDepositAmount: 'VNĐ10 VND',
     depositQrAlt: 'QRă‚’å…¥é‡‘',
     copyAddressAria: 'ă‚¢ăƒ‰ăƒ¬ă‚¹ă‚’ă‚³ăƒ”ăƒ¼ă™ă‚‹',
     copySuccessTitle: 'ă‚³ăƒ”ăƒ¼ă«æˆåŸă—ă¾ă—ăŸ',
     copySuccessMessage: 'ă‚¢ăƒ‰ăƒ¬ă‚¹ăŒă‚¯ăƒªăƒƒăƒ—ăƒœăƒ¼ăƒ‰ă«æ­£å¸¸ă«ă‚³ăƒ”ăƒ¼ă•ă‚Œă¾ă—ăŸă€‚',
     shareSuccessTitle: 'å…±æœ‰ăŒæˆåŸă—ă¾ă—ăŸ',
     shareSuccessMessage: 'ă‚¢ăƒ‰ăƒ¬ă‚¹ăŒæ­£å¸¸ă«å…±æœ‰ă•ă‚Œă¾ă—ăŸă€‚',
-    sendOnlyPrefix: 'VNDTă®ă¿ă‚’çµŒç”±ă—ă¦é€ä¿¡ă—ă¾ă™',
+    sendOnlyPrefix: 'VNDă®ă¿ă‚’çµŒç”±ă—ă¦é€ä¿¡ă—ă¾ă™',
     networkSuffix: 'ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯',
     fundsWarning: 'èª¤ă£ă¦é€é‡‘ă•ă‚ŒăŸè³‡é‡‘ă¯å–ă‚æˆ»ă™ă“ă¨ăŒă§ăă¾ă›ă‚“ă€‚',
     copyAddress: 'ă‚¢ăƒ‰ăƒ¬ă‚¹ă‚’ă‚³ăƒ”ăƒ¼ă™ă‚‹',
     share: 'å…±æœ‰',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'ă‚«ăƒ¼ăƒ‰',
       instantTime15Min: 'ă‚¤ăƒ³ă‚¹ă‚¿ăƒ³ăƒˆ - 15 åˆ†',
       instantTime2Min: 'ă‚¤ăƒ³ă‚¹ă‚¿ăƒ³ăƒˆ - 2 åˆ†',
@@ -290,9 +307,9 @@
   withdraw: {
     common: {
       usd: 'ç±³ăƒ‰ăƒ«',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}} ç±³ăƒ‰ăƒ«',
-      amountWithVNDT: '{{amount}} VNDT',
+      amountWithVND: '{{amount}} VND',
       networkFee: 'ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯æ–™é‡‘',
       amountReceived: 'å—å–é‡‘â€‹â€‹é¡',
       processing: 'å‡¦ç†...',
@@ -301,9 +318,9 @@
     },
     method: {
       demoAccountError: 'ăƒ‡ăƒ¢å£åº§ă§ă¯å‡ºé‡‘ăŒă§ăă¾ă›ă‚“ă€‚ă¾ăă‚¢ă‚«ă‚¦ăƒ³ăƒˆă«ăƒăƒ£ăƒ¼ă‚¸ă—ă¦ăă ă•ă„ă€‚',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'ă‚¤ăƒ³ă‚¹ă‚¿ăƒ³ăƒˆ - 15 åˆ†',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'å‡ºé‡‘ă‚’ç¶ă‘ă‚‹ă«ă¯ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯ă¨ăƒˆăƒ¼ă‚¯ăƒ³ă‚’é¸æă—ă¦ăă ă•ă„',
@@ -311,10 +328,10 @@
       limitLabel: 'é™åº¦é¡',
     },
     detail: {
-      walletVNDTAddress: 'ă‚¦ă‚©ăƒ¬ăƒƒăƒˆă®VNDTă‚¢ăƒ‰ăƒ¬ă‚¹',
-      walletAddressHelpAria: 'ă‚¦ă‚©ăƒ¬ăƒƒăƒˆ VNDT ă‚¢ăƒ‰ăƒ¬ă‚¹ă¨ă¯ä½•ă§ă™ă‹?',
+      walletVNDAddress: 'ă‚¦ă‚©ăƒ¬ăƒƒăƒˆă®VNDă‚¢ăƒ‰ăƒ¬ă‚¹',
+      walletAddressHelpAria: 'ă‚¦ă‚©ăƒ¬ăƒƒăƒˆ VND ă‚¢ăƒ‰ăƒ¬ă‚¹ă¨ă¯ä½•ă§ă™ă‹?',
       walletAddressHelpDescription:
-        'VNDT ă‚’ă‚ªăƒ³ăƒă‚§ăƒ¼ăƒ³ă§é€ä¿¡ă™ă‚‹å ´æ‰€ă§ă™ (ä¾‹: TRC20)ă€‚æ­£ă—ă„ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯ă«ă¯è‡ªåˆ†ă®ă‚¦ă‚©ăƒ¬ăƒƒăƒˆ ă‚¢ăƒ‰ăƒ¬ă‚¹ă‚’ä½¿ç”¨ă—ă¦ăă ă•ă„ă€‚ă‚¢ăƒ‰ăƒ¬ă‚¹ă‚„ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯ăŒé–“é•ă£ă¦ă„ă‚‹ă¨ă€è³‡é‡‘ăŒå¤±ă‚ă‚Œă‚‹å¯èƒ½æ€§ăŒă‚ă‚ă¾ă™ă€‚',
+        'VND ă‚’ă‚ªăƒ³ăƒă‚§ăƒ¼ăƒ³ă§é€ä¿¡ă™ă‚‹å ´æ‰€ă§ă™ (ä¾‹: TRC20)ă€‚æ­£ă—ă„ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯ă«ă¯è‡ªåˆ†ă®ă‚¦ă‚©ăƒ¬ăƒƒăƒˆ ă‚¢ăƒ‰ăƒ¬ă‚¹ă‚’ä½¿ç”¨ă—ă¦ăă ă•ă„ă€‚ă‚¢ăƒ‰ăƒ¬ă‚¹ă‚„ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯ăŒé–“é•ă£ă¦ă„ă‚‹ă¨ă€è³‡é‡‘ăŒå¤±ă‚ă‚Œă‚‹å¯èƒ½æ€§ăŒă‚ă‚ă¾ă™ă€‚',
       enterWalletAddress: 'ă‚¦ă‚©ăƒ¬ăƒƒăƒˆă‚¢ăƒ‰ăƒ¬ă‚¹ă‚’å…¥å›ă—ă¦ăă ă•ă„',
       paste: 'ăƒăƒ¼ă‚¹ăƒˆ',
       max: 'ăƒăƒƒă‚¯ă‚¹',
@@ -334,9 +351,9 @@
       description: 'ä»¥ä¸‹ă®æƒ…å ±ăŒă™ă¹ă¦æ­£ă—ă„ă“ă¨ă‚’ç¢ºèªă—ă¦ăă ă•ă„',
       walletAddress: 'ă‚¦ă‚©ăƒ¬ăƒƒăƒˆă‚¢ăƒ‰ăƒ¬ă‚¹',
       network: 'ăƒăƒƒăƒˆăƒ¯ăƒ¼ă‚¯',
-      VNDTEthereum: 'VNDT(ă‚¤ăƒ¼ă‚µăƒªă‚¢ăƒ )',
+      VNDEthereum: 'VND(ă‚¤ăƒ¼ă‚µăƒªă‚¢ăƒ )',
       withdrawalAmount: 'å‡ºé‡‘é¡',
-      networkFeeValue: '0.1 VNDT',
+      networkFeeValue: '0.1 VND',
     },
     verifyOtp: {
       title: 'å–å¼•ă‚’ç¢ºèªă™ă‚‹',
@@ -1492,8 +1509,24 @@
       orderTypeStopLimit: 'ă‚¹ăƒˆăƒƒăƒ—ăƒªăƒŸăƒƒăƒˆæ³¨æ–‡',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} @ {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} @ æˆè¡Œä¾¡æ ¼',
-    },
+    
+
+  "avgFillPrice": "平均約定価格",
+  "totalCost": "合計金額"
+,
+},
+  
+
+  "orders": {
+    "loadError": "未約定注文を読み込めません",
+    "loadErrorDescription": "注文情報が返されませんでした。再試行してください。"
   },
+  "orderHistory": {
+    "loadError": "注文履歴を読み込めません",
+    "loadErrorDescription": "注文履歴が返されませんでした。再試行してください。"
+  }
+,
+},
   account: {
     assetOverview: 'è³‡ç”£æ¦‚è¦',
     equity: 'è³‡æœ¬ (USD)',
@@ -1807,7 +1840,28 @@
   notifications: {
     onlyUnread: 'æœªèª­ă®ă¿è¡¨ç¤º',
     unreadLabel: 'æœªèª­',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "賃料収入を受け取れます",
+      "description": "{{asset}}：賃料収入 {{amount}} を受け取れます。"
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "買い取り代金を受け取れます",
+      "description": "{{asset}}：買い取り代金 {{amount}} を受け取れます。"
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "投票待ちの提案があります",
+      "description": "{{asset}} にまだ投票していない提案があります。"
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "賃料支払いの入金が必要です",
+      "description": "{{asset}}：賃料 {{amount}} の支払期日です。賃貸ウォレットの利用可能残高が不足しています。"
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1819,7 +1873,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1832,7 +1886,17 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "第{{count}}期",
+  "pendingPeriods": "未受領の{{count}}期を表示",
+  "claimedHistory": "受領済み履歴（{{count}}期）"
+,
+
+
+  "status": "ă‚¹ăƒ†ăƒ¼ă‚¿ă‚¹"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1845,7 +1909,215 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "提案する月額賃料 (VND)",
+    "depositVnd": "提案する敷金 (VND)",
+    "maintenanceBudgetVnd": "修繕予算 (VND)",
+    "operatorName": "新しい運営会社",
+    "operatorContact": "運営会社の連絡先",
+    "salePriceVnd": "提案する売却価格 (VND)",
+    "salePlan": "売却・代金分配計画",
+    "nextRentalOnly": "承認された条件は新規賃貸に適用されます。既存契約の賃料・敷金は変わりません。",
+    "approvedRentalTerms": "承認済みの募集条件",
+    "openingVoteInProgress": "賃貸開始の承認投票が進行中です。",
+    "invalid": "この提案に必要な条件をすべて入力してください。"
+  }
+,
+
+
+  "assetNotFound": "物件が見つかりません",
+  "manageAsset": "物件を管理",
+  "navigation": "物件管理メニュー",
+  "expectedApy": "予想年間利回り",
+  "price": "参考価格",
+  "property": "トークン化不動産",
+  "tradeAsset": "トークンを取引",
+  "portfolioDesc": "各物件の運営・資金の流れ・流動性・ガバナンスを確認します。",
+  "emptyOwned": "この口座は不動産トークンを保有していません。",
+  "sections": {
+    "overview": "概要",
+    "rental": "賃貸",
+    "liquidity": "流動性",
+    "governance": "ガバナンス",
+    "cashFlow": "資金の流れ"
+  },
+  "actions": {
+    "pending": "対応待ち {{count}} 件"
+  },
+  "operations": {
+    "available": "賃貸可能",
+    "rented": "賃貸中"
+  },
+  "status": {
+    "active": "運営中",
+    "inactive": "停止中",
+    "open": "取引可能",
+    "paused": "取引停止中"
+  },
+  "overview": {
+    "activeProposals": "進行中の提案 {{count}} 件",
+    "buyoutProgress": "買収資格の達成状況",
+    "buyoutStatus": "買収資格",
+    "operation": "運営状況",
+    "yourOwnership": "保有トークン"
+  },
+  "rentalOperations": {
+    "title": "賃貸管理",
+    "applicantList": "賃貸申込者",
+    "claimRent": "賃料収益を受け取る",
+    "claimed": "受領済み",
+    "unclaimed": "未受領",
+    "noEntitlement": "この期間の受取権はありません",
+    "contractWallet": "賃貸ウォレットの利用可能残高",
+    "reservedForClaims": "保有者への分配用留保額",
+    "expectedDeposit": "想定敷金 (VND)",
+    "expectedRent": "想定月額賃料 (VND)",
+    "guestName": "ゲスト {{number}}",
+    "historyError": "賃料履歴を読み込めません。",
+    "incomeHistoryTitle": "賃料分配履歴",
+    "incomeHistoryDescription": "各行は、支払い済みで保有割合を確定した賃貸期間です。",
+    "awaitingPaymentExplanation": "入金・分配がまだありません。対象の未受領額が発生すると受取ボタンが表示されます。",
+    "manageRentPayment": "賃料の入金・管理",
+    "monthlyRentVnd": "月額賃料 (VND)",
+    "nextCollection": "次回賃料回収",
+    "noApplications": "賃貸申込はまだありません。",
+    "noIncomeHistory": "入金済みの賃貸期間はありません。",
+    "paymentPeriod": "賃貸期間",
+    "periodTotal": "入金総額",
+    "status": "賃貸状況",
+    "tenant": "現在の入居者",
+    "unknownApplicant": "申込者",
+    "yourShare": "あなたの持分",
+    "yourAmount": "受取権利額",
+    "allocatedAmount": "保有者への割当額",
+    "grossAmount": "支払済み賃料総額",
+    "allowedPurposes": "許可された用途",
+    "daoDescription": "賃貸開始と申込承認はトークン保有者の投票で決定します。",
+    "enablementSubmitted": "賃貸提案を提出しました。",
+    "openEnablementVote": "賃貸開始を提案",
+    "privateVoteNotice": "投票権の集計のみ表示し、個々の選択は公開しません。",
+    "submitToDao": "提案を提出",
+    "transactionDetails": "賃料分配の詳細",
+    "voteNow": "内容を見て投票",
+    "voters": "投票者 {{count}} 人"
+  },
+  "governance": {
+    "alreadyVoted": "投票は記録済みです。",
+    "continuousHolding": "継続保有要件",
+    "currentHolding": "現在の保有量",
+    "eligibilityTitle": "物件買収の資格",
+    "eligibilityDescription": "資格は保有量と継続保有履歴に基づきます。",
+    "loadError": "提案を読み込めません。再試行してください。",
+    "proposals": "コミュニティ提案",
+    "rentalProposal": "賃貸提案",
+    "requiredHolding": "必要な支配保有量"
+  },
+  "createProposal": {
+    "description": "説明"
+  ,
+
+  "typeGeneral": "一般提案",
+  "typeMaintenance": "修繕計画",
+  "typeOperatorChange": "運営会社の変更",
+  "typeRentChange": "賃料・敷金の変更",
+  "typeAssetSale": "資産売却",
+  "typeBuyout": "買い取り",
+  "proposalType": "提案の種類",
+  "proposalTitle": "提案タイトル",
+  "submit": "提案を送信",
+  "submitting": "送信中…",
+  "successMsg": "提案を送信しました",
+  "errorMsg": "提案を送信できませんでした",
+  "required": "タイトルと説明を入力してください",
+  "votingWindow": "投票期間",
+  "selectedType": "選択した種類",
+  "votingDays": "投票期間"
+,
+},
+  "details": {
+    "action": "æ“ä½œ",
+    "buy": "è²·ă„",
+    "close": "æ±ºæ¸ˆ",
+    "no": "ă„ă„ăˆ",
+    "sell": "å£²ă‚",
+    "side": "å£²è²·",
+    "viewDetails": "詳細を見る",
+    "metadataLabels": {
+      "price": "ä¾¡æ ¼",
+      "quantity": "æ•°é‡"
+    ,
+
+  "proposalType": "選択した種類"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "æ•°é‡"
+  },
+  "portfolioTitle": "ăƒă‚¸ă‚·ăƒ§ăƒ³",
+  "processing": "処理中…",
+  "properties": "物件",
+  "statuses": {
+    "COMPLETED": "å®Œäº†",
+    "PENDING": "ä¿ç•™ä¸­",
+    "REJECTED": "å´ä¸‹",
+    "CANCELLED": "ă‚­ăƒ£ăƒ³ă‚»ăƒ«æ¸ˆă¿",
+    "FAILED": "å¤±æ•—",
+    "OPEN": "ă‚ªăƒ¼ăƒ—ăƒ³"
+  },
+  "transactionHistory": {
+    "price": "ä¾¡æ ¼",
+    "quantity": "æ•°é‡",
+    "status": "ă‚¹ăƒ†ăƒ¼ă‚¿ă‚¹",
+    "time": "æ™‚é–“",
+    "type": "ă‚¿ă‚¤ăƒ—"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "ガバナンス",
+      "CASH_FLOW": "資金の流れ",
+      "LIQUIDITY": "流動性"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "購入 / 売却",
+      "viewProperty": "物件を見る"
+    },
+    "ownership": {
+      "title": "保有物件",
+      "description": "所有割合は口座台帳のトークン残高に基づきます。",
+      "properties": "物件"
+    ,
+
+  "returnSincePurchase": "取得原価比 {{percent}}%",
+  "noCostBasis": "取得原価不明",
+  "returnBasis": "平均取得原価に対する含み損益。手数料と賃料収入を除きます。"
+,
+},
+    "empty": {
+      "title": "まだ物件を保有していません",
+      "description": "購入済みの不動産トークンがここに表示されます。"
+    },
+    "table": {
+      "actions": "物件の操作",
+      "asset": "資産コード",
+      "avgBuyPrice": "所有割合",
+      "currentPrice": "トークン評価額",
+      "quantity": "保有トークン",
+      "totalValue": "持分評価額"
+    }
+  },
+  "rentalListing": {
+    "months": "か月"
+  }
+,
 };
 export default ja;
 

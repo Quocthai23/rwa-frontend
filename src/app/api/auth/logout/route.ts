@@ -1,4 +1,8 @@
-﻿import { clearAuthCookies, successResponse, getAccessTokenFromRequest } from '@/app/api/_utils/auth';
+﻿import {
+  clearAuthCookies,
+  successResponse,
+  getAccessTokenFromRequest,
+} from '@/app/api/_utils/auth';
 import { API_BASE_URL } from '@/constants/env';
 import { apiClient } from '@/services/apiClient';
 
@@ -11,11 +15,23 @@ export async function POST(request: Request) {
       await apiClient.postWithResponse('auth/logout', undefined, {
         baseUrl: backendUrl,
         headers: {
-          'Authorization': `Bearer ${accessTokenHeader}`,
+          Authorization: `Bearer ${accessTokenHeader}`,
+          ...(request.headers
+            .get('cookie')
+            ?.split(';')
+            .find((value) => value.trim().startsWith('refresh_token='))
+            ? {
+                Cookie: request.headers
+                  .get('cookie')!
+                  .split(';')
+                  .find((value) => value.trim().startsWith('refresh_token='))!
+                  .trim(),
+              }
+            : {}),
         },
         skipAuth: true,
       });
-    } catch (e) {
+    } catch {
       // Ignore backend logout errors, we still want to clear local cookies
     }
   }
@@ -26,4 +42,3 @@ export async function POST(request: Request) {
 
   return response;
 }
-

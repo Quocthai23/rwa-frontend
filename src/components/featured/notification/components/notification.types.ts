@@ -1,4 +1,6 @@
 ﻿import type { NotificationItem as ApiNotificationItem } from '@/types/notification';
+import i18n from '@/i18n';
+import { formatVnd, getIntlLocale } from '@/i18n/formatting';
 import { formatTimeAgo } from '@/utils/dateUtils';
 
 export enum NotificationCategory {
@@ -15,7 +17,13 @@ export enum NotificationType {
   FOLLOW = 4,
 }
 
-export type NotificationCategoryTab = 'user' | 'system' | 'trading';
+export type NotificationCategoryTab =
+  | 'user'
+  | 'system'
+  | 'trading'
+  | 'finance'
+  | 'asset'
+  | 'security';
 
 export type NotificationTabId = 'all' | NotificationCategoryTab;
 
@@ -30,6 +38,7 @@ export type NotificationItem = {
   description: NotificationText;
   id: string;
   read: boolean;
+  requiresAction?: boolean;
   targetUrl?: string;
   timestamp: string;
   title: NotificationText;
@@ -48,10 +57,41 @@ export type NotificationCategoryStyle = {
 };
 
 export const NOTIFICATION_TABS: NotificationTab[] = [
-  { id: 'all', labelDefault: 'All', labelKey: 'notifications.tabs.all' },
-  { id: 'user', labelDefault: 'User', labelKey: 'notifications.tabs.user' },
-  { id: 'system', labelDefault: 'System', labelKey: 'notifications.tabs.system' },
-  { id: 'trading', labelDefault: 'Trading', labelKey: 'notifications.tabs.trading' },
+  {
+    id: 'all',
+    labelDefault: 'All',
+    labelKey: 'notifications.tabs.all',
+  },
+  {
+    id: 'finance',
+    labelDefault: 'Money & accounts',
+    labelKey: 'notifications.groups.finance',
+  },
+  {
+    id: 'trading',
+    labelDefault: 'Trading',
+    labelKey: 'notifications.groups.trading',
+  },
+  {
+    id: 'asset',
+    labelDefault: 'Assets & voting',
+    labelKey: 'notifications.groups.asset',
+  },
+  {
+    id: 'user',
+    labelDefault: 'Community',
+    labelKey: 'notifications.groups.user',
+  },
+  {
+    id: 'security',
+    labelDefault: 'Security',
+    labelKey: 'notifications.groups.security',
+  },
+  {
+    id: 'system',
+    labelDefault: 'System & support',
+    labelKey: 'notifications.groups.system',
+  },
 ];
 
 const CATEGORY_BY_CODE: Record<number, NotificationCategoryTab> = {
@@ -61,6 +101,9 @@ const CATEGORY_BY_CODE: Record<number, NotificationCategoryTab> = {
 };
 
 const CATEGORY_ALIASES: Record<string, NotificationCategoryTab> = {
+  finance: 'finance',
+  asset: 'asset',
+  security: 'security',
   user: 'user',
   system: 'system',
   trading: 'trading',
@@ -146,7 +189,11 @@ const resolveCategory = (
   item: ApiNotificationItem,
   metadata: NotificationMetadata,
 ): NotificationCategoryTab => {
-  return normalizeCategory(metadata?.category) ?? normalizeCategory(item.category) ?? 'user';
+  return (
+    normalizeCategory(metadata?.category) ??
+    normalizeCategory(item.category) ??
+    (typeof item.type === 'string' ? 'system' : 'user')
+  );
 };
 
 const resolveType = (
@@ -251,13 +298,16 @@ const resolveTargetUrl = (
   type: NotificationType | undefined,
   metadata: NotificationMetadata,
 ): string | undefined => {
+  const target = readMetadataString(metadata, ['targetUrl']);
+  if (target && target.startsWith('/') && !target.startsWith('//') && !/[\\\r\n]/.test(target))
+    return target;
   switch (type) {
     case NotificationType.FOLLOW: {
       const userId = resolveProfileUserId(item, metadata);
       if (!userId) {
         return undefined;
       }
-      return `/discover?tab=profile?userId=${encodeURIComponent(userId)}`;
+      return `/discover?tab=profile&userId=${encodeURIComponent(userId)}`;
     }
     case NotificationType.LIKE_POST:
     case NotificationType.COMMENT_POST:
@@ -305,7 +355,7 @@ const resolveNotificationContent = (
   metadata: NotificationMetadata,
 ): NotificationRenderContent => {
   const actor = resolveActorName(type, metadata);
-  const otherCount = Math.max(0, item.actorCount - 1);
+  const otherCount = Math.max(0, (item.actorCount ?? 1) - 1);
   const postContent = resolvePostContent(metadata);
   const commentContent = resolveCommentContent(metadata);
 
@@ -443,13 +493,51 @@ export function mapApiNotificationToItem(item: ApiNotificationItem): Notificatio
   const metadata = parseMetadata(item.metadata);
   const category = resolveCategory(item, metadata);
   const type = resolveType(item, metadata);
-  const content = resolveNotificationContent(item, type, category, metadata);
+  let content = resolveNotificationContent(item, type, category, metadata);
+  if (typeof item.type === 'string') {
+    const rawValues = metadata?.values;
+    const values: Record<string, string | number> = {};
+    if (rawValues && typeof rawValues === 'object')
+      for (const [key, value] of Object.entries(rawValues))
+        if (typeof value === 'string' || typeof value === 'number') values[key] = value;
+    if (values.amount != null) {
+      const locale = getIntlLocale(i18n.resolvedLanguage ?? i18n.language);
+      const currency = String(values.currency ?? 'VND');
+      values.amount = new Intl.NumberFormat(locale, {
+        maximumFractionDigits: currency === 'VND' ? 0 : 8,
+      }).format(Number(values.amount));
+      if (!values.currency)
+        values.amount = formatVnd(
+          rawValues && typeof rawValues === 'object'
+            ? (rawValues as Record<string, string | number>).amount
+            : 0,
+          locale,
+        );
+    }
+    content = {
+      title: {
+        key:
+          readMetadataString(metadata, ['titleKey']) ?? 'notifications.types.generic.withMessage',
+        defaultValue: item.title ?? 'Notification',
+        values: { ...values, message: item.title ?? 'Notification' },
+      },
+      description: {
+        key:
+          readMetadataString(metadata, ['descriptionKey']) ??
+          'notifications.types.generic.withMessage',
+        defaultValue: item.content ?? '',
+        values: { ...values, message: item.content ?? '' },
+      },
+      targetUrl: resolveTargetUrl(item, type, metadata),
+    };
+  }
 
   return {
     id: item.id,
     category,
     description: content.description,
     read: item.isRead,
+    requiresAction: item.requiresAction,
     targetUrl: content.targetUrl,
     timestamp: resolveTimestamp(item.createdAt, item.updatedAt),
     title: content.title,
@@ -499,4 +587,3 @@ export function getNotificationCategoryStyle(
       };
   }
 }
-

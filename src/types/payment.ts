@@ -1,4 +1,4 @@
-﻿// types/payment.ts
+// types/payment.ts
 // Aligned with rwa-backend payment.dto.ts. Do not add fields absent from the backend DTO.
 
 // PayOS deposit checkout
@@ -63,7 +63,7 @@ export type TransferPayload = {
   accountId: string;
   /** Amount to transfer as decimal string */
   amount: string;
-  /** Optional asset ID. Omit for VNDT balance transfer */
+  /** Optional asset ID. Omit for VND balance transfer */
   assetId?: string;
   /** Recipient user ID (either toUserId or toEmail required) */
   toUserId?: string;
@@ -78,6 +78,7 @@ export type TransferPayload = {
 // â”€â”€â”€ Transaction History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BE: GetTransactionHistoryDto { take?, skip?, type?, status?, startDate?, endDate? }
 export type GetPaymentHistoryParams = {
+  transactionId?: string;
   take?: number;
   skip?: number;
   accountId?: string;

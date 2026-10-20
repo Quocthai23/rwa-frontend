@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { commissionService } from '@/services/commissionService';
@@ -26,7 +26,7 @@ export const useCommissionStats = () => {
         .filter((r) => r.status === 'CLAIMED')
         .reduce((sum, r) => sum + Number(r.amount), 0);
 
-      const totalVNDT = stats.totalByCurrency?.['VNDT'] || (unclaimed + claimed);
+      const totalVND = stats.totalByCurrency?.['VND'] || (unclaimed + claimed);
       
       // Find unique referrers/invitees
       const uniqueSourceUsers = new Set(rewards.map((r) => r.sourceUserId));
@@ -34,7 +34,7 @@ export const useCommissionStats = () => {
       return {
         totalReferees: uniqueSourceUsers.size,
         activeReferees: uniqueSourceUsers.size,
-        totalCommissions: String(totalVNDT),
+        totalCommissions: String(totalVND),
         claimedCommissions: String(claimed),
         unclaimedCommissions: String(unclaimed),
       };

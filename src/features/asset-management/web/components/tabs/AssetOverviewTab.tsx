@@ -4,9 +4,9 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/shared/atoms/button';
+import { AssetManagementButton as Button } from '@/features/asset-management/web/components/AssetManagementButton';
 import { Skeleton } from '@/components/shared/atoms/skeleton';
-import { useAssetStatus, useBuyoutProposals, useEligibility } from '@/hook/useAssetManagement';
+import { useAssetStatus, useAssetProposals, useEligibility } from '@/hook/useAssetManagement';
 import { usePortfolioItem } from '@/hook/usePortfolio';
 import { useAccountStore } from '@/store/useAccountStore';
 import type { Asset } from '@/types/assets';
@@ -23,7 +23,8 @@ export default function AssetOverviewTab({ asset }: { asset: Asset }) {
   const accountId = useAccountStore((state) => state.selectedAccount?.id || '');
   const { data: status, isLoading: loadingStatus } = useAssetStatus(asset.id);
   const { data: eligibility, isLoading: loadingEligibility } = useEligibility(asset.id);
-  const { data: proposals = [], isLoading: loadingProposals } = useBuyoutProposals(asset.id);
+  const proposalsQuery = useAssetProposals(asset.id);
+  const { data: proposals = [], isLoading: loadingProposals } = proposalsQuery;
   const { data: holding } = usePortfolioItem({ accountId, assetId: asset.id });
 
   const activeProposalCount = useMemo(
@@ -65,10 +66,12 @@ export default function AssetOverviewTab({ asset }: { asset: Asset }) {
     {
       key: 'governance',
       title: t('assetManagement.sections.governance', { defaultValue: 'Governance' }),
-      value: t('assetManagement.overview.activeProposals', {
-        count: activeProposalCount,
-        defaultValue: `${activeProposalCount} active proposals`,
-      }),
+      value: proposalsQuery.isError
+        ? t('assetManagement.governance.loadError')
+        : t('assetManagement.overview.activeProposals', {
+            count: activeProposalCount,
+            defaultValue: `${activeProposalCount} active proposals`,
+          }),
     },
     {
       key: 'cash-flow',

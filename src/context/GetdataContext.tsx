@@ -4,14 +4,15 @@ import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { IS_APP_PRODUCTION } from '@/constants/env';
 import { useAccounts } from '@/hook/useAccount';
 import { useAuthHydrated } from '@/hook/useAuthHydrated';
-import { authApi } from '@/services/auth';
+import { apiClient } from '@/services/apiClient';
+import { CLIENT_BASE_URL } from '@/services/baseUrl';
 import { getAssets } from '@/services/assetsService';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { Asset } from '@/types';
 import type { User } from '@/types/auth';
 import { useQuery } from '@tanstack/react-query';
-import { createContext, ReactNode, useContext, useEffect, useMemo } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from 'react';
 
 interface GetdataContextType {
   assets: Asset[] | undefined;
@@ -20,7 +21,7 @@ interface GetdataContextType {
   isLoadingMe: boolean;
   me: User | undefined;
   refetchAssets: () => void;
-  refetchMe: () => Promise<{ data: User | undefined }>;
+  refetchMe: () => Promise<{ data: User | null | undefined }>;
   isFetchingAssets: boolean;
   errorAssets: Error | null;
   isFetchingMe: boolean;
@@ -35,8 +36,10 @@ interface GetdataProviderProps {
 export function GetdataProvider({ children }: GetdataProviderProps) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const authUser = useAuthStore((state) => state.user);
+  const login = useAuthStore((state) => state.login);
   const updateAuthUser = useAuthStore((state) => state.updateUser);
   const hasHydratedAuth = useAuthHydrated();
+  const sessionBootstrapAttempted = useRef(false);
   const { data: accounts } = useAccounts();
   const setAccounts = useAccountStore((state) => state.setAccounts);
   const selectAccount = useAccountStore((state) => state.selectAccount);
@@ -55,8 +58,9 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
 
   const useMe = () => {
     return useQuery({
-      enabled: hasHydratedAuth && isAuthenticated,
-      queryFn: async () => authApi.getMe(),
+      enabled: hasHydratedAuth,
+      queryFn: () => apiClient.get<User | null>('/api/auth/session', undefined, { baseUrl: CLIENT_BASE_URL, skipAuth: true }),
+      retry: false,
       queryKey: ['me', authUser?.id ?? 'unknown'],
     });
   };
@@ -86,12 +90,16 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
   } = useAssets();
 
   useEffect(() => {
-    if (!me) {
-      return;
+    if (me === undefined) return;
+    if (!sessionBootstrapAttempted.current) {
+      sessionBootstrapAttempted.current = true;
+      if (me && !isAuthenticated) {
+        login(me);
+        return;
+      }
     }
-
-    updateAuthUser(me);
-  }, [me, updateAuthUser]);
+    if (me && isAuthenticated) updateAuthUser(me);
+  }, [me, isAuthenticated, login, updateAuthUser]);
 
   useEffect(() => {
     if (accounts) {

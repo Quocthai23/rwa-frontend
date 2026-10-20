@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { getIntlLocale } from '@/i18n/formatting';
 import { ChevronRight } from '@untitledui/icons';
 
 import { Skeleton } from '@/components/shared/atoms/skeleton';
@@ -16,7 +17,7 @@ export default function AssetActivityTab({ asset }: { asset: Asset }) {
   const { t, i18n } = useTranslation();
   const [selectedActivity, setSelectedActivity] = useState<AssetActivityItem | null>(null);
   const { data: items = [], isLoading, isError } = useAssetActivity(asset.id);
-  const locale = i18n.resolvedLanguage?.startsWith('vi') ? 'vi-VN' : 'en-US';
+  const locale = getIntlLocale(i18n.resolvedLanguage ?? i18n.language);
 
   const localizeCategory = (category: string) =>
     t(`assetManagement.activity.categories.${category}`, { defaultValue: category });

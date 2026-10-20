@@ -1,8 +1,8 @@
 ﻿'use client';
 
-import { Bell01, CheckCircle, ChevronLeft } from '@untitledui/icons';
+import { Bell01, CheckCircle, ChevronLeft, Settings01 } from '@untitledui/icons';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import NotificationCard from '@/components/featured/notification/components/NotificationCard';
@@ -21,38 +21,40 @@ import {
 export default function NotificationAppScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const [requestedTake, setRequestedTake] = useState(20);
   const [activeTab, setActiveTab] = useState<NotificationTabId>('all');
-  const { data, error, isError, isLoading, refetch } = useNotifications();
+  const [actionOnly, setActionOnly] = useState(false);
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const { data, error, isError, isLoading, isFetching, refetch } = useNotifications({
+    category: activeTab === 'all' ? undefined : activeTab,
+    isRead: unreadOnly ? false : undefined,
+    requiresAction: actionOnly ? true : undefined,
+    skip: 0,
+    take: requestedTake,
+  });
   const readAllMutation = useReadAllNotifications();
   const readMutation = useReadNotification();
   const notifications = useMemo(() => data?.notifications ?? [], [data?.notifications]);
 
-  useEffect(() => {
-    // Automatically mark all notifications as read when panel is opened
-    readAllMutation.mutate();
-  }, []);
+  const unreadTotal = data?.unreadTotal ?? notifications.filter((item) => !item.read).length;
+  const hasMore = notifications.length < (data?.total ?? notifications.length);
 
-  const filteredNotifications = useMemo(() => {
-    if (activeTab === 'all') return notifications;
-    return notifications.filter((item) => item.category === activeTab);
-  }, [activeTab, notifications]);
+  const filteredNotifications = notifications;
 
-  const unreadCount = useMemo(
-    () => filteredNotifications.filter((item) => !item.read).length,
-    [filteredNotifications],
-  );
+  const unreadCount =
+    activeTab === 'all' ? unreadTotal : (data?.unreadByCategory?.[activeTab] ?? 0);
 
   const handleMarkAllAsRead = () => {
-    if (!notifications.some((item) => !item.read) || readAllMutation.isPending) {
+    if (unreadTotal === 0 || readAllMutation.isPending) {
       return;
     }
 
-    void readAllMutation.mutateAsync();
+    readAllMutation.mutate();
   };
 
   const handleNotificationClick = (item: NotificationItem) => {
     if (!item.read && !readMutation.isPending) {
-      void readMutation.mutateAsync(item.id);
+      readMutation.mutate(item.id);
     }
 
     if (item.targetUrl) {
@@ -73,7 +75,7 @@ export default function NotificationAppScreen() {
             <ChevronLeft size={22} />
           </button>
 
-          <div className="min-w-0 text-center">
+          <div className="min-w-0 flex-1 text-center">
             <div className="flex items-center justify-center gap-2">
               <h1 className="text-h3-semibold truncate">
                 {t('notifications.title', 'Notifications')}
@@ -81,19 +83,27 @@ export default function NotificationAppScreen() {
             </div>
             <p className="text-body-small-regular text-muted-foreground mt-1 truncate">
               {t('notifications.summary', '{{items}} items, {{unread}} unread', {
-                items: filteredNotifications.length,
+                items: data?.total ?? 0,
                 unread: unreadCount,
               })}
             </p>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              aria-label={t('notificationSettings.title')}
+              onClick={() => router.push('/notifications/settings')}
+              className="hover:bg-muted flex size-10 items-center justify-center rounded-full"
+            >
+              <Settings01 size={21} />
+            </button>
             <button
               type="button"
               aria-label={t('notifications.markAllAsRead', 'Mark all as read')}
               onClick={handleMarkAllAsRead}
               className="hover:bg-muted flex size-10 items-center justify-center rounded-full transition-colors"
-              disabled={readAllMutation.isPending || unreadCount === 0}
+              disabled={readAllMutation.isPending || unreadTotal === 0}
             >
               <CheckCircle size={22} />
             </button>
@@ -106,19 +116,44 @@ export default function NotificationAppScreen() {
 
         <div className="relative space-y-4 px-4 py-4 pb-6">
           <section className="space-y-3">
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={actionOnly}
+                  onChange={(e) => {
+                    setRequestedTake(20);
+                    setActionOnly(e.target.checked);
+                  }}
+                />
+                {t('notifications.actionOnly', 'Needs action')}
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={unreadOnly}
+                  onChange={(event) => {
+                    setRequestedTake(20);
+                    setUnreadOnly(event.target.checked);
+                  }}
+                />
+                {t('notifications.onlyUnread', 'Only show unread')}
+              </label>
+            </div>
             <div className="scrollbar-neutral-slim flex gap-2 overflow-x-auto pb-1">
               {NOTIFICATION_TABS.map((tab) => {
                 const isActive = tab.id === activeTab;
                 const count =
-                  tab.id === 'all'
-                    ? notifications.length
-                    : notifications.filter((item) => item.category === tab.id).length;
+                  tab.id === 'all' ? unreadTotal : (data?.unreadByCategory?.[tab.id] ?? 0);
 
                 return (
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setRequestedTake(20);
+                      setActiveTab(tab.id);
+                    }}
                     className={`text-body-large-semibold inline-flex items-center gap-2 border-b-2 px-4 py-2 whitespace-nowrap transition-colors ${
                       isActive ? 'border-primary-500' : 'hover:border-border border-transparent'
                     }`}
@@ -181,18 +216,39 @@ export default function NotificationAppScreen() {
                     <Bell01 className="text-primary-500 size-6" />
                   </div>
                   <h3 className="text-h3-semibold text-foreground">
-                    {t('notifications.empty.title', 'No notifications')}
+                    {hasMore
+                      ? t('notifications.loadedEmptyTitle')
+                      : t('notifications.empty.title', 'No notifications')}
                   </h3>
                   <p className="text-body-small-regular text-muted-foreground mt-2 max-w-sm">
-                    {t('notifications.empty.description', 'You are caught up for this category.')}
+                    {hasMore
+                      ? t('notifications.loadedEmptyDescription')
+                      : t(
+                          'notifications.empty.description',
+                          'You are caught up for this category.',
+                        )}
                   </p>
                 </div>
               )}
             </div>
+            {hasMore && !isError && (
+              <button
+                type="button"
+                disabled={isFetching}
+                onClick={() => setRequestedTake((take) => take + 20)}
+                className="border-border bg-background hover:bg-muted w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
+              >
+                {isFetching ? t('common.loading') : t('common.loadMore')}
+              </button>
+            )}
+            {(readAllMutation.isError || readMutation.isError) && (
+              <p role="alert" className="px-3 text-sm text-red-600 dark:text-red-400">
+                {t('apiErrors.generic')}
+              </p>
+            )}
           </section>
         </div>
       </main>
     </div>
   );
 }
-

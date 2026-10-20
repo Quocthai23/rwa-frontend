@@ -150,7 +150,11 @@ const toReadableError = async (error: unknown): Promise<never> => {
     forceLogoutAndRedirectToLogin();
   }
 
-  if (message.includes('Request failed with status code') || code === 'http-error') {
+  if (code === 'http-error' && /^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(message)) {
+    code = message.toLowerCase();
+  }
+
+  if (message.includes('Request failed with status code')) {
     message = 'Something went wrong. Please try again later.';
   }
 
@@ -296,7 +300,9 @@ class RefreshManager {
       });
 
       if (!response.ok) {
-        throw new Error('Refresh failed');
+        const error = new Error('Refresh failed') as Error & { status?: number };
+        error.status = response.status;
+        throw error;
       }
 
       const data = extractTokens(await response.json());
@@ -308,11 +314,8 @@ class RefreshManager {
       this.tokenManager.setRefreshToken(data.refreshToken);
       return data.accessToken;
     })()
-      .catch((error) => {
-        this.tokenManager.clearToken();
-        setTimeout(() => {
-          useAuthStore.getState().logout();
-        }, 0);
+      .catch((error: unknown) => {
+        // Feature-request failures must not destroy the browser auth state.
         throw error;
       })
       .finally(() => {
@@ -371,9 +374,12 @@ class AuthInterceptor {
     } catch {
       // ignore non-JSON responses
     }
-    const isTokenExpired = errorCode === 'token-expired';
+    // A missing JS-readable bridge cookie and an expired access token both
+    // surface as 401. The refresh token is httpOnly, so recover through the
+    // BFF once before exposing an authentication error to the UI.
+    const shouldRefreshAccessToken = response.status === 401 || errorCode === 'token-expired';
 
-    if (!isTokenExpired) {
+    if (!shouldRefreshAccessToken) {
       return response;
     }
 
@@ -508,6 +514,7 @@ class ApiClient {
         data: typed.data,
         total: typed.total,
         nextCursor: typed.nextCursor,
+        ...('unreadByCategory' in typed ? { unreadByCategory: typed.unreadByCategory } : {}),
       } as unknown as T;
     }
 

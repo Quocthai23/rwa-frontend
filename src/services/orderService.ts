@@ -7,6 +7,7 @@ import type {
 } from '../types';
 
 import { apiClient } from './apiClient';
+import { CLIENT_BASE_URL } from './baseUrl';
 
 /**
  * Spot Order Service
@@ -35,6 +36,18 @@ export const getOrdersListAPI = async (
   params?: GetOrdersParams,
   authHeader?: string,
 ): Promise<GetOrdersResponse> => {
+  if (typeof window !== 'undefined' && !authHeader) {
+    return apiClient.get<GetOrdersResponse>(
+      '/api/order',
+      params,
+      {
+        baseUrl: CLIENT_BASE_URL,
+        skipAuth: true,
+      },
+      true,
+    );
+  }
+
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
 
   // Use the standardized ORDERS_ENDPOINTS.LIST ('/orders')
@@ -71,6 +84,13 @@ export const updateOrderAPI = async (
   }
 
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
+  if (typeof window !== 'undefined' && !authHeader) {
+    return apiClient.patch<unknown>(
+      `/api/order?orderId=${encodeURIComponent(orderId)}`,
+      updatePayload,
+      { baseUrl: CLIENT_BASE_URL, skipAuth: true },
+    );
+  }
 
   // Use path parameter for orderId as per Swagger: PATCH /orders/{orderId}
   const response = await apiClient.patch<unknown>(ORDERS_ENDPOINTS.UPDATE(orderId), updatePayload, {
@@ -84,11 +104,18 @@ export const cancelAllOrdersAPI = async (
   authHeader?: string,
   orderIds?: string[],
 ): Promise<unknown> => {
-  const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
-
   const payload = {
     orderIds: orderIds || [], // Bulk cancel expects an array of IDs
   };
+
+  if (typeof window !== 'undefined' && !authHeader) {
+    return apiClient.post<unknown>('/api/order', payload, {
+      baseUrl: CLIENT_BASE_URL,
+      skipAuth: true,
+    });
+  }
+
+  const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
 
   const response = await apiClient.post<unknown>(ORDERS_ENDPOINTS.BULK_CANCEL, payload, {
     headers,

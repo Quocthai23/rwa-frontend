@@ -70,7 +70,6 @@ export const TradeWebAsideOrderForm = forwardRef<
 >(function TradeWebAsideOrderForm(
   {
     symbol,
-    digit,
     limitPrice,
     setLimitPrice,
     tradePanelRef,
@@ -85,7 +84,6 @@ export const TradeWebAsideOrderForm = forwardRef<
   const { t } = useTranslation();
   const router = useRouter();
   const { isConnected, isReconnecting } = useMarketSocketStore();
-  const canTrade = navigator.onLine && isConnected && !isReconnecting;
   const rt = useMarketSocketStore((s) => s.rtBySymbol?.[symbol]);
   const { data: symbolAsset } = useAssetById(symbol ?? '');
 
@@ -103,22 +101,27 @@ export const TradeWebAsideOrderForm = forwardRef<
   };
 
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>(TABS[0]);
+  // Limit orders use the entered price and the HTTP API; a realtime reconnect
+  // should not block them. Market orders still require a live quote connection.
+  const canTrade = navigator.onLine && (activeTab === 'Limit' || (isConnected && !isReconnecting));
   const transactionType = orderSideProp;
   const [quantity, setQuantity] = useState('');
   const quantityRef = useRef(quantity);
-  quantityRef.current = quantity;
+  useLayoutEffect(() => { quantityRef.current = quantity; }, [quantity]);
   const [isQuantityTouched, setIsQuantityTouched] = useState(false);
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const submitLockRef = useRef(false);
 
   useEffect(() => {
     if (!oneClickMode) return;
-    setActiveTab('Market');
+    const timer = window.setTimeout(() => setActiveTab('Market'), 0);
+    return () => window.clearTimeout(timer);
   }, [oneClickMode]);
 
   useEffect(() => {
     if (!asideLimitMode) return;
-    setActiveTab('Limit');
+    const timer = window.setTimeout(() => setActiveTab('Limit'), 0);
+    return () => window.clearTimeout(timer);
   }, [asideLimitMode]);
 
   useLayoutEffect(() => {
@@ -219,7 +222,8 @@ export const TradeWebAsideOrderForm = forwardRef<
   const lastSymbolRef = useRef<string | null>(null);
   useEffect(() => {
     if (!Number.isFinite(minTradeSize) || minTradeSize <= 0) return;
-
+    // Defaults follow the selected external asset; preserve any user edit.
+    const timeout = window.setTimeout(() => {
     const symbolChanged = lastSymbolRef.current !== symbol;
     if (symbolChanged) {
       lastSymbolRef.current = symbol;
@@ -231,7 +235,9 @@ export const TradeWebAsideOrderForm = forwardRef<
     if (!isQuantityTouched && !quantity) {
       setQuantity(defaultQuantityValue.toFixed(2));
     }
-  }, [symbol, defaultQuantityValue, isQuantityTouched, quantity]);
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, [symbol, defaultQuantityValue, isQuantityTouched, quantity, minTradeSize]);
 
   const onAdjustQty = (delta: number) => {
     adjustQuantityByDelta(
@@ -473,7 +479,7 @@ export const TradeWebAsideOrderForm = forwardRef<
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto scrollbar-neutral-slim">
         {!oneClickMode && (
           <div className="bg-muted grid grid-cols-2 rounded-lg p-1">
             {TABS.map((tab) => (
@@ -616,7 +622,7 @@ export const TradeWebAsideOrderForm = forwardRef<
             <span className="text-foreground">
               {transactionType === 'sell'
                 ? `${formatBalance(baseAvailableQuantity)} ${symbol}`
-                : `${formatBalance(availableBalance.toNumber())} VNDT`}
+                : `${formatBalance(availableBalance.toNumber())} VND`}
             </span>
           </div>
           {disabledReason && (

@@ -48,6 +48,7 @@ export const getPortfolioOverview = async (
     params,
     {
       baseUrl: CLIENT_BASE_URL,
+      skipAuth: true,
     },
   );
   return res;
@@ -79,6 +80,7 @@ export const getPortfolioItems = async (
     params,
     {
       baseUrl: CLIENT_BASE_URL,
+      skipAuth: true,
     },
     true,
   ); // haveTotal: return { data, total, nextCursor }
@@ -107,6 +109,7 @@ export const getPortfolioHistory = async (
 
   const res = await apiClient.get('/api' + PORTFOLIO_ENDPOINTS.HISTORY, params, {
     baseUrl: CLIENT_BASE_URL,
+    skipAuth: true,
   });
   return res;
 };

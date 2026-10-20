@@ -3,12 +3,13 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { ArrowDown, ArrowUp, Share04 } from '@untitledui/icons';
+import { Share04 } from '@untitledui/icons';
 import { toPng } from 'html-to-image';
 
 import { Button } from '@/components/shared/atoms/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hook/useToast';
+import { useAuthStore } from '@/store/authStore';
 import ShareModal from '@/components/featured/SymbolDetail/components/ShareModal';
 import { ToggleFavouriteAsset } from '@/components/shared/components/ToggleFavouriteAsset';
 import type { TradePanelSheetHandle } from '@/components/shared/chart/components/tradePanel/utils/tradePanelTypes';
@@ -16,6 +17,8 @@ import {
   TradeWebAsideOrderForm,
   type TradeWebAsideOrderFormHandle,
 } from './TradeWebAsideOrderForm';
+import type { Asset } from '@/types/assets';
+import { BuyoutBuyerPanel } from '../../components/BuyoutBuyerPanel';
 import type { DecimalValue } from '@/types/decimal';
 import { toFiniteNumberFromNumberish } from '@/components/shared/chart/components/web/tradePanel/utils/tradePanelInputHelpers';
 
@@ -56,6 +59,7 @@ export type TradeOrderPanelAsideProps = {
   isOneClickEnabled: boolean;
   isAsideLimitMode: boolean;
   disableOrderActions?: boolean;
+  buyoutSummary?: Asset['buyoutSummary'];
   orderSide: 'buy' | 'sell';
   onOrderSideChange: (side: 'buy' | 'sell') => void;
   onAsideQuantityLabelChange: (label: string) => void;
@@ -81,6 +85,7 @@ export function TradeOrderPanelAside({
   isOneClickEnabled,
   isAsideLimitMode,
   disableOrderActions = false,
+  buyoutSummary,
   orderSide,
   onOrderSideChange,
   onAsideQuantityLabelChange,
@@ -89,6 +94,7 @@ export function TradeOrderPanelAside({
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const [showShareModal, setShowShareModal] = useState(false);
   const [capturedImageUri, setCapturedImageUri] = useState<null | string>(null);
   const askValue = toFiniteNumberFromNumberish(ask);
@@ -211,91 +217,112 @@ export function TradeOrderPanelAside({
               </Button>
             </div>
           </div>
-          <div className="mt-2 flex items-end justify-between">
-            <div>
-              <div className="flex items-center gap-1">
-                <p className={`text-display-sm font-semibold ${chgClass}`}>
-                  {lastPriceValue == null ? '--' : formatVnd(lastPriceValue, digit)}
-                </p>
-                <span className="text-body-small-medium text-muted-foreground">VNĐ</span>
-                {chg > 0 && <ArrowUp size={16} className="text-green-500" />}
-                {chg < 0 && <ArrowDown size={16} className="text-red-500" />}
-              </div>
-              <div className="mt-1 flex items-center gap-1">
-                <p className={cn('text-body-small-medium', chgClass)}>
-                  {hasBothPrices ? (askValue - bidValue).toFixed(2) : '--'}
-                </p>
-                <p className={cn('text-body-small-medium', chgClass)}>{signedPercent(chg)}</p>
+          {!disableOrderActions && (
+            <div className="mt-2 flex items-end justify-between">
+              <div>
+                <div className="flex items-center gap-1">
+                  <p className={`text-display-sm font-semibold ${chgClass}`}>
+                    {lastPriceValue == null ? '--' : formatVnd(lastPriceValue, digit)}
+                  </p>
+                  <span className="text-body-small-medium text-muted-foreground">VNĐ</span>
+                </div>
+                <div className="mt-1 flex items-center gap-1">
+                  <p className={cn('text-body-small-medium', chgClass)}>{signedPercent(chg)}</p>
+                </div>
               </div>
             </div>
+          )}
+        </div>
+
+        {!user ? (
+          <div className="border-border bg-muted/20 rounded-xl border p-5">
+            <p className="text-foreground text-sm font-semibold">
+              {t('trade.orderForm.loginToTrade', { defaultValue: 'Sign in to trade' })}
+            </p>
+            <p className="text-muted-foreground mt-2 text-xs leading-5">
+              {t('trade.orderForm.loginDescription', {
+                defaultValue: 'Sign in to view your balance and place orders.',
+              })}
+            </p>
+            <Button
+              className="mt-4 w-full"
+              variant="primary-contained"
+              onClick={() => router.push('/login')}
+            >
+              {t('auth.login.title', { defaultValue: 'Sign in' })}
+            </Button>
           </div>
-        </div>
+        ) : disableOrderActions ? (
+          <BuyoutBuyerPanel assetId={assetId} summary={buyoutSummary} />
+        ) : (
+          <>
+            <div className="bg-muted grid grid-cols-2 rounded-lg p-1">
+              <Button
+                variant="white-contained"
+                disabled={sellActionDisabled}
+                onClick={() => {
+                  onOrderSideChange('sell');
+                  triggerOneClickSubmit('sell');
+                }}
+                className={cn(
+                  'focus-visible:ring-primary-500 flex flex-col items-center gap-0 rounded-md px-3 py-2 text-center shadow-none outline-none focus-visible:ring-2 disabled:pointer-events-none',
+                  sellActionDisabled
+                    ? 'text-muted-foreground bg-transparent'
+                    : orderSide === 'sell'
+                      ? 'border-border bg-background !text-foreground shadow-sm'
+                      : '!text-foreground bg-transparent',
+                )}
+              >
+                <p className="text-body-small-semibold">{t('trade.sell')}</p>
+                <p className="text-caption-regular">{bidText}</p>
+              </Button>
+              <Button
+                type="button"
+                variant="white-contained"
+                disabled={buyActionDisabled}
+                onClick={() => {
+                  onOrderSideChange('buy');
+                  triggerOneClickSubmit('buy');
+                }}
+                className={cn(
+                  'focus-visible:ring-primary-500 flex flex-col items-center gap-0 rounded-md px-3 py-2 text-center shadow-none outline-none focus-visible:ring-2 disabled:pointer-events-none',
+                  buyActionDisabled
+                    ? 'text-muted-foreground bg-transparent'
+                    : orderSide === 'buy'
+                      ? 'border-border bg-background !text-foreground shadow-sm'
+                      : '!text-foreground bg-transparent',
+                )}
+              >
+                <p className="text-body-small-semibold">{t('trade.buy')}</p>
+                <p className="text-caption-regular">{askText}</p>
+              </Button>
+            </div>
+            {!hasBothPrices && (
+              <p className="rounded-md bg-amber-50 px-3 py-2 text-xs leading-4 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+                {t('trade.orderForm.noBidAskHint', {
+                  defaultValue:
+                    'There is not yet enough buy/sell liquidity for a market order. You can still place a limit order below and wait for it to match.',
+                })}
+              </p>
+            )}
 
-        <div className="bg-muted grid grid-cols-2 rounded-lg p-1">
-          <Button
-            variant="white-contained"
-            disabled={sellActionDisabled}
-            onClick={() => {
-              onOrderSideChange('sell');
-              triggerOneClickSubmit('sell');
-            }}
-            className={cn(
-              'focus-visible:ring-primary-500 flex flex-col items-center gap-0 rounded-md px-3 py-2 text-center shadow-none outline-none focus-visible:ring-2 disabled:pointer-events-none',
-              sellActionDisabled
-                ? 'text-muted-foreground bg-transparent'
-                : orderSide === 'sell'
-                  ? 'border-border bg-background !text-foreground shadow-sm'
-                  : '!text-foreground bg-transparent',
-            )}
-          >
-            <p className="text-body-small-semibold">{t('trade.sell')}</p>
-            <p className="text-caption-regular">{bidText}</p>
-          </Button>
-          <Button
-            type="button"
-            variant="white-contained"
-            disabled={buyActionDisabled}
-            onClick={() => {
-              onOrderSideChange('buy');
-              triggerOneClickSubmit('buy');
-            }}
-            className={cn(
-              'focus-visible:ring-primary-500 flex flex-col items-center gap-0 rounded-md px-3 py-2 text-center shadow-none outline-none focus-visible:ring-2 disabled:pointer-events-none',
-              buyActionDisabled
-                ? 'text-muted-foreground bg-transparent'
-                : orderSide === 'buy'
-                  ? 'border-border bg-background !text-foreground shadow-sm'
-                  : '!text-foreground bg-transparent',
-            )}
-          >
-            <p className="text-body-small-semibold">{t('trade.buy')}</p>
-            <p className="text-caption-regular">{askText}</p>
-          </Button>
-        </div>
-        {!hasBothPrices && (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-xs leading-4 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
-            {t('trade.orderForm.noBidAskHint', {
-              defaultValue:
-                'There is not yet enough buy/sell liquidity for a market order. You can still place a limit order below and wait for it to match.',
-            })}
-          </p>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <TradeWebAsideOrderForm
+                ref={asideOrderFormRef}
+                symbol={currentSymbol}
+                digit={digit}
+                limitPrice={limitPrice}
+                setLimitPrice={setLimitPrice}
+                tradePanelRef={tradePanelRef}
+                orderSide={orderSide}
+                oneClickMode={isOneClickEnabled && !isAsideLimitMode}
+                asideLimitMode={isAsideLimitMode}
+                tradingLocked={disableOrderActions}
+                onAsideQuantityChange={onAsideQuantityLabelChange}
+              />
+            </div>
+          </>
         )}
-
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <TradeWebAsideOrderForm
-            ref={asideOrderFormRef}
-            symbol={currentSymbol}
-            digit={digit}
-            limitPrice={limitPrice}
-            setLimitPrice={setLimitPrice}
-            tradePanelRef={tradePanelRef}
-            orderSide={orderSide}
-            oneClickMode={isOneClickEnabled && !isAsideLimitMode}
-            asideLimitMode={isAsideLimitMode}
-            tradingLocked={disableOrderActions}
-            onAsideQuantityChange={onAsideQuantityLabelChange}
-          />
-        </div>
       </div>
 
       <ShareModal

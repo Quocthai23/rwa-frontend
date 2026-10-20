@@ -62,8 +62,7 @@ type ServerToClientEvents = {
 
 export const buildKlineStoreKey = (topicId: string, timeframe: number) => `${topicId}-${timeframe}`;
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function isAssetIdTopic(topicId: string): boolean {
   return UUID_RE.test(topicId.trim());
@@ -89,7 +88,9 @@ function buildSubscribePayload(topicId: string, timeframe: number) {
 
 function resolutionLabelToSeconds(res: unknown): number | null {
   if (typeof res === 'number' && Number.isFinite(res) && res > 0) return res;
-  const s = String(res ?? '').trim().toLowerCase();
+  const s = String(res ?? '')
+    .trim()
+    .toLowerCase();
   const map: Record<string, number> = {
     '1m': 60,
     '5m': 300,
@@ -126,7 +127,9 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
  * - Wrapped: { data: { symbol, timeframe, candle } }
  * - Flat symbol: { symbol, timeframe, ... OHLC }
  */
-function parseKlineSocketPayload(message: unknown): { topicId: string; timeframe: number; candle: Candle } | null {
+function parseKlineSocketPayload(
+  message: unknown,
+): { topicId: string; timeframe: number; candle: Candle } | null {
   if (!isPlainObject(message)) return null;
 
   const inner = isPlainObject(message.data) ? message.data : message;
@@ -213,12 +216,13 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
       }
     });
 
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', () => {
       set({ isConnected: false });
     });
 
     socket.on('connect_error', (error) => {
-      console.error('đŸ”´ Kline socket error:', error);
+      set({ isConnected: false });
+      console.warn('[Kline] Connection interrupted; retrying:', error.message);
     });
 
     // Listen to kline events
@@ -355,4 +359,3 @@ export const useKlineSocketStore = create<KlineSocketState>((set, get) => ({
     }
   },
 }));
-

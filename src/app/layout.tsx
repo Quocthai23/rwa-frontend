@@ -14,6 +14,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  manifest: '/manifest.webmanifest',
   title: 'MTX Trading – Nền tảng giao dịch tài sản thực (RWA)',
   description:
     'MTX Trading là nền tảng tokenization tài sản thực hàng đầu Việt Nam. Mua bán, giao dịch token bất động sản và tài sản có giá trị một cách minh bạch trên blockchain.',

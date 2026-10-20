@@ -37,14 +37,14 @@ export default function DepositPayOsQR({ qrCode, amount, orderCode, checkoutUrl,
       .catch(() => {
         if (!cancelled) {
           setQrImageUrl(null);
-          showError('Không thể tạo mã QR', 'Vui lòng mở trang thanh toán PayOS.');
+          showError(t('topUp.qrCreateErrorTitle'), t('topUp.qrCreateErrorMessage'));
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [qrCode, showError]);
+  }, [qrCode, showError, t]);
 
   const copyToClipboard = async (text: string, field: string) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -64,12 +64,12 @@ export default function DepositPayOsQR({ qrCode, amount, orderCode, checkoutUrl,
 
   const handleCopyAmount = async () => {
     const success = await copyToClipboard(amount.toString(), 'amount');
-    if (success) showSuccess('ThĂ nh cĂ´ng', 'ÄĂ£ sao chĂ©p sá»‘ tiá»n');
+    if (success) showSuccess(t('topUp.copySuccessTitle'), t('topUp.amountCopied'));
   };
 
   const handleCopyContent = async () => {
     const success = await copyToClipboard(orderCode.toString(), 'content');
-    if (success) showSuccess('ThĂ nh cĂ´ng', 'ÄĂ£ sao chĂ©p ná»™i dung chuyá»ƒn khoáº£n');
+    if (success) showSuccess(t('topUp.copySuccessTitle'), t('topUp.transferContentCopied'));
   };
 
   const handleOpenCheckout = () => {
@@ -78,7 +78,7 @@ export default function DepositPayOsQR({ qrCode, amount, orderCode, checkoutUrl,
       if (target.protocol !== 'https:') throw new Error('Checkout URL must use HTTPS');
       window.location.assign(target.toString());
     } catch {
-      showError('Liên kết không hợp lệ', 'Không thể mở trang thanh toán PayOS.');
+      showError(t('topUp.invalidCheckoutTitle'), t('topUp.invalidCheckoutMessage'));
     }
   };
 
@@ -100,13 +100,13 @@ export default function DepositPayOsQR({ qrCode, amount, orderCode, checkoutUrl,
             width={28}
             height={28}
           />
-          <p className="text-h3-semibold text-foreground">Thanh toĂ¡n VietQR</p>
+          <p className="text-h3-semibold text-foreground">{t('topUp.vietQrTitle')}</p>
         </div>
       </div>
 
       <div className="flex flex-1 flex-col items-center px-4 py-6 overflow-y-auto">
         <p className="text-body-regular text-foreground text-center mb-6">
-          Má»Ÿ á»©ng dá»¥ng ngĂ¢n hĂ ng vĂ  <br /> quĂ©t mĂ£ QR bĂªn dÆ°á»›i Ä‘á»ƒ náº¡p tiá»n
+          {t('topUp.vietQrInstruction')}
         </p>
 
         <div className="bg-card rounded-xl p-4 shadow-sm mb-6 border border-border">
@@ -125,7 +125,7 @@ export default function DepositPayOsQR({ qrCode, amount, orderCode, checkoutUrl,
 
         <div className="w-full flex flex-col gap-4 bg-muted/50 p-4 rounded-lg">
           <div className="flex justify-between items-center">
-            <span className="text-body-small-regular text-muted-foreground">Sá»‘ tiá»n:</span>
+            <span className="text-body-small-regular text-muted-foreground">{t('topUp.amountLabel')}:</span>
             <div className="flex items-center gap-2">
               <span className="text-body-large-semibold text-primary-500">{formatCurrency(amount)}</span>
               <button onClick={handleCopyAmount}>
@@ -135,7 +135,7 @@ export default function DepositPayOsQR({ qrCode, amount, orderCode, checkoutUrl,
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-body-small-regular text-muted-foreground">Ná»™i dung chuyá»ƒn khoáº£n:</span>
+            <span className="text-body-small-regular text-muted-foreground">{t('topUp.transferContent')}:</span>
             <div className="flex items-center gap-2">
               <span className="text-body-medium-semibold text-foreground">{orderCode}</span>
               <button onClick={handleCopyContent}>
@@ -146,7 +146,7 @@ export default function DepositPayOsQR({ qrCode, amount, orderCode, checkoutUrl,
         </div>
 
         <Button type="button" className="mt-6 w-full" onClick={handleOpenCheckout}>
-          Mở trang thanh toán PayOS
+          {t('topUp.openPayos')}
         </Button>
       </div>
     </div>

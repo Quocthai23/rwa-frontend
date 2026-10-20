@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { Button } from '@/components/shared/atoms/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/shared/atoms/dialog';
 import AssetOverview from './components/AssetOverview';
+import { useMyRentalContracts } from '@/hook/useDividends';
 import HistoryDateRangePicker, {
   getDefaultHistoryRange,
   type HistoryRangeValue,
@@ -77,7 +78,10 @@ export default function PositionWebScreen({
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const accountId = selectedAccount?.id || '';
   const POSITION_WEB_TABS = [
-    { id: 'portfolio', label: t('position.tabs.portfolio', { defaultValue: 'My Portfolio / Assets' }) },
+    {
+      id: 'portfolio',
+      label: t('position.tabs.portfolio', { defaultValue: 'My Portfolio / Assets' }),
+    },
     { id: 'orders', label: t('position.tabs.orders', { defaultValue: 'Open Orders' }) },
     {
       id: 'order-history',
@@ -111,14 +115,14 @@ export default function PositionWebScreen({
   const hasHydratedAuth = useAuthHydrated();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
+  const myRentals = useMyRentalContracts(hasHydratedAuth && isAuthenticated);
 
   const allOpenOrders = useMemo(
     () => openOrdersData?.pages.flatMap((page: { data: OrderItem[] }) => page.data) ?? [],
     [openOrdersData],
   );
   const limitOrders = useMemo(
-    () =>
-      allOpenOrders.filter((order) => order.orderType === 'LIMIT'),
+    () => allOpenOrders.filter((order) => order.orderType === 'LIMIT'),
     [allOpenOrders],
   );
   // Stop orders no longer supported in RWA backend
@@ -172,9 +176,7 @@ export default function PositionWebScreen({
     <div
       className={`flex ${checkPathname ? 'h-[calc(100dvh-72px)]' : 'h-[calc(100%)]'} ${checkPathname ? 'px-7 py-5' : 'p-1'} border-border bg-background flex-col gap-3 overflow-hidden border-t`}
     >
-      {checkPathname && selectedAccount && (
-        <AssetOverview activeAccount={selectedAccount} />
-      )}
+      {checkPathname && selectedAccount && <AssetOverview activeAccount={selectedAccount} />}
 
       <div className="bg-background h-full min-h-0 flex-1 overflow-hidden">
         <div className="border-border bg-background border-b">
@@ -223,6 +225,16 @@ export default function PositionWebScreen({
                   </Button>
                 );
               })}
+              {hasHydratedAuth && isAuthenticated ? (
+                <Button
+                  variant="white-contained"
+                  onClick={() => router.push('/my-rentals')}
+                  className="text-body-small-medium! text-muted-foreground hover:text-foreground relative h-11 shrink-0 rounded-none px-0 whitespace-nowrap"
+                >
+                  {t('position.tabs.myRentals', { defaultValue: 'Properties I rent' })}
+                  {myRentals.data?.length ? ` (${myRentals.data.length})` : ''}
+                </Button>
+              ) : null}
             </div>
 
             {canShowBulkCloseButton && (
@@ -249,12 +261,16 @@ export default function PositionWebScreen({
         </div>
 
         <div className="scrollbar-neutral-slim h-[calc(100%-35px)] overflow-auto py-1">
-          {currentActiveTab === 'portfolio' ? (
-            <PortfolioTabContent accountId={accountId} />
+          {currentActiveTab === 'portfolio' ? <PortfolioTabContent accountId={accountId} /> : null}
+          {currentActiveTab === 'orders' ? (
+            <OpenOrdersTabContent key={accountId} accountId={accountId} />
           ) : null}
-          {currentActiveTab === 'orders' ? <OpenOrdersTabContent accountId={accountId} /> : null}
           {currentActiveTab === 'order-history' ? (
-            <OrderHistoryTabContent accountId={accountId} dateRange={orderHistoryDateRange} />
+            <OrderHistoryTabContent
+              key={accountId}
+              accountId={accountId}
+              dateRange={orderHistoryDateRange}
+            />
           ) : null}
         </div>
       </div>
@@ -316,4 +332,3 @@ export default function PositionWebScreen({
     </div>
   );
 }
-

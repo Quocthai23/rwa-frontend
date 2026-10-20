@@ -1,4 +1,4 @@
-﻿const zh = {
+const zh = {
   common: {
     search: 'æœç´¢',
     all: 'å…¨éƒ¨',
@@ -59,7 +59,24 @@
     unknownError: 'å‘ç”Ÿäº†æœªçŸ¥é”™è¯¯',
     share: 'Share',
     noData: 'æ— æ•°æ®',
-  },
+  
+
+  "back": "返回",
+  "description": "说明",
+  "loadMore": "加载更多",
+  "loading": "加载中…",
+  "unknown": "未知",
+  "viewDetails": "查看详情",
+  "processing": "处理中…",
+  "dayUnit": "天",
+  "monthUnit": "个月",
+  "retry": "é‡è¯•"
+,
+
+
+  "next": "继续"
+,
+},
   search: {
     marketWatch: 'å¸‚åœºè§‚å¯Ÿ',
     placeholder: 'æœç´¢',
@@ -212,14 +229,14 @@
     copySuccessMessage: 'åœ°å€å·²æˆåŸå¤åˆ¶åˆ°å‰ªè´´æ¿ă€‚',
     shareSuccessTitle: 'åˆ†äº«æˆåŸ',
     shareSuccessMessage: 'åœ°å€åˆ†äº«æˆåŸă€‚',
-    sendOnlyPrefix: 'ä»…é€è¿‡ä»¥ä¸‹æ–¹å¼å‘é€ VNDT',
+    sendOnlyPrefix: 'ä»…é€è¿‡ä»¥ä¸‹æ–¹å¼å‘é€ VND',
     networkSuffix: 'ç½‘ç»œ',
     fundsWarning: 'é”™è¯¯å‘é€ç„èµ„é‡‘æ— æ³•æ”¶å›ă€‚',
     copyAddress: 'å¤åˆ¶åœ°å€',
     share: 'åˆ†äº«',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'å¡',
       instantTime15Min: 'å³æ—¶ - 15 åˆ†é’Ÿ',
       instantTime2Min: 'å³æ—¶ - 2 åˆ†é’Ÿ',
@@ -287,9 +304,9 @@
   withdraw: {
     common: {
       usd: 'ç¾å…ƒ',
-      VNDT: 'æ³°è¾¾å¸',
+      VND: 'æ³°è¾¾å¸',
       amountWithUsd: '{{amount}} ç¾å…ƒ',
-      amountWithVNDT: '{{amount}} æ³°è¾¾å¸',
+      amountWithVND: '{{amount}} æ³°è¾¾å¸',
       networkFee: 'ç½‘ç»œè´¹',
       amountReceived: 'æ”¶åˆ°é‡‘é¢',
       processing: 'å¤„ç†ä¸­...',
@@ -298,9 +315,9 @@
     },
     method: {
       demoAccountError: 'æ¨¡æ‹Ÿè´¦æˆ·æ— æ³•æ‰§è¡Œææ¬¾ă€‚è¯·å…ˆç»™æ‚¨ç„è´¦æˆ·å……å€¼ă€‚',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'å³æ—¶ - 15 åˆ†é’Ÿ',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'è¯·é€‰æ‹©ç½‘ç»œå’Œä»£å¸ä»¥ç»§ç»­æç°',
@@ -308,10 +325,10 @@
       limitLabel: 'é™é¢',
     },
     detail: {
-      walletVNDTAddress: 'é’±åŒ…VNDTåœ°å€',
-      walletAddressHelpAria: 'ä»€ä¹ˆæ˜¯é’±åŒ…VNDTåœ°å€ï¼Ÿ',
+      walletVNDAddress: 'é’±åŒ…VNDåœ°å€',
+      walletAddressHelpAria: 'ä»€ä¹ˆæ˜¯é’±åŒ…VNDåœ°å€ï¼Ÿ',
       walletAddressHelpDescription:
-        'æ˜¯æˆ‘ä»¬å°†æ‚¨ç„ VNDT å‘é€åˆ°é“¾ä¸ç„åœ°æ–¹ï¼ˆä¾‹å¦‚ TRC20ï¼‰ă€‚ä½¿ç”¨æ‚¨è‡ªå·±ç„é’±åŒ…åœ°å€æ¥è¿æ¥æ­£ç¡®ç„ç½‘ç»œâ€”â€”é”™è¯¯ç„åœ°å€æˆ–ç½‘ç»œå¯èƒ½æ„å‘³ç€èµ„é‡‘ä¸¢å¤±ă€‚',
+        'æ˜¯æˆ‘ä»¬å°†æ‚¨ç„ VND å‘é€åˆ°é“¾ä¸ç„åœ°æ–¹ï¼ˆä¾‹å¦‚ TRC20ï¼‰ă€‚ä½¿ç”¨æ‚¨è‡ªå·±ç„é’±åŒ…åœ°å€æ¥è¿æ¥æ­£ç¡®ç„ç½‘ç»œâ€”â€”é”™è¯¯ç„åœ°å€æˆ–ç½‘ç»œå¯èƒ½æ„å‘³ç€èµ„é‡‘ä¸¢å¤±ă€‚',
       enterWalletAddress: 'è¾“å…¥é’±åŒ…åœ°å€',
       paste: 'ç²˜è´´',
       max: 'æœ€å¤§',
@@ -331,7 +348,7 @@
       description: 'è¯·ç¡®ä¿ä»¥ä¸‹æ‰€æœ‰ä¿¡æ¯å‡æ­£ç¡®',
       walletAddress: 'é’±åŒ…åœ°å€',
       network: 'ç½‘ç»œ',
-      VNDTEthereum: 'VNDT(ä»¥å¤ªå)',
+      VNDEthereum: 'VND(ä»¥å¤ªå)',
       withdrawalAmount: 'ææ¬¾é‡‘é¢',
       networkFeeValue: '0.1 ç¾å…ƒ',
     },
@@ -1433,8 +1450,24 @@
       orderTypeStopLimit: 'æ­¢æŸé™ä»·',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} äº {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} äºå¸‚ä»·',
-    },
+    
+
+  "avgFillPrice": "平均成交价",
+  "totalCost": "总金额"
+,
+},
+  
+
+  "orders": {
+    "loadError": "无法加载待成交委托",
+    "loadErrorDescription": "服务器未返回委托数据，请重试。"
   },
+  "orderHistory": {
+    "loadError": "无法加载委托历史",
+    "loadErrorDescription": "服务器未返回委托历史，请重试。"
+  }
+,
+},
   account: {
     assetOverview: 'èµ„äº§æ¦‚è§ˆ',
     equity: 'å‡€å€¼ (USD)',
@@ -1739,7 +1772,28 @@
   notifications: {
     onlyUnread: 'ä»…æ˜¾ç¤ºæœªè¯»',
     unreadLabel: 'æœªè¯»',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "租金收益待领取",
+      "description": "{{asset}}：有 {{amount}} 租金待领取。"
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "收购款待领取",
+      "description": "{{asset}}：有 {{amount}} 收购款待领取。"
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "有提案待投票",
+      "description": "{{asset}} 有进行中的提案，您尚未投票。"
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "需充值支付租金",
+      "description": "{{asset}}：租金 {{amount}} 已到期，租赁钱包可用余额不足。"
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1751,7 +1805,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1764,7 +1818,17 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "第 {{count}} 期",
+  "pendingPeriods": "查看 {{count}} 期待领取款项",
+  "claimedHistory": "已领取记录（{{count}} 期）"
+,
+
+
+  "status": "ç¶æ€"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1777,7 +1841,215 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "拟议月租金 (VND)",
+    "depositVnd": "拟议押金 (VND)",
+    "maintenanceBudgetVnd": "维护预算 (VND)",
+    "operatorName": "新运营方",
+    "operatorContact": "运营方联系方式",
+    "salePriceVnd": "拟议售价 (VND)",
+    "salePlan": "出售及款项分配方案",
+    "nextRentalOnly": "已批准的报价仅适用于新租约。现有合同的租金和押金保持不变。",
+    "approvedRentalTerms": "已批准的出租条件",
+    "openingVoteInProgress": "出租授权表决正在进行。",
+    "invalid": "请填写此类提案的完整条款。"
+  }
+,
+
+
+  "assetNotFound": "未找到房产",
+  "manageAsset": "管理房产",
+  "navigation": "房产管理导航",
+  "expectedApy": "预期年收益率",
+  "price": "参考价格",
+  "property": "代币化房产",
+  "tradeAsset": "交易代币",
+  "portfolioDesc": "跟踪各房产的运营、现金流、流动性和治理。",
+  "emptyOwned": "此账户未持有房产代币。",
+  "sections": {
+    "overview": "概览",
+    "rental": "出租",
+    "liquidity": "流动性",
+    "governance": "治理",
+    "cashFlow": "现金流"
+  },
+  "actions": {
+    "pending": "{{count}} 项待办"
+  },
+  "operations": {
+    "available": "可供出租",
+    "rented": "已出租"
+  },
+  "status": {
+    "active": "运营中",
+    "inactive": "已暂停",
+    "open": "交易开放",
+    "paused": "交易暂停"
+  },
+  "overview": {
+    "activeProposals": "{{count}} 项提案正在表决",
+    "buyoutProgress": "收购资格进度",
+    "buyoutStatus": "收购资格",
+    "operation": "运营状态",
+    "yourOwnership": "您持有的代币"
+  },
+  "rentalOperations": {
+    "title": "出租管理",
+    "applicantList": "租赁申请人",
+    "claimRent": "领取租金收益",
+    "claimed": "已领取",
+    "unclaimed": "待领取",
+    "noEntitlement": "本期无领取权益",
+    "contractWallet": "租赁钱包可用余额",
+    "reservedForClaims": "为股东分配预留",
+    "expectedDeposit": "预期押金 (VND)",
+    "expectedRent": "预期月租金 (VND)",
+    "guestName": "访客 {{number}}",
+    "historyError": "无法加载租金记录。",
+    "incomeHistoryTitle": "租金分配历史",
+    "incomeHistoryDescription": "每行对应一期已付款且已确定代币持有权益的租金。",
+    "awaitingPaymentExplanation": "租户尚未支付可分配的租金。款项到账且您有待领权益后，将显示领取按钮。",
+    "manageRentPayment": "管理租金付款",
+    "monthlyRentVnd": "月租金 (VND)",
+    "nextCollection": "下次租金收取",
+    "noApplications": "暂无租赁申请。",
+    "noIncomeHistory": "尚无已付款的租金期次。",
+    "paymentPeriod": "租金期间",
+    "periodTotal": "已付总额",
+    "status": "租赁状态",
+    "tenant": "当前租户",
+    "unknownApplicant": "申请人",
+    "yourShare": "您的份额",
+    "yourAmount": "您的应收权益",
+    "allocatedAmount": "已分配给股东",
+    "grossAmount": "已付租金总额",
+    "allowedPurposes": "允许的用途",
+    "daoDescription": "出租授权和租户申请由代币持有人表决决定。",
+    "enablementSubmitted": "出租提案已提交。",
+    "openEnablementVote": "提议开放出租",
+    "privateVoteNotice": "仅显示汇总表决权，不公开各股东的选择。",
+    "submitToDao": "提交提案",
+    "transactionDetails": "租金付款详情",
+    "voteNow": "查看并投票",
+    "voters": "{{count}} 人投票"
+  },
+  "governance": {
+    "alreadyVoted": "您的投票已记录。",
+    "continuousHolding": "连续持有要求",
+    "currentHolding": "当前持有量",
+    "eligibilityTitle": "房产收购资格",
+    "eligibilityDescription": "资格根据代币余额及连续持有记录计算。",
+    "loadError": "无法加载提案，请重试。",
+    "proposals": "社区提案",
+    "rentalProposal": "出租提案",
+    "requiredHolding": "所需控股数量"
+  },
+  "createProposal": {
+    "description": "说明"
+  ,
+
+  "typeGeneral": "一般提案",
+  "typeMaintenance": "维修计划",
+  "typeOperatorChange": "更换运营方",
+  "typeRentChange": "调整租金和押金",
+  "typeAssetSale": "出售资产",
+  "typeBuyout": "收购",
+  "proposalType": "提案类型",
+  "proposalTitle": "提案标题",
+  "submit": "提交提案",
+  "submitting": "正在提交…",
+  "successMsg": "提案已提交",
+  "errorMsg": "无法提交提案",
+  "required": "请填写标题和说明",
+  "votingWindow": "投票期限",
+  "selectedType": "所选类型",
+  "votingDays": "投票期限"
+,
+},
+  "details": {
+    "action": "æ“ä½œ",
+    "buy": "ä¹°å…¥",
+    "close": "å¹³ä»“",
+    "no": "ä¸",
+    "sell": "å–å‡º",
+    "side": "æ–¹å‘",
+    "viewDetails": "查看详情",
+    "metadataLabels": {
+      "price": "ä»·æ ¼",
+      "quantity": "æ•°é‡"
+    ,
+
+  "proposalType": "所选类型"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "æ•°é‡"
+  },
+  "portfolioTitle": "æŒä»“",
+  "processing": "处理中…",
+  "properties": "处房产",
+  "statuses": {
+    "COMPLETED": "å·²å®Œæˆ",
+    "PENDING": "å¾…å¤„ç†",
+    "REJECTED": "å·²æ‹’ç»",
+    "CANCELLED": "å·²å–æ¶ˆ",
+    "FAILED": "å¤±è´¥",
+    "OPEN": "å¼€å¯"
+  },
+  "transactionHistory": {
+    "price": "ä»·æ ¼",
+    "quantity": "æ•°é‡",
+    "status": "ç¶æ€",
+    "time": "æ—¶é—´",
+    "type": "ç±»å‹"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "治理",
+      "CASH_FLOW": "现金流",
+      "LIQUIDITY": "流动性"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "买入 / 卖出",
+      "viewProperty": "查看房产"
+    },
+    "ownership": {
+      "title": "持有的房产",
+      "description": "所有权比例根据账户账本中的代币余额计算。",
+      "properties": "处房产"
+    ,
+
+  "returnSincePurchase": "较成本 {{percent}}%",
+  "noCostBasis": "暂无成本数据",
+  "returnBasis": "按个人平均成本计算的未实现收益，不含费用和租金。"
+,
+},
+    "empty": {
+      "title": "您尚未持有房产",
+      "description": "成功购买的房产代币将在此显示。"
+    },
+    "table": {
+      "actions": "房产操作",
+      "asset": "资产代码",
+      "avgBuyPrice": "持有比例",
+      "currentPrice": "代币估值",
+      "quantity": "持有代币",
+      "totalValue": "持有权益价值"
+    }
+  },
+  "rentalListing": {
+    "months": "个月"
+  }
+,
 };
 export default zh;
 

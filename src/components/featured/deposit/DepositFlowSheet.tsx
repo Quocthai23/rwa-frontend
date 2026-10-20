@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 
@@ -10,8 +10,9 @@ import { Sheet, SheetContent } from '@/components/shared/atoms/web/sheet';
 import { useGeneratePayosLink } from '@/hook/payment/useGeneratePayosLink';
 import { useToast } from '@/hook/useToast';
 import { useAccountStore } from '@/store/useAccountStore';
+import { useTranslation } from 'react-i18next';
 
-const DEFAULT_CURRENCY = 'VNDT';
+const DEFAULT_CURRENCY = 'VND';
 
 type DepositFlowSheetProps = {
   isOpen: boolean;
@@ -20,6 +21,7 @@ type DepositFlowSheetProps = {
 
 const DepositFlowSheet = ({ isOpen, onOpenChange }: DepositFlowSheetProps) => {
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
+  const { t } = useTranslation();
   const [step, setStep] = useState<'method' | 'qr' | 'payos-amount' | 'payos-qr'>('method');
   const [qrAddress, setQrAddress] = useState('');
   const [qrNetwork, setQrNetwork] = useState('');
@@ -41,14 +43,14 @@ const DepositFlowSheet = ({ isOpen, onOpenChange }: DepositFlowSheetProps) => {
 
   const handlePayosAmountSubmit = (amount: number) => {
     if (!selectedAccount?.id) {
-      showError('Không thể nạp tiền', 'Vui lòng chọn tài khoản nhận tiền.');
+      showError(t('topUp.depositUnavailableTitle'), t('topUp.selectReceivingAccount'));
       return;
     }
     generatePayos({ accountId: selectedAccount.id, amount }, {
       onSuccess: (data) => {
         setPayosData(data);
         setStep('payos-qr');
-        showSuccess('ThĂ nh cĂ´ng', 'ÄĂ£ táº¡o mĂ£ QR thanh toĂ¡n PayOS');
+        showSuccess(t('topUp.payosSuccessTitle'), t('topUp.payosSuccessMessage'));
       }
     });
   };

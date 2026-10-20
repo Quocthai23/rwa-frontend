@@ -327,10 +327,7 @@ function OrdersTable({
               >
                 {order.executedPrice ? formatDecimal(order.executedPrice) : '-'}
               </td>
-              <td
-                className="px-2 py-2 text-right tabular-nums"
-                style={getColumnStyle('totalCost')}
-              >
+              <td className="px-2 py-2 text-right tabular-nums" style={getColumnStyle('totalCost')}>
                 {order.totalCost ? `VNĐ${formatDecimal(order.totalCost)}` : '-'}
               </td>
               <td className="px-2 py-2 text-right" style={getColumnStyle('status')}>
@@ -375,14 +372,14 @@ function OrdersTable({
                 <div className="mb-2 flex flex-row items-start justify-between">
                   <div className="flex flex-row items-center gap-2">
                     <h2 className="text-h2-semibold text-foreground">{selectedOrder.symbol}</h2>
-                      <p
-                        className={`text-body-small-medium ${selectedOrder.side === 'BUY' ? 'text-green-500 dark:text-green-200' : 'text-red-500 dark:text-red-200'}`}
-                      >
-                        {selectedOrder.side === 'BUY'
-                          ? t('position.filter.buy')
-                          : t('position.filter.sell')}{' '}
-                        {getOrderTypeLabel(selectedOrder.orderType)}
-                      </p>
+                    <p
+                      className={`text-body-small-medium ${selectedOrder.side === 'BUY' ? 'text-green-500 dark:text-green-200' : 'text-red-500 dark:text-red-200'}`}
+                    >
+                      {selectedOrder.side === 'BUY'
+                        ? t('position.filter.buy')
+                        : t('position.filter.sell')}{' '}
+                      {getOrderTypeLabel(selectedOrder.orderType)}
+                    </p>
                   </div>
                   <div className="flex flex-row items-center gap-1">
                     <p className="text-body-small-regular text-muted-foreground">
@@ -458,6 +455,7 @@ function OrdersTable({
 }
 
 export default function OpenOrdersTabContent({ accountId }: { accountId: string }) {
+  const { t } = useTranslation();
   const sortStorageKey = `${OPEN_ORDERS_SORT_STORAGE_KEY}:${accountId}`;
   const [sortKey, setSortKey] = useState<OpenOrdersSortKey | null>(
     () => readOpenOrdersSort(sortStorageKey)?.sortKey ?? DEFAULT_OPEN_ORDERS_SORT.sortKey,
@@ -468,18 +466,14 @@ export default function OpenOrdersTabContent({ accountId }: { accountId: string 
   const rtBySymbol = useMarketSocketStore((state) => state.rtBySymbol);
 
   useEffect(() => {
-    const persisted = readOpenOrdersSort(sortStorageKey);
-    setSortKey(persisted?.sortKey ?? DEFAULT_OPEN_ORDERS_SORT.sortKey);
-    setSortDir(persisted?.sortDir ?? DEFAULT_OPEN_ORDERS_SORT.sortDir);
-  }, [sortStorageKey]);
-
-  useEffect(() => {
     persistOpenOrdersSort(sortStorageKey, { sortKey, sortDir });
   }, [sortDir, sortKey, sortStorageKey]);
 
   const {
     data: openOrdersData,
     isLoading,
+    isError,
+    refetch,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -528,6 +522,23 @@ export default function OpenOrdersTabContent({ accountId }: { accountId: string 
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading) return <TableLoadingState />;
+  if (isError) {
+    return (
+      <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-foreground text-sm font-semibold">
+          {t('position.orders.loadError', { defaultValue: 'Unable to load open orders' })}
+        </p>
+        <p className="text-muted-foreground text-xs">
+          {t('position.orders.loadErrorDescription', {
+            defaultValue: 'The server did not return your orders. Please try again.',
+          })}
+        </p>
+        <Button type="button" variant="neutral-outline" onClick={() => void refetch()}>
+          {t('common.retry', { defaultValue: 'Retry' })}
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div ref={scrollContainerRef} className="flex min-h-0 overflow-auto" onScroll={handleScroll}>
@@ -543,4 +554,3 @@ export default function OpenOrdersTabContent({ accountId }: { accountId: string 
     </div>
   );
 }
-

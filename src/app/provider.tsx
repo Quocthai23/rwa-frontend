@@ -10,6 +10,7 @@ import { useRealtimeStore } from '@/store/realtimeStore';
 import { useOrderSocketStore } from '@/store/orderSocketStore';
 import { useKlineSocketStore } from '@/store/klineSocketStore';
 import { useAccountStore } from '@/store/useAccountStore';
+import { useAuthStore } from '@/store/authStore';
 import I18nSync from '@/components/shared/I18nSync';
 import { GlobalModals } from '@/components/shared/GlobalModals';
 import { useMediaQuery } from '@/hook/useMediaQuery';
@@ -17,7 +18,6 @@ import '@/i18n';
 
 /** Keeps kline WebSocket alive across route changes (e.g. Market ↔ Trade) so candles stay continuous. */
 let klineAppSessionConnectStarted = false;
-let realtimeAppSessionConnectStarted = false;
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +37,7 @@ export const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
+  const userId = useAuthStore((state) => state.user?.id);
   const isDesktop = useMediaQuery('(min-width: 768px)', false);
 
   // Initialize kline socket (keeps candlestick data alive)
@@ -48,14 +49,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // Initialize realtime store (unified market + trading data)
   useEffect(() => {
-    if (realtimeAppSessionConnectStarted) return;
-    realtimeAppSessionConnectStarted = true;
     useRealtimeStore.getState().connect();
   }, []);
 
   // Initialize order socket when account is selected
   useEffect(() => {
-    if (selectedAccount?.id) {
+    useOrderSocketStore.getState().disconnect();
+    if (userId && selectedAccount?.id) {
       useOrderSocketStore.getState().connect();
       useOrderSocketStore.getState().subscribeAccount(selectedAccount.id);
     } else {
@@ -63,11 +63,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
 
     return () => {
-      if (selectedAccount?.id) {
-        useOrderSocketStore.getState().unsubscribeAccount(selectedAccount.id);
-      }
+      useOrderSocketStore.getState().disconnect();
     };
-  }, [selectedAccount?.id]);
+  }, [selectedAccount?.id, userId]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -1,4 +1,4 @@
-﻿const ar = {
+const ar = {
   common: {
     search: 'Ø¨Ø­Ø«',
     all: 'Ø§Ù„ÙƒÙ„',
@@ -59,7 +59,24 @@
     share: 'Share',
     usd: 'USD',
     noData: 'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙØ§Ù†Ø§Øª',
-  },
+  
+
+  "back": "رجوع",
+  "description": "الوصف",
+  "loadMore": "تحميل المزيد",
+  "loading": "جارٍ التحميل…",
+  "unknown": "غير معروف",
+  "viewDetails": "عرض التفاصيل",
+  "processing": "جارٍ التنفيذ…",
+  "dayUnit": "أيام",
+  "monthUnit": "أشهر",
+  "retry": "Ø£Ø¹Ø¯ Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø©"
+,
+
+
+  "next": "متابعة"
+,
+},
   search: {
     marketWatch: 'Ù…Ø±Ø§Ù‚Ø¨Ø© Ø§Ù„Ø³ÙˆÙ‚',
     placeholder: 'Ø¨Ø­Ø«',
@@ -214,14 +231,14 @@
     copySuccessMessage: 'ØªÙ… Ù†Ø³Ø® Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø¥Ù„Ù‰ Ø§Ù„Ø­Ø§ÙØ¸Ø© Ø¨Ù†Ø¬Ø§Ø­.',
     shareSuccessTitle: 'Ø§Ù„Ù…Ø´Ø§Ø±ÙƒØ© Ù†Ø§Ø¬Ø­Ø©',
     shareSuccessMessage: 'ØªÙ…Øª Ù…Ø´Ø§Ø±ÙƒØ© Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø¨Ù†Ø¬Ø§Ø­.',
-    sendOnlyPrefix: 'Ø£Ø±Ø³Ù„ VNDT ÙÙ‚Ø· Ø¹Ø¨Ø±',
+    sendOnlyPrefix: 'Ø£Ø±Ø³Ù„ VND ÙÙ‚Ø· Ø¹Ø¨Ø±',
     networkSuffix: 'Ø´Ø¨ÙƒØ©',
     fundsWarning: 'Ù„Ø§ ÙÙ…ÙƒÙ† Ø§Ø³ØªØ±Ø¯Ø§Ø¯ Ø§Ù„Ø£Ù…ÙˆØ§Ù„ Ø§Ù„Ù…Ø±Ø³Ù„Ø© Ø¨Ø´ÙƒÙ„ ØºÙØ± ØµØ­ÙØ­.',
     copyAddress: 'Ø§Ù†Ø³Ø® Ø§Ù„Ø¹Ù†ÙˆØ§Ù†',
     share: 'Ø´Ø§Ø±Ùƒ',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'Ø¨Ø·Ø§Ù‚Ø©',
       instantTime15Min: 'ÙÙˆØ±Ù - 15 Ø¯Ù‚ÙÙ‚Ø©',
       instantTime2Min: 'ÙÙˆØ±Ù - Ø¯Ù‚ÙÙ‚ØªØ§Ù†',
@@ -290,9 +307,9 @@
   withdraw: {
     common: {
       usd: 'Ø¯ÙˆÙ„Ø§Ø± Ø£Ù…Ø±ÙÙƒÙ',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}} Ø¯ÙˆÙ„Ø§Ø± Ø£Ù…Ø±ÙÙƒÙ',
-      amountWithVNDT: '{{amount}} VNDT',
+      amountWithVND: '{{amount}} VND',
       networkFee: 'Ø±Ø³ÙˆÙ… Ø§Ù„Ø´Ø¨ÙƒØ©',
       amountReceived: 'Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø³ØªÙ„Ù…',
       processing: 'Ø¬Ø§Ø±Ù Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©...',
@@ -301,9 +318,9 @@
     },
     method: {
       demoAccountError: 'Ù„Ø§ ÙÙ…ÙƒÙ† Ù„Ù„Ø­Ø³Ø§Ø¨Ø§Øª Ø§Ù„ØªØ¬Ø±ÙØ¨ÙØ© Ø¥Ø¬Ø±Ø§Ø¡ Ø¹Ù…Ù„ÙØ§Øª Ø§Ù„Ø³Ø­Ø¨. ÙØ±Ø¬Ù‰ ØªØ¹Ø¨Ø¦Ø© Ø­Ø³Ø§Ø¨Ùƒ Ø£ÙˆÙ„Ø§.',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'ÙÙˆØ±Ù - 15 Ø¯Ù‚ÙÙ‚Ø©',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'Ø§Ø®ØªØ± Ø§Ù„Ø´Ø¨ÙƒØ© ÙˆØ§Ù„Ø±Ù…Ø² Ù„Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„Ø³Ø­Ø¨',
@@ -311,10 +328,10 @@
       limitLabel: 'Ø§Ù„Ø­Ø¯',
     },
     detail: {
-      walletVNDTAddress: 'Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙØ¸Ø© VNDT',
-      walletAddressHelpAria: 'Ù…Ø§ Ù‡Ùˆ Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙØ¸Ø© VNDTØŸ',
+      walletVNDAddress: 'Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙØ¸Ø© VND',
+      walletAddressHelpAria: 'Ù…Ø§ Ù‡Ùˆ Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙØ¸Ø© VNDØŸ',
       walletAddressHelpDescription:
-        'Ù‡Ùˆ Ø§Ù„Ù…ÙƒØ§Ù† Ø§Ù„Ø°Ù Ù†Ø±Ø³Ù„ ÙÙÙ‡ VNDT Ø§Ù„Ø®Ø§Øµ Ø¨Ùƒ Ø¹Ù„Ù‰ Ø§Ù„Ø³Ù„Ø³Ù„Ø© (Ø¹Ù„Ù‰ Ø³Ø¨ÙÙ„ Ø§Ù„Ù…Ø«Ø§Ù„ TRC20). Ø§Ø³ØªØ®Ø¯Ù… Ø¹Ù†ÙˆØ§Ù† Ù…Ø­ÙØ¸ØªÙƒ Ø§Ù„Ø®Ø§ØµØ© Ù„Ù„Ø´Ø¨ÙƒØ© Ø§Ù„ØµØ­ÙØ­Ø© - Ù‚Ø¯ ÙØ¹Ù†Ù Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø£Ùˆ Ø§Ù„Ø´Ø¨ÙƒØ© Ø§Ù„Ø®Ø§Ø·Ø¦Ø© ÙÙ‚Ø¯Ø§Ù† Ø§Ù„Ø£Ù…ÙˆØ§Ù„.',
+        'Ù‡Ùˆ Ø§Ù„Ù…ÙƒØ§Ù† Ø§Ù„Ø°Ù Ù†Ø±Ø³Ù„ ÙÙÙ‡ VND Ø§Ù„Ø®Ø§Øµ Ø¨Ùƒ Ø¹Ù„Ù‰ Ø§Ù„Ø³Ù„Ø³Ù„Ø© (Ø¹Ù„Ù‰ Ø³Ø¨ÙÙ„ Ø§Ù„Ù…Ø«Ø§Ù„ TRC20). Ø§Ø³ØªØ®Ø¯Ù… Ø¹Ù†ÙˆØ§Ù† Ù…Ø­ÙØ¸ØªÙƒ Ø§Ù„Ø®Ø§ØµØ© Ù„Ù„Ø´Ø¨ÙƒØ© Ø§Ù„ØµØ­ÙØ­Ø© - Ù‚Ø¯ ÙØ¹Ù†Ù Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø£Ùˆ Ø§Ù„Ø´Ø¨ÙƒØ© Ø§Ù„Ø®Ø§Ø·Ø¦Ø© ÙÙ‚Ø¯Ø§Ù† Ø§Ù„Ø£Ù…ÙˆØ§Ù„.',
       enterWalletAddress: 'Ø£Ø¯Ø®Ù„ Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙØ¸Ø©',
       paste: 'Ù„ØµÙ‚',
       max: 'Ù…Ø§ÙƒØ³',
@@ -335,7 +352,7 @@
       description: 'ÙØ±Ø¬Ù‰ Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† ØµØ­Ø© Ø¬Ù…ÙØ¹ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø£Ø¯Ù†Ø§Ù‡',
       walletAddress: 'Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙØ¸Ø©',
       network: 'Ø§Ù„Ø´Ø¨ÙƒØ©',
-      VNDTEthereum: 'VNDT (Ø§Ù„Ø¥ÙØ«ÙØ±ÙÙˆÙ…)',
+      VNDEthereum: 'VND (Ø§Ù„Ø¥ÙØ«ÙØ±ÙÙˆÙ…)',
       withdrawalAmount: 'Ù…Ø¨Ù„Øº Ø§Ù„Ø³Ø­Ø¨',
       networkFeeValue: '0.1 Ø¯ÙˆÙ„Ø§Ø± Ø£Ù…Ø±ÙÙƒÙ',
     },
@@ -1454,8 +1471,24 @@
       orderTypeStopLimit: 'Ø¥ÙÙ‚Ø§Ù Ù…Ø­Ø¯Ø¯',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} Ø¹Ù†Ø¯ {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} Ø¨Ø³Ø¹Ø± Ø§Ù„Ø³ÙˆÙ‚',
-    },
+    
+
+  "avgFillPrice": "متوسط سعر التنفيذ",
+  "totalCost": "القيمة الإجمالية"
+,
+},
+  
+
+  "orders": {
+    "loadError": "تعذر تحميل الأوامر المفتوحة",
+    "loadErrorDescription": "لم يُرجع الخادم الأوامر. حاول مجددًا."
   },
+  "orderHistory": {
+    "loadError": "تعذر تحميل سجل الأوامر",
+    "loadErrorDescription": "لم يُرجع الخادم سجل الأوامر. حاول مجددًا."
+  }
+,
+},
   account: {
     assetOverview: 'Ù†Ø¸Ø±Ø© Ø¹Ø§Ù…Ø© Ø¹Ù„Ù‰ Ø§Ù„Ø£ØµÙˆÙ„',
     equity: 'Ø­Ù‚ÙˆÙ‚ Ø§Ù„Ù…Ù„ÙƒÙØ© (Ø¯ÙˆÙ„Ø§Ø± Ø£Ù…Ø±ÙÙƒÙ)',
@@ -1766,7 +1799,28 @@
   notifications: {
     onlyUnread: 'Ø¹Ø±Ø¶ ØºÙØ± Ø§Ù„Ù…Ù‚Ø±ÙˆØ¡Ø© ÙÙ‚Ø·',
     unreadLabel: 'ØºÙØ± Ù…Ù‚Ø±ÙˆØ¡',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "دخل إيجار جاهز للاستلام",
+      "description": "{{asset}}: يمكنك استلام {{amount}} من دخل الإيجار."
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "دفعة استحواذ جاهزة للاستلام",
+      "description": "{{asset}}: يمكنك استلام {{amount}} من دفعة الاستحواذ."
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "مقترح ينتظر تصويتك",
+      "description": "لدى {{asset}} مقترح نشط لم تصوّت عليه بعد."
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "يجب تمويل محفظة الإيجار",
+      "description": "{{asset}}: حان موعد إيجار {{amount}} والرصيد المتاح في محفظة الإيجار غير كافٍ."
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1778,7 +1832,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1791,7 +1845,17 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "الفترة {{count}}",
+  "pendingPeriods": "عرض {{count}} فترات بانتظار الاستلام",
+  "claimedHistory": "سجل الدفعات المستلمة ({{count}} فترات)"
+,
+
+
+  "status": "Ø§Ù„Ø­Ø§Ù„Ø©"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1804,7 +1868,215 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "الإيجار الشهري المقترح (VND)",
+    "depositVnd": "التأمين المقترح (VND)",
+    "maintenanceBudgetVnd": "ميزانية الصيانة (VND)",
+    "operatorName": "المشغّل الجديد",
+    "operatorContact": "بيانات اتصال المشغّل",
+    "salePriceVnd": "سعر البيع المقترح (VND)",
+    "salePlan": "خطة البيع وتوزيع العائدات",
+    "nextRentalOnly": "تسري الشروط المعتمدة على الإيجارات الجديدة. تبقى أجرة وتأمين العقود الحالية دون تغيير.",
+    "approvedRentalTerms": "شروط الإيجار المعتمدة",
+    "openingVoteInProgress": "يجري بالفعل تصويت على السماح بالتأجير.",
+    "invalid": "يرجى استكمال شروط هذا النوع من المقترحات."
+  }
+,
+
+
+  "assetNotFound": "لم يتم العثور على العقار",
+  "manageAsset": "إدارة العقار",
+  "navigation": "التنقل في إدارة العقار",
+  "expectedApy": "العائد السنوي المتوقع",
+  "price": "السعر المرجعي",
+  "property": "عقار مرمّز",
+  "tradeAsset": "تداول الرموز",
+  "portfolioDesc": "تابع التشغيل والتدفقات والسيولة والحوكمة لكل عقار.",
+  "emptyOwned": "لا يملك هذا الحساب رموزًا عقارية.",
+  "sections": {
+    "overview": "نظرة عامة",
+    "rental": "التأجير",
+    "liquidity": "السيولة",
+    "governance": "الحوكمة",
+    "cashFlow": "التدفقات النقدية"
+  },
+  "actions": {
+    "pending": "{{count}} إجراءات معلّقة"
+  },
+  "operations": {
+    "available": "متاح للتأجير",
+    "rented": "مؤجّر حاليًا"
+  },
+  "status": {
+    "active": "قيد التشغيل",
+    "inactive": "متوقف مؤقتًا",
+    "open": "التداول مفتوح",
+    "paused": "التداول متوقف"
+  },
+  "overview": {
+    "activeProposals": "{{count}} مقترحات جارية",
+    "buyoutProgress": "التقدم نحو أهلية الاستحواذ",
+    "buyoutStatus": "أهلية الاستحواذ",
+    "operation": "حالة التشغيل",
+    "yourOwnership": "رموزك المملوكة"
+  },
+  "rentalOperations": {
+    "title": "إدارة التأجير",
+    "applicantList": "المتقدمون للإيجار",
+    "claimRent": "استلام دخل الإيجار",
+    "claimed": "تم الاستلام",
+    "unclaimed": "بانتظار الاستلام",
+    "noEntitlement": "لا استحقاق لهذه الفترة",
+    "contractWallet": "رصيد محفظة الإيجار المتاح",
+    "reservedForClaims": "محجوز للتوزيع على المساهمين",
+    "expectedDeposit": "التأمين المتوقع (VND)",
+    "expectedRent": "الإيجار الشهري المتوقع (VND)",
+    "guestName": "ضيف {{number}}",
+    "historyError": "تعذر تحميل دفعات الإيجار.",
+    "incomeHistoryTitle": "سجل دخل الإيجار",
+    "incomeHistoryDescription": "يمثل كل صف فترة مدفوعة سُجلت فيها حقوق حاملي الرموز.",
+    "awaitingPaymentExplanation": "لم يمول المستأجر التوزيع بعد. يظهر زر الاستلام عندما يتوفر مبلغ مستحق لك.",
+    "manageRentPayment": "إدارة دفعات الإيجار",
+    "monthlyRentVnd": "الإيجار الشهري (VND)",
+    "nextCollection": "تحصيل الإيجار القادم",
+    "noApplications": "لا توجد طلبات إيجار بعد.",
+    "noIncomeHistory": "لم تُموّل أي فترة إيجار بعد.",
+    "paymentPeriod": "فترة الإيجار",
+    "periodTotal": "إجمالي المدفوع",
+    "status": "حالة الإيجار",
+    "tenant": "المستأجر الحالي",
+    "unknownApplicant": "مقدّم الطلب",
+    "yourShare": "حصتك",
+    "yourAmount": "استحقاقك",
+    "allocatedAmount": "المخصّص للمساهمين",
+    "grossAmount": "إجمالي الإيجار المدفوع",
+    "allowedPurposes": "الاستخدامات المسموحة",
+    "daoDescription": "يقرر حاملو الرموز السماح بالتأجير وطلبات المستأجرين بالتصويت.",
+    "enablementSubmitted": "تم إرسال مقترح التأجير.",
+    "openEnablementVote": "اقتراح بدء التأجير",
+    "privateVoteNotice": "تُعرض قوة التصويت الإجمالية فقط وتبقى اختيارات الأفراد خاصة.",
+    "submitToDao": "إرسال المقترح",
+    "transactionDetails": "تفاصيل دفعة الإيجار",
+    "voteNow": "عرض والتصويت",
+    "voters": "{{count}} مصوّت"
+  },
+  "governance": {
+    "alreadyVoted": "تم تسجيل صوتك.",
+    "continuousHolding": "شرط مدة الاحتفاظ المتواصل",
+    "currentHolding": "الحيازة الحالية",
+    "eligibilityTitle": "أهلية الاستحواذ على العقار",
+    "eligibilityDescription": "تُحسب الأهلية من رصيد الرموز وسجل الاحتفاظ المتواصل.",
+    "loadError": "تعذر تحميل المقترحات. حاول مجددًا.",
+    "proposals": "مقترحات المجتمع",
+    "rentalProposal": "مقترح تأجير",
+    "requiredHolding": "الحيازة المطلوبة للسيطرة"
+  },
+  "createProposal": {
+    "description": "الوصف"
+  ,
+
+  "typeGeneral": "مقترح عام",
+  "typeMaintenance": "خطة الصيانة",
+  "typeOperatorChange": "تغيير المشغل",
+  "typeRentChange": "تعديل الإيجار والتأمين",
+  "typeAssetSale": "بيع الأصل",
+  "typeBuyout": "استحواذ",
+  "proposalType": "نوع المقترح",
+  "proposalTitle": "عنوان المقترح",
+  "submit": "إرسال المقترح",
+  "submitting": "جارٍ الإرسال…",
+  "successMsg": "تم إرسال المقترح",
+  "errorMsg": "تعذر إرسال المقترح",
+  "required": "أدخل العنوان والوصف",
+  "votingWindow": "مدة التصويت",
+  "selectedType": "النوع المحدد",
+  "votingDays": "مدة التصويت"
+,
+},
+  "details": {
+    "action": "Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡",
+    "buy": "Ø´Ø±Ø§Ø¡",
+    "close": "Ø¥ØºÙ„Ø§Ù‚",
+    "no": "Ù„Ø§",
+    "sell": "Ø¨ÙØ¹",
+    "side": "Ø§Ù„Ø¬Ø§Ù†Ø¨",
+    "viewDetails": "عرض التفاصيل",
+    "metadataLabels": {
+      "price": "Ø§Ù„Ø³Ø¹Ø±",
+      "quantity": "Ø§Ù„ÙƒÙ…ÙØ©"
+    ,
+
+  "proposalType": "النوع المحدد"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "Ø§Ù„ÙƒÙ…ÙØ©"
+  },
+  "portfolioTitle": "Ø§Ù„Ù…Ø±Ø§ÙƒØ²",
+  "processing": "جارٍ التنفيذ…",
+  "properties": "عقارات",
+  "statuses": {
+    "COMPLETED": "Ù…ÙƒØªÙ…Ù„",
+    "PENDING": "Ù‚ÙØ¯ Ø§Ù„Ø§Ù†ØªØ¸Ø§Ø±",
+    "REJECTED": "Ù…Ø±ÙÙˆØ¶",
+    "CANCELLED": "Ù…Ù„ØºÙ",
+    "FAILED": "ÙØ´Ù„",
+    "OPEN": "Ù…ÙØªÙˆØ­"
+  },
+  "transactionHistory": {
+    "price": "Ø§Ù„Ø³Ø¹Ø±",
+    "quantity": "Ø§Ù„ÙƒÙ…ÙØ©",
+    "status": "Ø§Ù„Ø­Ø§Ù„Ø©",
+    "time": "Ø§Ù„ÙˆÙ‚Øª",
+    "type": "Ø§Ù„Ù†ÙˆØ¹"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "الحوكمة",
+      "CASH_FLOW": "التدفقات النقدية",
+      "LIQUIDITY": "السيولة"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "شراء / بيع",
+      "viewProperty": "عرض العقار"
+    },
+    "ownership": {
+      "title": "العقارات المملوكة",
+      "description": "تُحسب الملكية من رصيد الرموز المسجل في الحساب.",
+      "properties": "عقارات"
+    ,
+
+  "returnSincePurchase": "{{percent}}% مقارنة بتكلفة الشراء",
+  "noCostBasis": "تكلفة الشراء غير متاحة",
+  "returnBasis": "ربح أو خسارة غير محققة مقارنة بمتوسط تكلفة الشراء، دون الرسوم والإيجار."
+,
+},
+    "empty": {
+      "title": "لا تملك أي عقار بعد",
+      "description": "ستظهر هنا الرموز العقارية التي اشتريتها."
+    },
+    "table": {
+      "actions": "إجراءات العقار",
+      "asset": "رمز الأصل",
+      "avgBuyPrice": "نسبة الملكية",
+      "currentPrice": "قيمة الرمز",
+      "quantity": "الرموز المملوكة",
+      "totalValue": "قيمة الملكية"
+    }
+  },
+  "rentalListing": {
+    "months": "أشهر"
+  }
+,
 };
 export default ar;
 

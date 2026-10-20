@@ -94,7 +94,7 @@ export function useMarketViewModel() {
         marketOpenOnly: options?.marketOpenOnly,
         rows,
         search: options?.search,
-      }).filter((row) => Boolean(row.rentalStatus));
+      }).filter((row) => row.rentalStatus === 'OPEN');
     }
 
     if (tabId === 'buyout') {

@@ -35,8 +35,8 @@ export default function NotificationCard({ className, item, onClick }: Notificat
       >
         <div className="flex min-h-[104px] items-center justify-between gap-4 px-4 py-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-body-large-semibold text-foreground truncate">
+            <div className="flex flex-col items-start justify-between gap-1 sm:flex-row sm:gap-3">
+              <h3 className="text-body-large-semibold text-foreground line-clamp-2 break-words">
                 {t(item.title.key, {
                   ...item.title.values,
                   defaultValue: item.title.defaultValue,
@@ -54,6 +54,11 @@ export default function NotificationCard({ className, item, onClick }: Notificat
               </span>
             </div>
 
+            {item.requiresAction && (
+              <span className="text-primary-500 bg-primary-500/10 mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium">
+                {t('notifications.actionOnly', 'Needs action')}
+              </span>
+            )}
             <p
               className={cn(
                 'text-body-large-regular mt-0.5 line-clamp-2',

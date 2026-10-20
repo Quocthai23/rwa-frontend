@@ -1,7 +1,10 @@
 export interface NotificationItem {
   id: string;
-  category: number;
-  type: number;
+  category: number | string;
+  requiresAction?: boolean;
+  type: number | string;
+  title?: string;
+  content?: string | null;
   entityId: string;
   actorCount: number;
   metadata: Record<string, unknown> | string | null;
@@ -13,5 +16,6 @@ export interface NotificationItem {
 export interface NotificationResponse {
   data: NotificationItem[];
   total: number;
+  unreadByCategory?: Record<string, number>;
   // unreadTotal: number;
 }

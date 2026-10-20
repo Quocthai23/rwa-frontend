@@ -1,5 +1,6 @@
 const en = {
   common: {
+    retry: 'Retry',
     search: 'Search',
     all: 'All',
     cancel: 'Cancel',
@@ -63,6 +64,14 @@ const en = {
     unknownError: 'An unknown error occurred',
     save: 'Save',
     noData: 'No data',
+
+    back: 'Back',
+    description: 'Description',
+    loadMore: 'Load more',
+    loading: 'Loading…',
+    unknown: 'Unknown',
+    viewDetails: 'View details',
+    next: 'Continue',
   },
   apiErrors: {
     activeRentalContractNotFound: 'No active rental contract was found.',
@@ -72,6 +81,16 @@ const en = {
     rentalFuturePeriod: 'A future rental period cannot be paid yet.',
     rentalPeriodAlreadyPaid: 'Rent for this month has already been paid.',
     rentalFundingMissing: 'This rental distribution has no valid escrow account.',
+    rentalWalletTenantOnly: 'Only the current tenant can fund this contract wallet.',
+    rentalWalletContractUnavailable:
+      'This rental contract cannot receive funds in its current status.',
+    rentalFundingWindowExpired: 'The funding window for this rental contract has expired.',
+    rentalFundingAccountCannotChange: 'This contract is linked to a different funding account.',
+    rentalWalletConcurrentUpdate:
+      'The contract wallet changed at the same time. Please submit the top-up again.',
+    rentalWalletAmountPositive: 'Enter an amount greater than VND 0.',
+    balanceNotFound: 'The selected account does not have a VND balance.',
+    liveAccountMissing: 'No active live VND account is available.',
     generic: 'An error occurred',
     unauthorized: 'Your session has expired. Please sign in again.',
     tokenExpired: 'Your session has expired. Please sign in again.',
@@ -92,6 +111,9 @@ const en = {
     assetAlreadyRented: 'This property already has an active tenant.',
     rentalApplicationExists:
       'You already have a rental application being processed for this property.',
+    rentalApplicationsNotEnabled: 'This property is not currently accepting rental applications.',
+    rentalPurposeNotApproved: 'Shareholders have not approved this use sector.',
+    rentalApplicationVoteActive: 'Another rental application is currently being voted on.',
     rentalStartDateFuture: 'The preferred start date must be in the future.',
     proposalTokenHolderOnly: 'Only current holders of this property token can submit a proposal.',
     buyoutNotEligible:
@@ -188,6 +210,7 @@ const en = {
     market: 'Market',
     trade: 'Trade',
     positions: 'My properties',
+    myRentals: 'Rentals',
     discover: 'Discover',
     news: 'News',
     account: 'Account',
@@ -367,26 +390,53 @@ const en = {
     topUpSuccessTitle: 'Top up successful',
     topUpSuccessMessage: 'Demo account topped up successfully',
     depositTitle: 'Deposit',
+    bankTransferName: 'Bank transfer (VND)',
+    bankTransferTime: 'Instant (1–5 minutes)',
+    bankTransferLimit: 'Minimum 10,000 VND',
+    vndOnlyNotice: 'This platform currently accepts VND deposits only.',
+    depositUnavailableTitle: 'Unable to deposit',
+    selectReceivingAccount: 'Please select the receiving account.',
+    payosSuccessTitle: 'Success',
+    payosSuccessMessage: 'Bank-transfer QR code created.',
+    qrCreateErrorTitle: 'Unable to create QR code',
+    qrCreateErrorMessage: 'Please open the PayOS checkout page.',
+    amountCopied: 'Amount copied.',
+    transferContentCopied: 'Transfer content copied.',
+    invalidCheckoutTitle: 'Invalid link',
+    invalidCheckoutMessage: 'Unable to open the PayOS checkout page.',
+    vietQrTitle: 'VietQR payment',
+    vietQrInstruction: 'Open your banking app and scan the QR code below to deposit.',
+    transferContent: 'Transfer content',
+    openPayos: 'Open PayOS checkout',
+    vndDepositTitle: 'Deposit VND',
+    amountLabel: 'Amount (VND)',
+    amountPlaceholder: 'Enter deposit amount',
+    minimumAmount: 'Minimum: 10,000 VND',
+    minimumAmountError: 'The minimum deposit is 10,000 VND.',
+    continue: 'Continue',
     comingSoonBadge: 'Coming soon',
     comingSoonMethodMessage: 'This deposit method is coming soon.',
     processingTime: 'Processing time',
     limit: 'Limit',
     minDepositPrefix: 'Deposit amount must be at least',
-    minDepositAmount: 'VNĐ10 VNDT',
+    minDepositAmount: 'VNĐ10 VND',
     depositQrAlt: 'Deposit QR',
     copyAddressAria: 'Copy address',
     copySuccessTitle: 'Copy successful',
     copySuccessMessage: 'Address copied to clipboard successfully.',
     shareSuccessTitle: 'Share successful',
     shareSuccessMessage: 'Address shared successfully.',
-    sendOnlyPrefix: 'Send only VNDT via',
+    sendOnlyPrefix: 'Send only VND via',
     networkSuffix: 'network',
     fundsWarning: 'Funds sent incorrectly cannot be recovered.',
     copyAddress: 'Copy address',
     share: 'Share',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      vndtErc20: 'Deposit VNDT from wallet (ERC20)',
+      vndtBep20: 'Deposit VNDT from wallet (BEP20)',
+      vndtLimit: '10,000 - 200,000,000 VND',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'Card',
       instantTime15Min: 'Instant - 15 min',
       instantTime2Min: 'Instant - 2 min',
@@ -456,9 +506,9 @@ const en = {
   withdraw: {
     common: {
       usd: 'USD',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}} USD',
-      amountWithVNDT: '{{amount}} VNDT',
+      amountWithVND: '{{amount}} VND',
       networkFee: 'Network fee',
       amountReceived: 'Amount received',
       processing: 'Processing...',
@@ -471,17 +521,17 @@ const en = {
       limitLabel: 'Limit',
       demoAccountError:
         'Demo accounts cannot perform withdrawals. Please top up your account first.',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'Instant - 15 min',
       limit: 'VNĐ10 - VNĐ200,000',
     },
     detail: {
-      walletVNDTAddress: 'Wallet VNDT address',
-      walletAddressHelpAria: 'What is a Wallet VNDT address?',
+      walletVNDAddress: 'Wallet VND address',
+      walletAddressHelpAria: 'What is a Wallet VND address?',
       walletAddressHelpDescription:
-        'is where we send your VNDT on-chain (e.g. TRC20). Use your own wallet address for the correct networkâ€”wrong address or network can mean lost funds.',
+        'is where we send your VND on-chain (e.g. TRC20). Use your own wallet address for the correct networkâ€”wrong address or network can mean lost funds.',
       enterWalletAddress: 'Enter wallet address',
       paste: 'Paste',
       max: 'Max',
@@ -501,9 +551,9 @@ const en = {
       description: 'Please make sure all information below is correct',
       walletAddress: 'Wallet address',
       network: 'Network',
-      VNDTEthereum: 'VNDT(Ethereum)',
+      VNDEthereum: 'VND(Ethereum)',
       withdrawalAmount: 'Withdrawal amount',
-      networkFeeValue: '0.1 VNDT',
+      networkFeeValue: '0.1 VND',
     },
     verifyOtp: {
       title: 'Verify Your Transaction',
@@ -883,6 +933,8 @@ const en = {
     failed: 'Failed',
     rejected: 'Rejected',
     cancelled: 'Cancelled',
+
+    detailClose: 'Close transaction details',
   },
   symbolDetail: {
     tabs: {
@@ -987,6 +1039,17 @@ const en = {
     loadingChart: 'Loading chart...',
     sheetTitle: 'Trade {{symbol}}',
     buyoutTrading: {
+      paymentEstimate: 'Estimated until the next ownership snapshot.',
+      buyerTitle: 'Buyout program overview',
+      buyerRole: 'You are the acquirer',
+      buyerMonitoring:
+        'Follow the market and payment progress. Secondary trading is paused for the acquirer while the program is active.',
+      paymentOverview: 'Payment obligations',
+      recordDate: 'Record date',
+      principalPart: 'Principal',
+      premiumPart: 'Waiting return',
+      viewOnly: 'View only',
+      manageProgram: 'Manage program',
       title: 'Secondary trading during buyout',
       active: 'Buyout active',
       buyer: 'Acquirer: Guest {{number}}',
@@ -997,6 +1060,8 @@ const en = {
       nextPayment: 'Next installment',
       progress: 'Program progress',
       progressValue: '{{completed}}/{{total}} months',
+      remainingTokens: 'Tokens remaining to acquire',
+      paidToDate: 'Paid to shareholders',
       minorityCanTrade:
         'You can continue buying from or selling to other shareholders. Secondary orders execute at market price, not at the locked buyout price.',
       buyerLocked:
@@ -1079,7 +1144,7 @@ const en = {
       marketClosedMessage: 'The market is currently closed. Please try again later.',
       failedCreateOrder: 'Failed to create order. Please try again.',
       maxOrderValueExceeded:
-        'The maximum value per order is {{value}} VNDT. Please reduce the quantity.',
+        'The maximum value per order is {{value}} VND. Please reduce the quantity.',
       orderPlacementFailedTitle: 'Order placement failed',
     },
     success: {
@@ -1111,6 +1176,8 @@ const en = {
       accept: 'Accept',
     },
     orderForm: {
+      loginToTrade: 'Sign in to trade',
+      loginDescription: 'Sign in to view your balance and place orders.',
       maximum: 'Maximum',
       estimatedPrice: 'Estimated price',
       quantity: 'Quantity',
@@ -1505,6 +1572,13 @@ const en = {
       status: 'Rental status',
       rented: 'Currently rented',
       available: 'Accepting applications',
+      statuses: {
+        OPEN: 'Accepting applications',
+        VOTING: 'Shareholder voting',
+        PENDING_FUNDING: 'Awaiting tenant funding',
+        RENTED: 'Currently rented',
+        LOCKED: 'Rental locked',
+      },
       monthlyRent: 'Monthly rent',
       expectedApy: 'Expected yield',
       paymentCycle: 'Payment cycle',
@@ -1647,9 +1721,14 @@ const en = {
       description: 'Ownership is calculated from token balances recorded in your account ledger.',
       properties: 'properties',
       locked: 'Pending sale',
+
+      returnSincePurchase: '{{percent}}% vs. purchase cost',
+      returnBasis:
+        'Unrealized return based on your average purchase cost; excludes fees and rental income.',
+      noCostBasis: 'Cost basis unavailable',
     },
     table: {
-      asset: 'Property',
+      asset: 'Asset code',
       quantity: 'Tokens owned',
       avgBuyPrice: 'Ownership share',
       currentPrice: 'Token valuation',
@@ -1667,9 +1746,18 @@ const en = {
     },
   },
   position: {
+    orders: {
+      loadError: 'Unable to load open orders',
+      loadErrorDescription: 'The server did not return your orders. Please try again.',
+    },
+    orderHistory: {
+      loadError: 'Unable to load order history',
+      loadErrorDescription: 'The server did not return your order history. Please try again.',
+    },
     tabs: {
       positions: 'Positions',
       portfolio: 'Owned properties',
+      myRentals: 'Properties I rent',
       orders: 'Open Orders',
       positionHistory: 'Position History',
       orderHistory: 'Order History',
@@ -1793,13 +1881,16 @@ const en = {
       closeAllPositions: 'Close All Positions',
       closeProfitablePositions: 'Close Profitable Positions',
       closeLosingPositions: 'Close Losing Positions',
+
+      avgFillPrice: 'Average fill price',
+      totalCost: 'Total value',
     },
   },
   account: {
     assetOverview: 'Property ownership portfolio',
     assetOverviewDescription:
       'Track your tokenized property ownership and available investment funds.',
-    addInvestmentFunds: 'Add funds',
+    addInvestmentFunds: 'Deposit',
     availableInvestmentFunds: 'Available investment funds',
     reservedForOrders: 'Reserved for pending purchases',
     totalCashBalance: 'Total cash balance',
@@ -2043,6 +2134,651 @@ const en = {
         withMessage: '{{message}}',
       },
     },
+
+    actions: {
+      RENT_CLAIM_AVAILABLE: {
+        title: 'Rental income available',
+        description: '{{asset}}: {{amount}} is ready to claim.',
+      },
+      BUYOUT_CLAIM_AVAILABLE: {
+        title: 'Buyout proceeds available',
+        description: '{{asset}}: {{amount}} is ready to claim.',
+      },
+      GOVERNANCE_VOTE_OPEN: {
+        title: 'A proposal awaits your vote',
+        description: '{{asset}} has an active proposal you have not voted on.',
+      },
+      RENT_PAYMENT_DUE: {
+        title: 'Rent funding required',
+        description:
+          '{{asset}}: rent of {{amount}} is due; the rental wallet has insufficient available funds.',
+      },
+    },
+    loadedEmptyTitle: 'No matching items loaded yet',
+    loadedEmptyDescription: 'Load more to check older notifications in this category.',
+    groups: {
+      finance: 'Money & accounts',
+      trading: 'Trading',
+      asset: 'Assets & voting',
+      user: 'Community',
+      security: 'Security',
+      system: 'System & support',
+    },
+    events: {
+      DEPOSIT_COMPLETED: {
+        title: 'Deposit completed',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      DEPOSIT_FAILED: {
+        title: 'Deposit failed',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      DEPOSIT_CANCELLED: {
+        title: 'Deposit cancelled',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      DEPOSIT_EXPIRED: {
+        title: 'Deposit expired',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      DEPOSIT_REVIEW_REQUIRED: {
+        title: 'Deposit requires review',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      WITHDRAWAL_REQUESTED: {
+        title: 'Withdrawal requested',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      WITHDRAWAL_SUBMITTED: {
+        title: 'Withdrawal awaiting confirmation',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      WITHDRAWAL_COMPLETED: {
+        title: 'Withdrawal completed',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      WITHDRAWAL_FAILED: {
+        title: 'Withdrawal failed',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      WITHDRAWAL_CANCELLED: {
+        title: 'Withdrawal cancelled',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      WITHDRAWAL_DELAYED: {
+        title: 'Withdrawal is taking longer',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      TRANSFER_SENT: {
+        title: 'Transfer sent',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      TRANSFER_RECEIVED: {
+        title: 'Transfer received',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      COMMISSION_UNLOCKED: {
+        title: 'Commission available',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      COMMISSION_PAID: {
+        title: 'Commission paid',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for the recorded status.',
+      },
+      ORDER_PARTIALLY_FILLED: {
+        title: 'Order partially filled',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      ORDER_FILLED: {
+        title: 'Order filled',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      ORDER_CANCELLED: {
+        title: 'Order cancelled',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      ORDER_REJECTED: {
+        title: 'Order rejected',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      SETTLEMENT_CONFIRMED: {
+        title: 'Blockchain settlement confirmed',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      SETTLEMENT_FAILED: {
+        title: 'Blockchain settlement needs review',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      POST_LIKED: {
+        title: 'Your post received a like',
+        body: 'Open the community to view this interaction.',
+      },
+      POST_COMMENTED: {
+        title: 'New comment on your post',
+        body: 'Open the community to view this interaction.',
+      },
+      COMMENT_LIKED: {
+        title: 'Your comment received a like',
+        body: 'Open the community to view this interaction.',
+      },
+      COMMENT_REPLIED: {
+        title: 'New reply to your comment',
+        body: 'Open the community to view this interaction.',
+      },
+      USER_FOLLOWED: {
+        title: 'New follower',
+        body: 'Open the community to view this interaction.',
+      },
+      KYC_SUBMITTED: {
+        title: 'Identity verification submitted',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      KYC_APPROVED: {
+        title: 'Identity verification approved',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      KYC_REJECTED: {
+        title: 'Identity verification needs changes',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      PASSWORD_CHANGED: {
+        title: 'Password changed',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      MFA_CHANGED: {
+        title: 'Two-factor authentication changed',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      EMAIL_CHANGED: {
+        title: 'Account email changed',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      ACCOUNT_STATUS_CHANGED: {
+        title: 'Account status changed',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      NEW_DEVICE_SIGN_IN: {
+        title: 'New device signed in',
+        body: 'Review account security. Contact support if you did not authorize this action.',
+      },
+      RENTAL_APPLICATION_UPDATED: {
+        title: 'Rental application updated',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      RENTAL_CONTRACT_UPDATED: {
+        title: 'Rental contract updated',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      GOVERNANCE_RESULT: {
+        title: 'Voting result available',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      SUPPORT_STATUS_CHANGED: {
+        title: 'Support ticket status updated',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      SUPPORT_REPLY: {
+        title: 'New support message',
+        body: 'Your request has been updated. Open the details to review.',
+      },
+      RENTAL_PAYMENT_COMPLETED: {
+        title: 'Rent payment recorded',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for details.',
+      },
+      RENTAL_WALLET_DEPOSIT_COMPLETED: {
+        title: 'Rental wallet funded',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for details.',
+      },
+      RENTAL_INCOME_CLAIM_COMPLETED: {
+        title: 'Rental income received',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for details.',
+      },
+      BUYOUT_INSTALLMENT_COMPLETED: {
+        title: 'Buyout installment paid',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for details.',
+      },
+      BUYOUT_PROCEEDS_CLAIM_COMPLETED: {
+        title: 'Buyout proceeds received',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for details.',
+      },
+      DIVIDEND_CLAIM_COMPLETED: {
+        title: 'Dividend received',
+        body: 'Amount: {{amount}} {{currency}}. Open transaction history for details.',
+      },
+      POST_REPOSTED: {
+        title: 'Your post was reposted',
+        body: 'Open the community to view this interaction.',
+      },
+      USER_MENTIONED: {
+        title: 'You were mentioned',
+        body: 'Open the community to view this interaction.',
+      },
+      SETTLEMENT_DELAYED: {
+        title: 'Blockchain settlement is delayed',
+        body: 'The ledger trade is recorded; blockchain confirmation is still pending. Open the details to review.',
+      },
+
+      NEW_AUTHOR_POST: {
+        title: 'New post from an author you follow',
+        body: 'Open the community to view the new post.',
+      },
+
+      RENTAL_APPLICATION_STATUS_PENDING: {
+        title: 'Rental application: pending review',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_PENDING_VOTE: {
+        title: 'Rental application: awaiting a vote',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_APPROVED: {
+        title: 'Rental application: approved',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Rental application: approved, awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_PENDING_FUNDING: {
+        title: 'Rental application: awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_ACTIVE: {
+        title: 'Rental application: active',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_DELINQUENT: {
+        title: 'Rental application: overdue',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_EXPIRED: {
+        title: 'Rental application: expired',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_REJECTED: {
+        title: 'Rental application: rejected',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_CANCELLED: {
+        title: 'Rental application: cancelled',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_TERMINATED: {
+        title: 'Rental application: terminated',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_COMPLETED: {
+        title: 'Rental application: completed',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_FUNDING: {
+        title: 'Rental application: awaiting activation funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_DEFAULTED: {
+        title: 'Rental application: defaulted',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_DUE: {
+        title: 'Rental application: due',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_FUNDED: {
+        title: 'Rental application: funded',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_RESERVED: {
+        title: 'Rental application: reserved',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_APPLICATION_STATUS_SETTLED: {
+        title: 'Rental application: settled',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_PENDING: {
+        title: 'Rental contract: pending review',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_PENDING_VOTE: {
+        title: 'Rental contract: awaiting a vote',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_APPROVED: {
+        title: 'Rental contract: approved',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Rental contract: approved, awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_PENDING_FUNDING: {
+        title: 'Rental contract: awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_ACTIVE: {
+        title: 'Rental contract: active',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_DELINQUENT: {
+        title: 'Rental contract: overdue',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_EXPIRED: {
+        title: 'Rental contract: expired',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_REJECTED: {
+        title: 'Rental contract: rejected',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_CANCELLED: {
+        title: 'Rental contract: cancelled',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_TERMINATED: {
+        title: 'Rental contract: terminated',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_COMPLETED: {
+        title: 'Rental contract: completed',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_FUNDING: {
+        title: 'Rental contract: awaiting activation funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_DEFAULTED: {
+        title: 'Rental contract: defaulted',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_DUE: {
+        title: 'Rental contract: due',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_FUNDED: {
+        title: 'Rental contract: funded',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_RESERVED: {
+        title: 'Rental contract: reserved',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_STATUS_SETTLED: {
+        title: 'Rental contract: settled',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_PENDING: {
+        title: 'Buyout program: pending review',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_PENDING_VOTE: {
+        title: 'Buyout program: awaiting a vote',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_APPROVED: {
+        title: 'Buyout program: approved',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Buyout program: approved, awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_PENDING_FUNDING: {
+        title: 'Buyout program: awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_ACTIVE: {
+        title: 'Buyout program: active',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_DELINQUENT: {
+        title: 'Buyout program: overdue',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_EXPIRED: {
+        title: 'Buyout program: expired',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_REJECTED: {
+        title: 'Buyout program: rejected',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_CANCELLED: {
+        title: 'Buyout program: cancelled',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_TERMINATED: {
+        title: 'Buyout program: terminated',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_COMPLETED: {
+        title: 'Buyout program: completed',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_FUNDING: {
+        title: 'Buyout program: awaiting activation funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_DEFAULTED: {
+        title: 'Buyout program: defaulted',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_DUE: {
+        title: 'Buyout program: due',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_FUNDED: {
+        title: 'Buyout program: funded',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_RESERVED: {
+        title: 'Buyout program: reserved',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_STATUS_SETTLED: {
+        title: 'Buyout program: settled',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_PENDING: {
+        title: 'Buyout installment: pending review',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_PENDING_VOTE: {
+        title: 'Buyout installment: awaiting a vote',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_APPROVED: {
+        title: 'Buyout installment: approved',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Buyout installment: approved, awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_PENDING_FUNDING: {
+        title: 'Buyout installment: awaiting funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_ACTIVE: {
+        title: 'Buyout installment: active',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_DELINQUENT: {
+        title: 'Buyout installment: overdue',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_EXPIRED: {
+        title: 'Buyout installment: expired',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_REJECTED: {
+        title: 'Buyout installment: rejected',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_CANCELLED: {
+        title: 'Buyout installment: cancelled',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_TERMINATED: {
+        title: 'Buyout installment: terminated',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_COMPLETED: {
+        title: 'Buyout installment: completed',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_FUNDING: {
+        title: 'Buyout installment: awaiting activation funding',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_DEFAULTED: {
+        title: 'Buyout installment: defaulted',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_DUE: {
+        title: 'Buyout installment: due',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_FUNDED: {
+        title: 'Buyout installment: funded',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_RESERVED: {
+        title: 'Buyout installment: reserved',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_SETTLED: {
+        title: 'Buyout installment: settled',
+        body: 'Open the property details to review the latest status.',
+      },
+      ASSET_TRADING_STATUS_CHANGED: {
+        title: 'Property trading status changed',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_AVAILABILITY_CHANGED: {
+        title: 'Rental authorization changed',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_TERMS_CHANGED: {
+        title: 'Rent or deposit terms changed',
+        body: 'Open the property details to review the latest status.',
+      },
+      CORPORATE_ACTION_STATUS_CHANGED: {
+        title: 'Property action updated',
+        body: 'Open the property details to review the latest status.',
+      },
+      GOVERNANCE_VOTE_CLOSING: {
+        title: 'Voting closes within 24 hours',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_ACTIVATION_DUE: {
+        title: 'Buyout activation funding is due',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_PAYMENT_DUE: {
+        title: 'Buyout installment is due',
+        body: 'Open the property details to review the latest status.',
+      },
+      BUYOUT_PAYMENT_OVERDUE: {
+        title: 'Buyout installment is overdue',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_FUNDING_DUE: {
+        title: 'Rental contract funding is due',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENT_PAYMENT_UPCOMING: {
+        title: 'Rent payment is approaching',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_CONTRACT_ENDING: {
+        title: 'Rental contract is ending soon',
+        body: 'Open the property details to review the latest status.',
+      },
+      RENTAL_PERMISSION_EXPIRING: {
+        title: 'Rental authorization is expiring',
+        body: 'Open the property details to review the latest status.',
+      },
+      INTEREST_PAYMENT_DUE: {
+        title: 'Property interest payment is due',
+        body: 'Open the property details to review the latest status.',
+      },
+      KYC_DOCUMENT_EXPIRING: {
+        title: 'Identity document expires soon',
+        body: 'Please renew your identity documents in account security.',
+      },
+      KYC_DOCUMENT_EXPIRED: {
+        title: 'Identity document has expired',
+        body: 'Please renew your identity documents in account security.',
+      },
+      PRICE_ALERT_TRIGGERED: {
+        title: 'Your price threshold was reached',
+        body: '{{asset}}: recorded price {{amount}} {{currency}}. This one-time alert is now inactive.',
+      },
+      RENT_CLAIM_AVAILABLE: {
+        title: 'Rental income available',
+        body: '{{asset}}: {{amount}} VND. Open the property details.',
+      },
+      BUYOUT_CLAIM_AVAILABLE: {
+        title: 'Buyout proceeds available',
+        body: '{{asset}}: {{amount}} VND. Open the property details.',
+      },
+      DIVIDEND_AVAILABLE: {
+        title: 'Dividend available',
+        body: '{{asset}}: {{amount}} VND. Open the property details.',
+      },
+      RENT_PAYMENT_DUE: {
+        title: 'Rent payment is due',
+        body: '{{asset}}: {{amount}} VND. Open the property details.',
+      },
+      GOVERNANCE_VOTE_OPEN: {
+        title: 'A proposal awaits your vote',
+        body: 'Open the property details to review the latest status.',
+      },
+
+      SESSION_REVOKED: {
+        title: 'Sign-in sessions revoked',
+        body: 'Open the details to review the recorded status.',
+      },
+      LINKED_WALLET_CHANGED: {
+        title: 'Linked wallet changed',
+        body: 'Open the details to review the recorded status.',
+      },
+      REFUND_STATUS_CHANGED: {
+        title: 'Refund status updated',
+        body: 'Open the details to review the recorded status.',
+      },
+      WITHDRAWAL_REPLACED: {
+        title: 'Withdrawal transaction replaced',
+        body: 'Open the details to review the recorded status.',
+      },
+      ASSET_ONBOARDING_STATUS_CHANGED: {
+        title: 'Asset onboarding request updated',
+        body: 'Open the details to review the recorded status.',
+      },
+      ASSET_REDEMPTION_STATUS_CHANGED: {
+        title: 'Asset redemption request updated',
+        body: 'Open the details to review the recorded status.',
+      },
+      INTEREST_PAYMENT_STATUS_CHANGED: {
+        title: 'Interest payment status updated',
+        body: 'Open the details to review the recorded status.',
+      },
+      SUPPORT_REQUEST_RECEIVED: {
+        title: 'Support request received',
+        body: 'Open the details to review the recorded status.',
+      },
+      SUPPORT_ASSIGNED: {
+        title: 'Support representative assigned',
+        body: 'Open the details to review the recorded status.',
+      },
+      KYC_APPROVING: {
+        title: 'Identity verification is being processed',
+        body: 'Open the details to review the recorded status.',
+      },
+    },
+    actionOnly: 'Needs action',
+    readFailed: 'Unable to mark as read. Please try again.',
   },
   noSignIn: {
     loginButton: 'Log In',
@@ -2067,6 +2803,98 @@ const en = {
       },
     },
   },
+  rentalPurposes: {
+    sectors: {
+      COMMERCIAL: 'Commerce and business',
+      HOSPITALITY: 'Hospitality and tourism',
+      RESIDENTIAL: 'Residential',
+      SERVICES: 'Services and community',
+      PRODUCTION: 'Light production',
+      OTHER: 'Other',
+    },
+    activities: {
+      RESTAURANT: 'Restaurant',
+      CAFE: 'Cafe and beverages',
+      RETAIL: 'Retail store',
+      SHOWROOM: 'Showroom',
+      MINIMART: 'Convenience store',
+      OFFICE: 'Office',
+      COWORKING: 'Coworking space',
+      SALON_SPA: 'Salon or spa',
+      TRAINING_CENTER: 'Training center',
+      CLINIC_PHARMACY: 'Clinic or pharmacy',
+      WAREHOUSE_LOGISTICS: 'Warehouse or logistics',
+      HOTEL: 'Hotel',
+      GUESTHOUSE: 'Guesthouse',
+      HOMESTAY: 'Homestay',
+      SERVICED_APARTMENT: 'Serviced apartment',
+      SHORT_STAY: 'Short-term accommodation',
+      FAMILY_HOME: 'Family residence',
+      INDIVIDUAL_HOME: 'Individual residence',
+      STAFF_HOUSING: 'Staff housing',
+      LONG_TERM_RESIDENCE: 'Long-term residence',
+      GYM: 'Gym',
+      STUDIO: 'Studio',
+      EVENT_SPACE: 'Event space',
+      COMMUNITY_CENTER: 'Community center',
+      CARE_SERVICE: 'Care service',
+      CLEAN_WORKSHOP: 'Clean workshop',
+      LIGHT_MANUFACTURING: 'Light manufacturing',
+      PACKAGING: 'Packaging',
+      OTHER: 'Other use',
+    },
+  },
+  myRentals: {
+    loadError: 'Unable to load rental contracts',
+    totalContracts: 'Rental contracts',
+    totalWallet: 'Total contract wallet',
+    monthlyCommitment: 'Monthly commitment',
+    needsAttention: '{{count}} contract needs attention',
+    depositProgress: 'Deposit progress',
+    fundDialogTitle: 'Fund contract wallet',
+    fundDialogDescription: 'Add VND for rent and deposit payments for {{asset}}.',
+    availableForRent: 'Contract wallet balance',
+    fundingAccount: 'Funding account',
+    accountAvailable: 'Available VND',
+    noFundingAccount: 'No live VND account',
+    noFundingAccountDescription: 'Create or activate a live VND account before funding.',
+    insufficientFundingBalance: 'The funding account does not have enough available VND.',
+    useMaximum: 'Use maximum',
+    walletAfterFunding: 'Wallet after funding',
+    minimumNeeded: 'Minimum needed',
+    suggestedAmount: 'Suggested amount',
+    autoDebitNote:
+      'The contract wallet is used automatically for deposit and monthly rent payments.',
+    fundError: 'Unable to fund the contract wallet. Please try again.',
+    loadErrorDescription: 'The server did not return your rental contracts. Please try again.',
+    title: 'Properties I rent',
+    description: 'Fund each VND contract wallet and review automatic monthly deductions.',
+    emptyTitle: 'No active rental contract',
+    emptyDescription: 'This section appears after shareholders approve your application.',
+    walletBalance: 'Wallet balance',
+    reserved: 'Reserved for claims',
+    monthlyRent: 'Monthly rent',
+    deposit: 'Funded deposit',
+    nextDue: 'Next due',
+    contractEnd: 'Contract end',
+    fundAmount: 'Add VND to contract wallet',
+    minimumRequired: 'Minimum {{amount}}',
+    fund: 'Fund',
+    fundSuccess: 'Contract wallet funded.',
+    walletHistory: 'Wallet history',
+    noHistory: 'No wallet transactions yet.',
+    status: {
+      PENDING_FUNDING: 'Pending funding',
+      ACTIVE: 'Active',
+      DELINQUENT: 'Payment overdue',
+      SUSPENDED: 'Suspended',
+    },
+    entryType: {
+      TOP_UP: 'Wallet top-up',
+      MONTHLY_RENT: 'Monthly rent deduction',
+      UNALLOCATED_REFUND: 'Unallocated amount returned',
+    },
+  },
   rentalListing: {
     backToMarket: 'Back to market',
     pageEyebrow: 'Rental property',
@@ -2087,8 +2915,26 @@ const en = {
     unavailableDescription:
       'New applications are currently closed. The status will update when the active lease ends.',
     notFound: 'Rental property not found',
+    voteEndsAt: 'Voting ends {{time}}',
+    durationMonths: 'Contract duration (months)',
+    proposedRent: 'Proposed monthly rent (VND)',
+    proposedDeposit: 'Proposed deposit (VND)',
+    purposeSector: 'Use sector',
+    purposeCode: 'Specific activity',
+    purposeDetails: 'Detailed use plan',
+    kycVerified: 'KYC verified',
+    kycNotVerified: 'KYC not verified',
+    approvedRent: 'Shareholder-approved rent',
+    approvedDeposit: 'Shareholder-approved deposit',
+    shareholderTermsTitle: 'Approved reference terms',
+    shareholderTermsHint:
+      'These values are prefilled as a reference. You may propose different terms for shareholders to vote on.',
+    applicationsClosedTitle: 'Rental applications are not open',
+    applicationsClosedDescription:
+      'Shareholders have not enabled applications or the authorization window has ended.',
   },
   assetManagement: {
+    actions: { pending: '{{count}} pending actions' },
     title: 'Asset Management',
     portfolioTitle: 'My properties',
     portfolioDesc: 'Track operations, cash flow, liquidity and governance for each property.',
@@ -2137,7 +2983,22 @@ const en = {
       },
     },
     rentalOperations: {
+      claimRent: 'Claim rental income',
+      paymentPeriod: 'Rental period',
+      periodTotal: 'Total paid',
+      yourShare: 'Your share',
+      awaitingPaymentExplanation:
+        'The tenant has not funded an income distribution yet. A claim button appears once a period is funded and you have an unclaimed entitlement.',
+      manageRentPayment: 'Manage rental payments',
+      contractWallet: 'Available rental wallet balance',
+      reservedForClaims: 'Reserved for shareholder distributions',
+      historyError: 'Unable to load rental payments.',
+      unclaimed: 'Unclaimed',
+      claimed: 'Claimed',
+      noEntitlement: 'No entitlement for this period',
       title: 'Rental operations',
+      expectedRent: 'Expected monthly rent (VND)',
+      expectedDeposit: 'Expected deposit (VND)',
       description: 'Lease information recorded for this property.',
       status: 'Lease status',
       tenant: 'Current tenant',
@@ -2174,6 +3035,9 @@ const en = {
       step3Text: 'This opens only after both parties confirm the terms and escrow is ready.',
       applicationStatuses: {
         PENDING: 'Waiting for operator review',
+        DRAFT: 'Draft',
+        PENDING_VOTE: 'Shareholder voting',
+        APPROVED_PENDING_FUNDING: 'Approved · awaiting funding',
         APPROVED: 'Approved',
         REJECTED: 'Not approved',
         CANCELLED: 'Cancelled',
@@ -2216,8 +3080,27 @@ const en = {
       incomeClaimable: 'Ready to claim',
       noIncomeForAccount: 'No allocation for this account',
       noIncomeHistory: 'No rental period has been funded yet.',
+
+      allocatedAmount: 'Allocated to shareholders',
+      allowedPurposes: 'Allowed use sectors',
+      daoDescription:
+        'Rental permission and tenant applications are decided by token-holder voting.',
+      enablementSubmitted: 'Rental proposal submitted.',
+      grossAmount: 'Total rent paid',
+      openEnablementVote: 'Propose rental opening',
+      period: 'Rental period',
+      privateVoteNotice:
+        'Only aggregate voting power is shown. Individual shareholder choices remain private.',
+      submitToDao: 'Submit proposal',
+      transactionDetails: 'Rental payment details',
+      voteNow: 'View and vote',
+      yourAmount: 'Your entitlement',
+      voters: '{{count}} voters',
     },
     governance: {
+      loadError: 'Unable to load proposals. Please retry.',
+      rentalProposal: 'Rental proposal',
+      alreadyVoted: 'Your vote has been recorded.',
       eligibilityTitle: 'Property buyout eligibility',
       eligibilityDescription:
         'Eligibility is calculated from token balances and continuous holding history in the database.',
@@ -2236,10 +3119,14 @@ const en = {
       title: 'Rental NFT (Green Assets)',
       desc: 'Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.',
       selectAsset: 'Select Asset',
-      depositAmount: 'Deposit Amount (VNDT)',
+      depositAmount: 'Deposit Amount (VND)',
       mintBtn: 'Mint Rental NFT',
     },
     buyout: {
+      paymentTitle: 'Buyout payments',
+      availableProceeds: 'Available buyout proceeds',
+      claimExplanation:
+        'The acquirer has funded these payments. Claim to credit your available balance.',
       title: 'Asset buyout',
       desc: 'Freeze the base price and open a protected 7-day minority vote.',
       selectAsset: 'Select Asset to Buyout',
@@ -2291,6 +3178,10 @@ const en = {
       confirmDescription: 'This action is authorized only after a valid MFA challenge.',
       mfaPlaceholder: 'Enter 6-digit code',
       confirming: 'Confirming...',
+
+      periodNumber: 'Period {{count}}',
+      pendingPeriods: 'View {{count}} unclaimed periods',
+      claimedHistory: 'Claimed payment history ({{count}} periods)',
     },
     voting: {
       title: 'Buyout Proposal',
@@ -2311,6 +3202,8 @@ const en = {
       nextDeduction: 'Next deduction in {{days}} days',
       expectedApy: 'Expected APY',
       noActiveRenter: 'No active renter',
+
+      lessThanMonth: 'Less than a month',
     },
     buyoutConfig: {
       title: 'Ownership Configuration',
@@ -2540,7 +3433,156 @@ const en = {
       CANCELLED: 'Cancelled',
       FAILED: 'Failed',
       DRAFT: 'Draft',
+
+      INITIAL: 'Not activated',
+      FUNDING: 'Awaiting funding',
+      DEFAULTED: 'Payment default',
+      PENDING_FUNDING: 'Awaiting rent payment',
+      DELINQUENT: 'Rent overdue',
+      SUSPENDED: 'Suspended',
+      RENTED: 'Leased',
+      OPEN: 'Open',
+      LOCKED: 'Locked',
+      VOTING: 'Voting in progress',
+      EXPIRED: 'Expired',
     },
+
+    processing: 'Processing…',
+    terms: {
+      monthlyRentVnd: 'Proposed monthly rent (VND)',
+      depositVnd: 'Proposed deposit (VND)',
+      maintenanceBudgetVnd: 'Maintenance budget (VND)',
+      operatorName: 'New operator',
+      operatorContact: 'Operator contact',
+      salePriceVnd: 'Proposed sale price (VND)',
+      salePlan: 'Sale and distribution plan',
+      nextRentalOnly:
+        'Approved asking terms apply to new rentals. Existing contracts keep their agreed rent and deposit.',
+      approvedRentalTerms: 'Approved asking terms',
+      openingVoteInProgress: 'A rental authorization vote is already in progress.',
+      invalid: 'Please complete the terms for this proposal type.',
+    },
+  },
+
+  verification: {
+    secureIdentity: 'IDENTITY & SECURITY',
+    title: 'Identity verification',
+    introTitle: 'Verify once. Manage your assets with confidence.',
+    introDescription:
+      'Prepare your original identity document and review every detail before sending your application.',
+    prepareDocument:
+      'A valid national ID or passport. Photograph the entire document, without glare or cropping.',
+    prepareFace: 'A recent portrait taken in good lighting, without a mask, filters or sunglasses.',
+    prepareDetails: 'Your legal name, document details, contact number, addresses and occupation.',
+    privacy:
+      'Only provide your own documents. Your application is reviewed before verification is approved. Do not upload another person’s information.',
+    documents: 'Documents',
+    information: 'Your details',
+    portrait: 'Portrait photo',
+    review: 'Review',
+    documentType: 'Document type',
+    idCard: 'National identity card',
+    passport: 'Passport',
+    ID_CARD: 'National identity card',
+    PASSPORT: 'Passport',
+    idFrontImg: 'Document photo / front side',
+    idBackImg: 'Back side of identity card',
+    selfieImg: 'Take or choose a portrait',
+    fileHint: 'JPG, PNG or WEBP · up to 10 MB',
+    fileError: 'Choose a JPG, PNG or WEBP image smaller than 10 MB.',
+    documentHint:
+      'Keep every edge visible. Details must be readable and match the information entered in the next step.',
+    fullName: 'Full legal name',
+    dob: 'Date of birth',
+    idNumber: 'Document number',
+    sex: 'Sex shown on document',
+    select: 'Select an option',
+    MALE: 'Male',
+    FEMALE: 'Female',
+    OTHER: 'Other',
+    nationality: 'Nationality',
+    phone: 'Contact phone (e.g. +84912345678)',
+    issueDate: 'Date of issue',
+    expiryDate: 'Date of expiry',
+    noExpiry: 'Document has no expiry date',
+    issuingAuthority: 'Issuing authority',
+    occupation: 'Occupation',
+    permanentAddress: 'Permanent address',
+    residentialAddress: 'Current residential address',
+    countryOfResidence: 'Country of residence',
+    portraitHint:
+      'Face the camera directly. Keep your face fully visible and use an unedited recent photo.',
+    manualReview:
+      'This photo supports manual identity review. It is not an NFC chip scan or a certified liveness check.',
+    reviewTitle: 'Review before submitting',
+    consent:
+      'I confirm this information and these documents are mine and accurate. I agree to their processing for identity verification.',
+    processing: 'Processing…',
+    submit: 'Submit for review',
+    start: 'Start verification',
+    submitted: 'Your verification application has been received.',
+    submittedTitle: 'Application submitted',
+    approvedTitle: 'Identity verified',
+    approvedDescription: 'Your identity verification has been approved.',
+    pendingTitle: 'Application under review',
+    pendingDescription:
+      'Your documents have been received. You can return later to check the review status.',
+    refresh: 'Refresh status',
+    rejected: 'Application needs correction',
+    ocrUnavailable:
+      'Automatic extraction is unavailable. Please enter the details directly from your document.',
+    submitError: 'The application could not be submitted. Please check your details and try again.',
+    dateError: 'Check the date of birth and document issue/expiry dates.',
+    loadError: 'Unable to load verification status. Please try again.',
+
+    renew: 'Renew identity documents',
+    renewalHint: 'Your document is expiring or expired. Expiry date:',
+
+    completeLegacyProfile:
+      'This legacy profile has no document expiry information. Update it to receive accurate renewal reminders.',
+  },
+  notificationSettings: {
+    title: 'Notification preferences',
+    governance: 'Voting emails',
+    description: 'Receive new proposal and voting result emails for assets you can vote on.',
+    recipient: 'Send to',
+    missingSmtp:
+      'Email delivery is not configured on the server yet. Your preference will still be saved.',
+    saved: 'Preference saved',
+    saveError: 'Unable to save your preference. Please try again.',
+    language: 'Email language',
+    groupHint:
+      'Choose in-app, email and push notifications for each group. Changes apply to new events.',
+    group: 'Group',
+    inApp: 'In app',
+    email: 'Email',
+
+    followedPosts: 'New posts from followed authors',
+
+    devicePush: 'Notifications on this device',
+    pushHint:
+      'Enable this device, then choose Push for the groups you want. Message details remain inside the app.',
+    pushUnavailable:
+      'Push requires a supported browser, HTTPS and server configuration. On iPhone, open the installed app from the Home Screen.',
+    pushError: 'Could not update push notifications. Check browser permissions and try again.',
+    disableDevice: 'Disable on this device',
+    enableDevice: 'Enable on this device',
+    priceAlerts: 'Price alerts',
+    priceHint:
+      'Choose a recorded price threshold. Each alert fires once and then stops; you can arm it again. Maximum 20 active alerts.',
+    asset: 'Asset',
+    chooseAsset: 'Choose an asset',
+    condition: 'Condition',
+    above: 'At or above',
+    below: 'At or below',
+    threshold: 'Threshold (VND)',
+    addAlert: 'Create alert',
+    alertError:
+      'Could not update alerts. Check the threshold and active alert limit, then try again.',
+    armed: 'Armed',
+    triggered: 'Triggered',
+    rearm: 'Arm again',
+    push: 'Push',
   },
 };
 export default en;

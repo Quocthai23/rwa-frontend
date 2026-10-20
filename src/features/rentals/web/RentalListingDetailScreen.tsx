@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from '@untitledui/icons';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/shared/atoms/button';
+import { Input } from '@/components/shared/atoms/input';
 import { Skeleton } from '@/components/shared/atoms/skeleton';
 import {
   useAssetStatus,
@@ -39,22 +40,83 @@ const formatVnd = (value?: string | number | null) => {
     : null;
 };
 
+const PURPOSE_OPTIONS: Record<string, string[]> = {
+  COMMERCIAL: [
+    'RESTAURANT',
+    'CAFE',
+    'RETAIL',
+    'SHOWROOM',
+    'MINIMART',
+    'OFFICE',
+    'COWORKING',
+    'SALON_SPA',
+    'TRAINING_CENTER',
+    'CLINIC_PHARMACY',
+    'WAREHOUSE_LOGISTICS',
+  ],
+  HOSPITALITY: ['HOTEL', 'GUESTHOUSE', 'HOMESTAY', 'SERVICED_APARTMENT', 'SHORT_STAY'],
+  RESIDENTIAL: ['FAMILY_HOME', 'INDIVIDUAL_HOME', 'STAFF_HOUSING', 'LONG_TERM_RESIDENCE'],
+  SERVICES: ['GYM', 'STUDIO', 'EVENT_SPACE', 'COMMUNITY_CENTER', 'CARE_SERVICE'],
+  PRODUCTION: ['CLEAN_WORKSHOP', 'LIGHT_MANUFACTURING', 'PACKAGING'],
+  OTHER: ['OTHER'],
+};
+
 export default function RentalListingDetailScreen({ assetId }: { assetId: string }) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const currentUser = useAuthStore((state) => state.user);
   const { data: assets = [], isLoading: isLoadingAsset } = useActiveAssets();
-  const asset = assets.find((item) => item.id === assetId);
-  const { data: status, isLoading: isLoadingStatus } = useAssetStatus(assetId);
-  const applicationQuery = useMyRentalApplication(assetId, Boolean(currentUser));
-  const submitApplication = useSubmitRentalApplication(assetId);
+  const asset = useMemo(() => {
+    const normalizedRef = decodeURIComponent(assetId).replaceAll('/', '').trim().toUpperCase();
+    return assets.find(
+      (item) => item.id === assetId || item.symbol.replaceAll('/', '').trim().toUpperCase() === normalizedRef,
+    );
+  }, [assetId, assets]);
+  const resolvedAssetId = asset?.id ?? '';
+  const { data: status, isLoading: isLoadingStatus } = useAssetStatus(resolvedAssetId);
+  const applicationQuery = useMyRentalApplication(resolvedAssetId, Boolean(currentUser && resolvedAssetId));
+  const submitApplication = useSubmitRentalApplication(resolvedAssetId);
   const [message, setMessage] = useState('');
   const [desiredStartDate, setDesiredStartDate] = useState('');
+  const [durationMonths, setDurationMonths] = useState('12');
+  const [proposedRentVnd, setProposedRentVnd] = useState('');
+  const [proposedDepositVnd, setProposedDepositVnd] = useState('');
+  const [purposeSector, setPurposeSector] = useState('RESIDENTIAL');
+  const [purposeCode, setPurposeCode] = useState('FAMILY_HOME');
+  const [purposeDetails, setPurposeDetails] = useState('');
   const [minimumStartDate] = useState(() =>
     new Date(Date.now() + 86400000).toISOString().slice(0, 10),
   );
 
-  if (isLoadingAsset || isLoadingStatus) {
+  const eligibility = applicationQuery.data?.eligibility;
+  const allowedSectors = useMemo(() => {
+    const approved = eligibility?.allowedPurposeSectors?.filter(
+      (sector) => Boolean(PURPOSE_OPTIONS[sector]),
+    );
+    return approved?.length ? approved : Object.keys(PURPOSE_OPTIONS);
+  }, [eligibility?.allowedPurposeSectors]);
+
+  useEffect(() => {
+    if (!asset || asset.id === assetId) return;
+    router.replace(`/rentals/${encodeURIComponent(asset.symbol)}`);
+  }, [asset, assetId, router]);
+
+  useEffect(() => {
+    if (!eligibility) return;
+    if (!proposedRentVnd && eligibility.expectedMonthlyRentVnd) {
+      setProposedRentVnd(String(eligibility.expectedMonthlyRentVnd));
+    }
+    if (!proposedDepositVnd && eligibility.expectedDepositVnd) {
+      setProposedDepositVnd(String(eligibility.expectedDepositVnd));
+    }
+    if (!allowedSectors.includes(purposeSector)) {
+      const nextSector = allowedSectors[0] ?? 'OTHER';
+      setPurposeSector(nextSector);
+      setPurposeCode(PURPOSE_OPTIONS[nextSector]?.[0] ?? 'OTHER');
+    }
+  }, [allowedSectors, eligibility, proposedDepositVnd, proposedRentVnd, purposeSector]);
+
+  if (isLoadingAsset || (Boolean(asset) && isLoadingStatus)) {
     return (
       <div className="mx-auto w-full max-w-[1440px] space-y-5 px-5 py-6 lg:px-8">
         <Skeleton className="h-8 w-56" />
@@ -84,11 +146,15 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
   const isRented = rental?.status === 'ACTIVE' || asset.rentalSummary?.status === 'RENTED';
   const application = applicationQuery.data?.application;
   const canApply = !isRented && applicationQuery.data?.available !== false;
-  const galleries = parseStringList(asset.gallery);
-  const imageUrl =
-    asset.images?.find((image) => image.isPrimary)?.url ?? asset.images?.[0]?.url ?? galleries[0];
   const amenities = parseStringList(asset.amenities);
-  const monthlyRent = formatVnd(rental?.monthlyRentVnd ?? asset.rentalSummary?.monthlyRentVnd);
+  const monthlyRent = formatVnd(
+    rental?.monthlyRentVnd ??
+      eligibility?.expectedMonthlyRentVnd ??
+      asset.rentalSummary?.expectedMonthlyRentVnd,
+  );
+  const expectedDeposit = formatVnd(
+    rental?.depositVnd ?? eligibility?.expectedDepositVnd ?? asset.rentalSummary?.expectedDepositVnd,
+  );
   const locale = i18n.language.startsWith('vi') ? 'vi-VN' : 'en-US';
 
   const submit = (event: React.FormEvent) => {
@@ -99,12 +165,19 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
         desiredStartDate: desiredStartDate
           ? new Date(`${desiredStartDate}T00:00:00`).toISOString()
           : undefined,
+        durationMonths: Number(durationMonths),
+        proposedRentVnd,
+        proposedDepositVnd,
+        purposeSector,
+        purposeCode,
+        purposeDetails: purposeDetails.trim() || undefined,
       },
       {
         onSuccess: () => {
           toast.success(t('assetManagement.rentalOperations.submitSuccess'));
           setMessage('');
           setDesiredStartDate('');
+          setPurposeDetails('');
         },
         onError: (error) =>
           toast.error(localizeApiError(error, t, 'assetManagement.rentalOperations.submitError')),
@@ -124,39 +197,35 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
           {t('rentalListing.backToMarket')}
         </button>
 
-        <section className="border-border overflow-hidden border">
-          <div className="grid min-h-64 md:grid-cols-[42%_1fr]">
-            <div className="bg-muted relative min-h-56 overflow-hidden">
-              {imageUrl ? (
-                // Asset media URLs are managed by the backend and may use tenant-specific hosts.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imageUrl} alt={asset.name} className="h-full w-full object-cover" />
-              ) : (
-                <div className="text-muted-foreground flex h-full min-h-56 items-center justify-center text-2xl font-semibold">
-                  {asset.symbol}
+        <section className="border-border relative overflow-hidden border bg-card">
+          <div className="bg-primary-500 absolute inset-y-0 left-0 w-1" />
+          <div className="px-6 py-7 sm:px-8">
+            <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
+              <div className="min-w-0">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span className="border-border bg-muted/40 text-foreground border px-2 py-1 font-mono text-xs font-semibold tracking-wide">
+                    {asset.symbol}
+                  </span>
+                  <span
+                    className={
+                      isRented
+                        ? 'bg-muted text-muted-foreground px-2 py-1 text-xs font-medium'
+                        : 'bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400'
+                    }
+                  >
+                    {t(isRented ? 'rentalListing.rented' : 'rentalListing.available')}
+                  </span>
                 </div>
-              )}
-            </div>
-            <div className="flex flex-col justify-center p-5 sm:p-7">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-                  {t('rentalListing.pageEyebrow')}
-                </span>
-                <span
-                  className={
-                    isRented
-                      ? 'bg-muted text-muted-foreground rounded px-2 py-1 text-xs font-medium'
-                      : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded px-2 py-1 text-xs font-medium'
-                  }
-                >
-                  {t(isRented ? 'rentalListing.rented' : 'rentalListing.available')}
-                </span>
+                <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
+                  {asset.name}
+                </h1>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  {asset.location || t('trade.info.locationNotSpecified')}
+                </p>
               </div>
-              <h1 className="text-foreground text-2xl font-semibold sm:text-3xl">{asset.name}</h1>
-              <p className="text-muted-foreground mt-2 text-sm">
-                {asset.symbol} · {asset.location || t('trade.info.locationNotSpecified')}
-              </p>
-              <div className="border-border mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-5 sm:grid-cols-4">
+              <div className="border-border grid shrink-0 grid-cols-2 border lg:min-w-[460px]">
+                <Metric label={t('rentalListing.approvedRent')} value={monthlyRent || '—'} />
+                <Metric label={t('rentalListing.approvedDeposit')} value={expectedDeposit || '—'} />
                 <Metric
                   label={t('trade.info.propertyType')}
                   value={asset.propertyType || t('common.notAvailable')}
@@ -164,18 +233,6 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
                 <Metric
                   label={t('trade.info.totalArea')}
                   value={asset.totalArea ? `${asset.totalArea.toLocaleString(locale)} m²` : '—'}
-                />
-                <Metric
-                  label={t('assetManagement.rentalOperations.monthlyRentVnd')}
-                  value={monthlyRent || t('rentalListing.rentNotPublished')}
-                />
-                <Metric
-                  label={t('trade.info.expectedYield')}
-                  value={
-                    asset.expectedApy
-                      ? `${Number(asset.expectedApy).toLocaleString(locale)}% / ${t('rentalListing.year')}`
-                      : '—'
-                  }
                 />
               </div>
             </div>
@@ -263,7 +320,15 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
                 </div>
               ) : applicationQuery.isLoading ? (
                 <Skeleton className="h-44 w-full" />
-              ) : application && ['PENDING', 'APPROVED'].includes(application.status) ? (
+              ) : applicationQuery.data?.available === false ? (
+                <EmptyApplication
+                  title={t('rentalListing.applicationsClosedTitle')}
+                  description={t('rentalListing.applicationsClosedDescription')}
+                />
+              ) : application &&
+                ['PENDING', 'PENDING_VOTE', 'APPROVED_PENDING_FUNDING', 'APPROVED'].includes(
+                  application.status,
+                ) ? (
                 <div>
                   <p className="text-muted-foreground text-xs">
                     {t('assetManagement.rentalOperations.yourApplication')}
@@ -276,6 +341,14 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
                       time: new Date(application.createdAt).toLocaleString(locale),
                     })}
                   </p>
+                  {application.votingEndsAt ? (
+                    <p className="text-muted-foreground mt-2 text-xs">
+                      {t('rentalListing.voteEndsAt', {
+                        time: new Date(application.votingEndsAt).toLocaleString(locale),
+                        defaultValue: 'Voting ends {{time}}',
+                      })}
+                    </p>
+                  ) : null}
                 </div>
               ) : (
                 <form onSubmit={submit} className="space-y-4">
@@ -289,16 +362,142 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
                   <p className="text-muted-foreground text-xs leading-5">
                     {t('assetManagement.rentalOperations.noTokenRequired')}
                   </p>
+                  <div className="border-primary-500/25 bg-primary-500/5 border p-3">
+                    <p className="text-foreground text-xs font-semibold">
+                      {t('rentalListing.shareholderTermsTitle')}
+                    </p>
+                    <div className="mt-2 grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-muted-foreground text-[11px]">
+                          {t('rentalListing.approvedRent')}
+                        </p>
+                        <p className="text-foreground mt-0.5 text-sm font-semibold tabular-nums">
+                          {monthlyRent || ''}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-[11px]">
+                          {t('rentalListing.approvedDeposit')}
+                        </p>
+                        <p className="text-foreground mt-0.5 text-sm font-semibold tabular-nums">
+                          {expectedDeposit || ''}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground mt-2 text-[11px] leading-4">
+                      {t('rentalListing.shareholderTermsHint')}
+                    </p>
+                  </div>
                   <label className="block">
                     <span className="text-muted-foreground mb-1.5 block text-xs">
                       {t('assetManagement.rentalOperations.desiredStartDate')}
                     </span>
                     <input
+                      required
                       type="date"
                       value={desiredStartDate}
                       min={minimumStartDate}
                       onChange={(event) => setDesiredStartDate(event.target.value)}
                       className="border-border bg-background text-foreground h-10 w-full rounded border px-3 text-sm"
+                    />
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="text-muted-foreground mb-1.5 block text-xs">
+                        {t('rentalListing.durationMonths', {
+                          defaultValue: 'Contract duration (months)',
+                        })}
+                      </span>
+                      <Input
+                        required
+                        type="number"
+                        min="1"
+                        max="120"
+                        value={durationMonths}
+                        onChange={(event) => setDurationMonths(event.target.value)}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-muted-foreground mb-1.5 block text-xs">
+                        {t('rentalListing.proposedRent', {
+                          defaultValue: 'Proposed monthly rent (VND)',
+                        })}
+                      </span>
+                      <Input
+                        required
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={proposedRentVnd}
+                        onChange={(event) => setProposedRentVnd(event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <label className="block">
+                    <span className="text-muted-foreground mb-1.5 block text-xs">
+                      {t('rentalListing.proposedDeposit', {
+                        defaultValue: 'Proposed deposit (VND)',
+                      })}
+                    </span>
+                    <Input
+                      required
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={proposedDepositVnd}
+                      onChange={(event) => setProposedDepositVnd(event.target.value)}
+                    />
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="text-muted-foreground mb-1.5 block text-xs">
+                        {t('rentalListing.purposeSector', { defaultValue: 'Use sector' })}
+                      </span>
+                      <select
+                        value={purposeSector}
+                        onChange={(event) => {
+                          const sector = event.target.value;
+                          setPurposeSector(sector);
+                          setPurposeCode(PURPOSE_OPTIONS[sector]?.[0] ?? 'OTHER');
+                        }}
+                        className="border-border bg-background text-foreground h-10 w-full rounded border px-3 text-sm"
+                      >
+                        {allowedSectors.map((sector) => (
+                          <option key={sector} value={sector}>
+                            {t(`rentalPurposes.sectors.${sector}`, { defaultValue: sector })}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-muted-foreground mb-1.5 block text-xs">
+                        {t('rentalListing.purposeCode', { defaultValue: 'Specific activity' })}
+                      </span>
+                      <select
+                        value={purposeCode}
+                        onChange={(event) => setPurposeCode(event.target.value)}
+                        className="border-border bg-background text-foreground h-10 w-full rounded border px-3 text-sm"
+                      >
+                        {(PURPOSE_OPTIONS[purposeSector] ?? []).map((purpose) => (
+                          <option key={purpose} value={purpose}>
+                            {t(`rentalPurposes.activities.${purpose}`, { defaultValue: purpose })}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <label className="block">
+                    <span className="text-muted-foreground mb-1.5 block text-xs">
+                      {t('rentalListing.purposeDetails', {
+                        defaultValue: 'Detailed use plan',
+                      })}
+                    </span>
+                    <textarea
+                      value={purposeDetails}
+                      onChange={(event) => setPurposeDetails(event.target.value)}
+                      maxLength={2000}
+                      rows={3}
+                      className="border-border bg-background text-foreground focus:border-primary-500 w-full rounded border p-3 text-sm outline-none"
                     />
                   </label>
                   <label className="block">
@@ -349,9 +548,9 @@ export default function RentalListingDetailScreen({ assetId }: { assetId: string
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0">
+    <div className="border-border min-w-0 border-b p-4 odd:border-r last:border-b-0 [&:nth-last-child(2)]:border-b-0">
       <p className="text-muted-foreground text-xs">{label}</p>
-      <p className="text-foreground mt-1 truncate text-sm font-semibold">{value}</p>
+      <p className="text-foreground mt-1 text-sm font-semibold tabular-nums">{value}</p>
     </div>
   );
 }

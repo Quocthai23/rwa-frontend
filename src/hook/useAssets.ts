@@ -14,6 +14,7 @@ import {
 } from '../services/assetsService';
 import type { Category } from '../types';
 import { useGetData } from '@/context/GetdataContext';
+import { useAuthStore } from '@/store/authStore';
 
 /**
  * Fetch all assets
@@ -33,6 +34,7 @@ export const useAssets = () => {
  * Fetch only active assets
  */
 export const useActiveAssets = () => {
+  const userId = useAuthStore((s) => s.user?.id);
   return useQuery({
     gcTime: CACHE_TIMES.TRENDING * 2,
     queryFn: async () => {
@@ -40,7 +42,7 @@ export const useActiveAssets = () => {
 
       return result;
     },
-    queryKey: ['assets', 'active'],
+    queryKey: ['assets', 'active', userId ?? 'guest'],
     retry: 0,
     staleTime: CACHE_TIMES.TRENDING,
   });

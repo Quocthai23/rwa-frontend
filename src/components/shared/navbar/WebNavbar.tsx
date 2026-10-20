@@ -2,7 +2,6 @@
 
 import {
   Bell01,
-  Gift01,
   Settings01,
   BarChartSquare01,
   SwitchVertical01,
@@ -10,18 +9,13 @@ import {
   Compass03,
   User01,
   Announcement01,
-  UsersPlus,
-  UploadCloud02,
 } from '@untitledui/icons';
-import { useAssetDeploymentStore } from '@/store/useAssetDeploymentStore';
-import { useKycStore } from '@/store/useKycStore';
-import { useToast } from '@/hook/useToast';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import NotificationWebScreen from '@/components/featured/notification/web/NotificationWebScreen';
 import SettingWebScreen from '@/components/featured/settings/web/SettingWebScreen';
-import { useUnreadNotificationCount, useReadAllNotifications } from '@/hook/useNotifications';
+import { useUnreadNotificationCount } from '@/hook/useNotifications';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/shared/atoms/button';
 import { Sheet, SheetContent } from '@/components/shared/atoms/web/sheet';
@@ -47,9 +41,6 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
   const [isNotificationSheetOpen, setNotificationSheetOpen] = useState(false);
   const [isSettingsSheetOpen, setSettingsSheetOpen] = useState(false);
   const unreadCountQuery = useUnreadNotificationCount();
-  const readAllMutation = useReadAllNotifications();
-  const { data: unreadCountData } = unreadCountQuery;
-  const { showError } = useToast();
   const unreadCount = unreadCountQuery.data ?? 0;
   const navTop = withHeader ? 72 : 0;
   const me = useAuthStore((state) => state.user);
@@ -178,33 +169,6 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
                   </Button>
                 );
               })}
-
-              <div className="border-border w-full border-t pt-1 2xl:pt-2" />
-              <Button
-                type="button"
-                variant="white-contained"
-                onClick={() => {
-                  const user = useAuthStore.getState().user;
-                  if (user?.kycStatus !== 'APPROVED') {
-                    showError(t('common.error'), t('kyc.required', 'KYC verification is required to deploy assets.'));
-                    useKycStore.getState().open();
-                    return;
-                  }
-                  useAssetDeploymentStore.getState().open();
-                }}
-                className={cn(
-                  'text-body-small-medium flex w-full cursor-pointer flex-col items-center rounded-md !bg-transparent px-1 py-1 transition-colors hover:bg-neutral-100 2xl:py-2 dark:hover:bg-neutral-800/70',
-                )}
-              >
-                <div className="flex origin-center scale-[0.75] flex-col items-center gap-1 transition-transform duration-300 2xl:scale-100 2xl:gap-1.5">
-                  <div className="relative h-6 w-6">
-                    <UploadCloud02 className="text-muted-foreground hover:text-primary-500 size-6" />
-                  </div>
-                  <span className="text-muted-foreground text-body-small-medium text-center leading-tight">
-                    {t('nav.deploy', 'Deploy')}
-                  </span>
-                </div>
-              </Button>
             </div>
 
             <div className="text-muted-foreground flex w-full flex-col items-center gap-1">
@@ -215,7 +179,6 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
                   className="rounded p-1 text-xl transition-colors hover:bg-neutral-100 2xl:p-2 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
                   onClick={() => {
                     setNotificationSheetOpen(true);
-                    readAllMutation.mutate();
                   }}
                 >
                   <div className="relative origin-center scale-[0.8] transition-transform duration-300 2xl:scale-100">
@@ -253,4 +216,3 @@ export default function WebNavbar({ withHeader = true }: WebNavbarProps) {
     </>
   );
 }
-

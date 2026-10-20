@@ -1,4 +1,4 @@
-﻿const ru = {
+const ru = {
   common: {
     search: 'ĐŸĐ¾Đ¸ÑĐº',
     all: 'Đ’ÑĐµ',
@@ -59,7 +59,24 @@
     save: 'Đ¡Đ¾Ñ…Ñ€Đ°Đ½Đ¸Ñ‚ÑŒ',
     share: 'Share',
     noData: 'ĐĐµÑ‚ Đ´Đ°Đ½Đ½Ñ‹Ñ…',
-  },
+  
+
+  "back": "Назад",
+  "description": "Описание",
+  "loadMore": "Загрузить ещё",
+  "loading": "Загрузка…",
+  "unknown": "Неизвестно",
+  "viewDetails": "Подробнее",
+  "processing": "Обработка…",
+  "dayUnit": "дней",
+  "monthUnit": "месяцев",
+  "retry": "ĐŸĐ¾Đ²Ñ‚Đ¾Ñ€Đ¸Ñ‚ÑŒ Đ¿Đ¾Đ¿Ñ‹Ñ‚ĐºÑƒ"
+,
+
+
+  "next": "Продолжить"
+,
+},
   search: {
     marketWatch: 'ĐĐ±Đ·Đ¾Ñ€ Ñ€Ñ‹Đ½ĐºĐ°',
     placeholder: 'ĐŸĐ¾Đ¸ÑĐº',
@@ -218,14 +235,14 @@
     copySuccessMessage: 'ĐĐ´Ñ€ĐµÑ ÑƒÑĐ¿ĐµÑˆĐ½Đ¾ ÑĐºĐ¾Đ¿Đ¸Ñ€Đ¾Đ²Đ°Đ½ Đ² Đ±ÑƒÑ„ĐµÑ€ Đ¾Đ±Đ¼ĐµĐ½Đ°.',
     shareSuccessTitle: 'ĐŸĐ¾Đ´ĐµĐ»Đ¸Ñ‚ÑŒÑÑ ÑƒÑĐ¿ĐµÑˆĐ½Ñ‹Đ¼',
     shareSuccessMessage: 'ĐĐ´Ñ€ĐµÑ ÑƒÑĐ¿ĐµÑˆĐ½Đ¾ Đ¿Ñ€ĐµĐ´Đ¾ÑÑ‚Đ°Đ²Đ»ĐµĐ½.',
-    sendOnlyPrefix: 'ĐÑ‚Đ¿Ñ€Đ°Đ²Đ»ÑĐ¹Ñ‚Đµ Ñ‚Đ¾Đ»ÑŒĐºĐ¾ VNDT Ñ‡ĐµÑ€ĐµĐ·',
+    sendOnlyPrefix: 'ĐÑ‚Đ¿Ñ€Đ°Đ²Đ»ÑĐ¹Ñ‚Đµ Ñ‚Đ¾Đ»ÑŒĐºĐ¾ VND Ñ‡ĐµÑ€ĐµĐ·',
     networkSuffix: 'ÑĐµÑ‚ÑŒ',
     fundsWarning: 'ĐĐµĐ¿Ñ€Đ°Đ²Đ¸Đ»ÑŒĐ½Đ¾ Đ¾Ñ‚Đ¿Ñ€Đ°Đ²Đ»ĐµĐ½Đ½Ñ‹Đµ ÑÑ€ĐµĐ´ÑÑ‚Đ²Đ° Đ½Đµ Đ¿Đ¾Đ´Đ»ĐµĐ¶Đ°Ñ‚ Đ²Đ¾Đ·Đ²Ñ€Đ°Ñ‚Ñƒ.',
     copyAddress: 'ĐĐ¾Đ¿Đ¸Ñ€Đ¾Đ²Đ°Ñ‚ÑŒ Đ°Đ´Ñ€ĐµÑ',
     share: 'Đ”ĐµĐ»Đ¸Ñ‚ÑŒÑÑ',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'ĐĐ°Ñ€Ñ‚Đ°',
       instantTime15Min: 'ĐœĐ³Đ½Đ¾Đ²ĐµĐ½Đ½Đ¾ - 15 Đ¼Đ¸Đ½ÑƒÑ‚',
       instantTime2Min: 'ĐœĐ³Đ½Đ¾Đ²ĐµĐ½Đ½Đ¾ - 2 Đ¼Đ¸Đ½ÑƒÑ‚Ñ‹',
@@ -295,9 +312,9 @@
   withdraw: {
     common: {
       usd: 'Đ´Đ¾Đ»Đ»Đ°Ñ€ Đ¡Đ¨Đ',
-      VNDT: 'VNDT',
+      VND: 'VND',
       amountWithUsd: '{{amount}} Đ´Đ¾Đ»Đ»Đ°Ñ€Đ¾Đ² Đ¡Đ¨Đ',
-      amountWithVNDT: '{{amount}} Đ´Đ¾Đ»Đ»Đ°Ñ€ Đ¡Đ¨Đ',
+      amountWithVND: '{{amount}} Đ´Đ¾Đ»Đ»Đ°Ñ€ Đ¡Đ¨Đ',
       networkFee: 'Đ¡ĐµÑ‚ĐµĐ²Đ°Ñ Đ¿Đ»Đ°Ñ‚Đ°',
       amountReceived: 'ĐŸĐ¾Đ»ÑƒÑ‡ĐµĐ½Đ½Đ°Ñ ÑÑƒĐ¼Đ¼Đ°',
       processing: 'ĐĐ±Ñ€Đ°Đ±Đ¾Ñ‚ĐºĐ°...',
@@ -307,9 +324,9 @@
     method: {
       demoAccountError:
         'Đ”ĐµĐ¼Đ¾-ÑÑ‡ĐµÑ‚Đ° Đ½Đµ Đ¿Đ¾Đ·Đ²Đ¾Đ»ÑÑÑ‚ Đ¾ÑÑƒÑ‰ĐµÑÑ‚Đ²Đ»ÑÑ‚ÑŒ Đ²Ñ‹Đ²Đ¾Đ´ ÑÑ€ĐµĐ´ÑÑ‚Đ². ĐŸĐ¾Đ¶Đ°Đ»ÑƒĐ¹ÑÑ‚Đ°, ÑĐ½Đ°Ñ‡Đ°Đ»Đ° Đ¿Đ¾Đ¿Đ¾Đ»Đ½Đ¸Ñ‚Đµ ÑĐ²Đ¾Đ¹ ÑÑ‡ĐµÑ‚.',
-      VNDTErc20Alt: 'VNDT ERC20',
-      VNDTBep20Alt: 'VNDT BEP20',
-      VNDT: 'Tether (VNDT)',
+      VNDErc20Alt: 'VND ERC20',
+      VNDBep20Alt: 'VND BEP20',
+      VND: 'Tether (VND)',
       instantTime15Min: 'ĐœĐ³Đ½Đ¾Đ²ĐµĐ½Đ½Đ¾ - 15 Đ¼Đ¸Đ½ÑƒÑ‚',
       limit: 'VNĐ10 - VNĐ200,000',
       selectMethod: 'Đ’Ñ‹Đ±ĐµÑ€Đ¸Ñ‚Đµ ÑĐµÑ‚ÑŒ Đ¸ Ñ‚Đ¾ĐºĐµĐ½ Đ´Đ»Ñ Đ¿Ñ€Đ¾Đ´Đ¾Đ»Đ¶ĐµĐ½Đ¸Ñ Đ²Ñ‹Đ²Đ¾Đ´Đ°',
@@ -317,10 +334,10 @@
       limitLabel: 'Đ›Đ¸Đ¼Đ¸Ñ‚',
     },
     detail: {
-      walletVNDTAddress: 'ĐĐ´Ñ€ĐµÑ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ° VNDT',
-      walletAddressHelpAria: 'Đ§Ñ‚Đ¾ Ñ‚Đ°ĐºĐ¾Đµ Đ°Đ´Ñ€ĐµÑ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ° VNDT?',
+      walletVNDAddress: 'ĐĐ´Ñ€ĐµÑ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ° VND',
+      walletAddressHelpAria: 'Đ§Ñ‚Đ¾ Ñ‚Đ°ĐºĐ¾Đµ Đ°Đ´Ñ€ĐµÑ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ° VND?',
       walletAddressHelpDescription:
-        'ÑÑĐ´Đ° Đ¼Ñ‹ Đ¾Ñ‚Đ¿Ñ€Đ°Đ²Đ»ÑĐµĐ¼ Đ²Đ°Ñˆ VNDT Đ¿Đ¾ Ñ†ĐµĐ¿Đ¾Ñ‡ĐºĐµ (Đ½Đ°Đ¿Ñ€Đ¸Đ¼ĐµÑ€, TRC20). Đ˜ÑĐ¿Đ¾Đ»ÑŒĐ·ÑƒĐ¹Ñ‚Đµ Đ°Đ´Ñ€ĐµÑ ÑĐ²Đ¾ĐµĐ³Đ¾ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ° Đ´Đ»Ñ Đ¿Ñ€Đ°Đ²Đ¸Đ»ÑŒĐ½Đ¾Đ¹ ÑĐµÑ‚Đ¸ â€” Đ½ĐµĐ¿Ñ€Đ°Đ²Đ¸Đ»ÑŒĐ½Ñ‹Đ¹ Đ°Đ´Ñ€ĐµÑ Đ¸Đ»Đ¸ ÑĐµÑ‚ÑŒ Đ¼Đ¾Đ³ÑƒÑ‚ Đ¿Ñ€Đ¸Đ²ĐµÑÑ‚Đ¸ Đº Đ¿Đ¾Ñ‚ĐµÑ€Đµ ÑÑ€ĐµĐ´ÑÑ‚Đ².',
+        'ÑÑĐ´Đ° Đ¼Ñ‹ Đ¾Ñ‚Đ¿Ñ€Đ°Đ²Đ»ÑĐµĐ¼ Đ²Đ°Ñˆ VND Đ¿Đ¾ Ñ†ĐµĐ¿Đ¾Ñ‡ĐºĐµ (Đ½Đ°Đ¿Ñ€Đ¸Đ¼ĐµÑ€, TRC20). Đ˜ÑĐ¿Đ¾Đ»ÑŒĐ·ÑƒĐ¹Ñ‚Đµ Đ°Đ´Ñ€ĐµÑ ÑĐ²Đ¾ĐµĐ³Đ¾ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ° Đ´Đ»Ñ Đ¿Ñ€Đ°Đ²Đ¸Đ»ÑŒĐ½Đ¾Đ¹ ÑĐµÑ‚Đ¸ â€” Đ½ĐµĐ¿Ñ€Đ°Đ²Đ¸Đ»ÑŒĐ½Ñ‹Đ¹ Đ°Đ´Ñ€ĐµÑ Đ¸Đ»Đ¸ ÑĐµÑ‚ÑŒ Đ¼Đ¾Đ³ÑƒÑ‚ Đ¿Ñ€Đ¸Đ²ĐµÑÑ‚Đ¸ Đº Đ¿Đ¾Ñ‚ĐµÑ€Đµ ÑÑ€ĐµĐ´ÑÑ‚Đ².',
       enterWalletAddress: 'Đ’Đ²ĐµĐ´Đ¸Ñ‚Đµ Đ°Đ´Ñ€ĐµÑ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ°',
       paste: 'Đ’ÑÑ‚Đ°Đ²Đ¸Ñ‚ÑŒ',
       max: 'ĐœĐ°ĐºÑ',
@@ -341,7 +358,7 @@
       description: 'ĐŸĐ¾Đ¶Đ°Đ»ÑƒĐ¹ÑÑ‚Đ°, ÑƒĐ±ĐµĐ´Đ¸Ñ‚ĐµÑÑŒ, Ñ‡Ñ‚Đ¾ Đ²ÑÑ Đ¸Đ½Ñ„Đ¾Ñ€Đ¼Đ°Ñ†Đ¸Ñ Đ½Đ¸Đ¶Đµ Đ²ĐµÑ€Đ½Đ°',
       walletAddress: 'ĐĐ´Ñ€ĐµÑ ĐºĐ¾ÑˆĐµĐ»ÑŒĐºĐ°',
       network: 'Đ¡ĐµÑ‚ÑŒ',
-      VNDTEthereum: 'VNDT(Đ­Ñ„Đ¸Ñ€Đ¸ÑƒĐ¼)',
+      VNDEthereum: 'VND(Đ­Ñ„Đ¸Ñ€Đ¸ÑƒĐ¼)',
       withdrawalAmount: 'Đ¡ÑƒĐ¼Đ¼Đ° Đ²Ñ‹Đ²Đ¾Đ´Đ°',
       networkFeeValue: '0,1 Đ´Đ¾Đ»Đ»Đ°Ñ€Đ° Đ¡Đ¨Đ',
     },
@@ -1485,8 +1502,24 @@
       orderTypeStopLimit: 'Đ¡Ñ‚Đ¾Đ¿-Đ»Đ¸Đ¼Đ¸Ñ‚',
       orderPriceAt: '{{quantity}} / {{filledQuantity}} Đ¿Đ¾ {{price}}',
       orderPriceAtMarket: '{{quantity}} / {{filledQuantity}} Đ¿Đ¾ Ñ€Ñ‹Đ½Đ¾Ñ‡Đ½Đ¾Đ¹ Ñ†ĐµĐ½Đµ',
-    },
+    
+
+  "avgFillPrice": "Средняя цена исполнения",
+  "totalCost": "Общая стоимость"
+,
+},
+  
+
+  "orders": {
+    "loadError": "Не удалось загрузить открытые заявки",
+    "loadErrorDescription": "Сервер не вернул заявки. Повторите попытку."
   },
+  "orderHistory": {
+    "loadError": "Не удалось загрузить историю заявок",
+    "loadErrorDescription": "Сервер не вернул историю заявок. Повторите попытку."
+  }
+,
+},
   account: {
     assetOverview: 'ĐĐ±Đ·Đ¾Ñ€ Đ°ĐºÑ‚Đ¸Đ²Đ¾Đ²',
     equity: 'Đ¡Đ¾Đ±ÑÑ‚Đ²ĐµĐ½Đ½Ñ‹Đ¹ ĐºĐ°Đ¿Đ¸Ñ‚Đ°Đ» (USD)',
@@ -1800,7 +1833,28 @@
   notifications: {
     onlyUnread: 'ĐŸĐ¾ĐºĐ°Đ·Ñ‹Đ²Đ°Ñ‚ÑŒ Ñ‚Đ¾Đ»ÑŒĐºĐ¾ Đ½ĐµĐ¿Ñ€Đ¾Ñ‡Đ¸Ñ‚Đ°Đ½Đ½Ñ‹Đµ',
     unreadLabel: 'ĐĐµĐ¿Ñ€Đ¾Ñ‡Đ¸Ñ‚Đ°Đ½Đ½Ñ‹Đµ',
-  },
+  
+
+  "actions": {
+    "RENT_CLAIM_AVAILABLE": {
+      "title": "Доступен доход от аренды",
+      "description": "{{asset}}: доступно {{amount}} арендного дохода."
+    },
+    "BUYOUT_CLAIM_AVAILABLE": {
+      "title": "Доступна выплата по выкупу",
+      "description": "{{asset}}: доступно {{amount}} по выкупу."
+    },
+    "GOVERNANCE_VOTE_OPEN": {
+      "title": "Предложение ожидает вашего голоса",
+      "description": "Для {{asset}} идёт голосование, в котором вы ещё не участвовали."
+    },
+    "RENT_PAYMENT_DUE": {
+      "title": "Требуется пополнение для аренды",
+      "description": "{{asset}}: наступил срок аренды {{amount}}, доступного остатка недостаточно."
+    }
+  }
+,
+},
   assetManagement: {
   title: "Asset Management",
   tabs: {
@@ -1812,7 +1866,7 @@
     title: "Rental NFT (Green Assets)",
     desc: "Deposit 1 month rent to mint a Rental NFT and start earning yields. If you miss the deadline by 7 days, your deposit is seized.",
     selectAsset: "Select Asset",
-    depositAmount: "Deposit Amount (VNDT)",
+    depositAmount: "Deposit Amount (VND)",
     mintBtn: "Mint Rental NFT"
   },
   buyout: {
@@ -1825,7 +1879,17 @@
     notVerified: "Holdings not verified yet.",
     verifyBtn: "Verify Eligibility",
     mintBtn: "Mint Temporary Ownership NFT"
-  },
+  ,
+
+  "periodNumber": "Период {{count}}",
+  "pendingPeriods": "Показать {{count}} неполученных периодов",
+  "claimedHistory": "История получения ({{count}} периодов)"
+,
+
+
+  "status": "Đ¡Ñ‚Đ°Ñ‚ÑƒÑ"
+,
+},
   voting: {
     title: "Buyout Proposal",
     proposedBy: "Proposed by Shark",
@@ -1838,7 +1902,215 @@
     voteNo: "Vote NO",
     noProposals: "No active buyout proposals at the moment."
   }
+,
+
+  "terms": {
+    "monthlyRentVnd": "Предлагаемая месячная аренда (VND)",
+    "depositVnd": "Предлагаемый залог (VND)",
+    "maintenanceBudgetVnd": "Бюджет обслуживания (VND)",
+    "operatorName": "Новый оператор",
+    "operatorContact": "Контакты оператора",
+    "salePriceVnd": "Предлагаемая цена продажи (VND)",
+    "salePlan": "План продажи и распределения средств",
+    "nextRentalOnly": "Утверждённые условия применяются к новой аренде. Действующие договоры сохраняют согласованные аренду и залог.",
+    "approvedRentalTerms": "Утверждённые условия аренды",
+    "openingVoteInProgress": "Голосование о разрешении аренды уже идёт.",
+    "invalid": "Заполните условия для этого типа предложения."
+  }
+,
+
+
+  "assetNotFound": "Объект не найден",
+  "manageAsset": "Управление объектом",
+  "navigation": "Навигация управления объектом",
+  "expectedApy": "Ожидаемая годовая доходность",
+  "price": "Ориентировочная цена",
+  "property": "Токенизированная недвижимость",
+  "tradeAsset": "Торговать токенами",
+  "portfolioDesc": "Следите за эксплуатацией, денежными потоками, ликвидностью и управлением каждого объекта.",
+  "emptyOwned": "На этом счёте нет токенов недвижимости.",
+  "sections": {
+    "overview": "Обзор",
+    "rental": "Аренда",
+    "liquidity": "Ликвидность",
+    "governance": "Управление",
+    "cashFlow": "Денежные потоки"
+  },
+  "actions": {
+    "pending": "Ожидающих действий: {{count}}"
+  },
+  "operations": {
+    "available": "Доступно для аренды",
+    "rented": "Сдано в аренду"
+  },
+  "status": {
+    "active": "В эксплуатации",
+    "inactive": "Приостановлено",
+    "open": "Торговля открыта",
+    "paused": "Торговля приостановлена"
+  },
+  "overview": {
+    "activeProposals": "Активных предложений: {{count}}",
+    "buyoutProgress": "Прогресс права на выкуп",
+    "buyoutStatus": "Право на выкуп",
+    "operation": "Состояние эксплуатации",
+    "yourOwnership": "Ваши токены"
+  },
+  "rentalOperations": {
+    "title": "Управление арендой",
+    "applicantList": "Заявители на аренду",
+    "claimRent": "Получить доход от аренды",
+    "claimed": "Получено",
+    "unclaimed": "Не получено",
+    "noEntitlement": "Нет права на выплату за этот период",
+    "contractWallet": "Доступный баланс арендного кошелька",
+    "reservedForClaims": "Зарезервировано для выплат владельцам",
+    "expectedDeposit": "Ожидаемый залог (VND)",
+    "expectedRent": "Ожидаемая месячная аренда (VND)",
+    "guestName": "Гость {{number}}",
+    "historyError": "Не удалось загрузить арендные выплаты.",
+    "incomeHistoryTitle": "История арендного дохода",
+    "incomeHistoryDescription": "Каждая строка — оплаченный период с зафиксированными правами владельцев токенов.",
+    "awaitingPaymentExplanation": "Арендатор ещё не внёс средства для распределения. Кнопка появится при наличии выплаты к получению.",
+    "manageRentPayment": "Управление арендными платежами",
+    "monthlyRentVnd": "Месячная аренда (VND)",
+    "nextCollection": "Следующий сбор аренды",
+    "noApplications": "Заявок на аренду пока нет.",
+    "noIncomeHistory": "Оплаченных арендных периодов пока нет.",
+    "paymentPeriod": "Период аренды",
+    "periodTotal": "Всего оплачено",
+    "status": "Статус аренды",
+    "tenant": "Текущий арендатор",
+    "unknownApplicant": "Заявитель",
+    "yourShare": "Ваша доля",
+    "yourAmount": "Ваше право на выплату",
+    "allocatedAmount": "Распределено владельцам",
+    "grossAmount": "Всего внесено арендной платы",
+    "allowedPurposes": "Разрешённые виды использования",
+    "daoDescription": "Разрешение аренды и заявки определяются голосованием владельцев токенов.",
+    "enablementSubmitted": "Предложение аренды отправлено.",
+    "openEnablementVote": "Предложить открытие аренды",
+    "privateVoteNotice": "Показаны только суммарные голоса. Личный выбор не раскрывается.",
+    "submitToDao": "Отправить предложение",
+    "transactionDetails": "Подробности арендной выплаты",
+    "voteNow": "Посмотреть и голосовать",
+    "voters": "Проголосовали: {{count}}"
+  },
+  "governance": {
+    "alreadyVoted": "Ваш голос записан.",
+    "continuousHolding": "Требуемый срок владения",
+    "currentHolding": "Текущее владение",
+    "eligibilityTitle": "Право на выкуп объекта",
+    "eligibilityDescription": "Право рассчитывается по балансу токенов и непрерывному сроку владения.",
+    "loadError": "Не удалось загрузить предложения. Повторите попытку.",
+    "proposals": "Предложения сообщества",
+    "rentalProposal": "Предложение аренды",
+    "requiredHolding": "Требуемая контрольная доля"
+  },
+  "createProposal": {
+    "description": "Описание"
+  ,
+
+  "typeGeneral": "Общее предложение",
+  "typeMaintenance": "План обслуживания",
+  "typeOperatorChange": "Смена оператора",
+  "typeRentChange": "Изменение аренды и залога",
+  "typeAssetSale": "Продажа актива",
+  "typeBuyout": "Выкуп",
+  "proposalType": "Тип предложения",
+  "proposalTitle": "Заголовок предложения",
+  "submit": "Отправить предложение",
+  "submitting": "Отправка…",
+  "successMsg": "Предложение отправлено",
+  "errorMsg": "Не удалось отправить предложение",
+  "required": "Укажите заголовок и описание",
+  "votingWindow": "Срок голосования",
+  "selectedType": "Выбранный тип",
+  "votingDays": "Срок голосования"
+,
+},
+  "details": {
+    "action": "Đ”ĐµĐ¹ÑÑ‚Đ²Đ¸Đµ",
+    "buy": "ĐÑƒĐ¿Đ¸Ñ‚ÑŒ",
+    "close": "Đ—Đ°ĐºÑ€Ñ‹Ñ‚ÑŒ",
+    "no": "ĐĐµÑ‚",
+    "sell": "ĐŸÑ€Đ¾Đ´Đ°Ñ‚ÑŒ",
+    "side": "Đ¡Ñ‚Đ¾Ñ€Đ¾Đ½Đ°",
+    "viewDetails": "Подробнее",
+    "metadataLabels": {
+      "price": "Đ¦ĐµĐ½Đ°",
+      "quantity": "ĐĐ¾Đ»Đ¸Ñ‡ĐµÑÑ‚Đ²Đ¾"
+    ,
+
+  "proposalType": "Выбранный тип"
+,
 }
+  },
+  "orderbook": {
+    "quantity": "ĐĐ¾Đ»Đ¸Ñ‡ĐµÑÑ‚Đ²Đ¾"
+  },
+  "portfolioTitle": "ĐŸĐ¾Đ·Đ¸Ñ†Đ¸Đ¸",
+  "processing": "Обработка…",
+  "properties": "объектов",
+  "statuses": {
+    "COMPLETED": "Đ—Đ°Đ²ĐµÑ€ÑˆĐµĐ½Đ¾",
+    "PENDING": "Đ’ Đ¾Đ¶Đ¸Đ´Đ°Đ½Đ¸Đ¸",
+    "REJECTED": "ĐÑ‚ĐºĐ»Đ¾Đ½ĐµĐ½",
+    "CANCELLED": "ĐÑ‚Đ¼ĐµĐ½ĐµĐ½",
+    "FAILED": "ĐĐµÑƒĐ´Đ°Ñ‡Đ½Đ¾",
+    "OPEN": "ĐÑ‚ĐºÑ€Ñ‹Ñ‚Đ¾"
+  },
+  "transactionHistory": {
+    "price": "Đ¦ĐµĐ½Đ°",
+    "quantity": "ĐĐ¾Đ»Đ¸Ñ‡ĐµÑÑ‚Đ²Đ¾",
+    "status": "Đ¡Ñ‚Đ°Ñ‚ÑƒÑ",
+    "time": "Đ’Ñ€ĐµĐ¼Ñ",
+    "type": "Đ¢Đ¸Đ¿"
+  },
+  "activity": {
+    "categories": {
+      "GOVERNANCE": "Управление",
+      "CASH_FLOW": "Денежные потоки",
+      "LIQUIDITY": "Ликвидность"
+    }
+  }
+,
+}
+,
+
+  "portfolio": {
+    "actions": {
+      "trade": "Купить / Продать",
+      "viewProperty": "Открыть объект"
+    },
+    "ownership": {
+      "title": "Недвижимость в собственности",
+      "description": "Доля собственности рассчитывается по балансу токенов в учёте счёта.",
+      "properties": "объектов"
+    ,
+
+  "returnSincePurchase": "{{percent}}% к цене покупки",
+  "noCostBasis": "Цена покупки неизвестна",
+  "returnBasis": "Нереализованная доходность к средней цене покупки, без комиссий и аренды."
+,
+},
+    "empty": {
+      "title": "У вас пока нет недвижимости",
+      "description": "Купленные токены недвижимости появятся здесь."
+    },
+    "table": {
+      "actions": "Действия с объектом",
+      "asset": "Код актива",
+      "avgBuyPrice": "Доля владения",
+      "currentPrice": "Оценка токена",
+      "quantity": "Токены в собственности",
+      "totalValue": "Стоимость доли"
+    }
+  },
+  "rentalListing": {
+    "months": "месяцев"
+  }
+,
 };
 export default ru;
 

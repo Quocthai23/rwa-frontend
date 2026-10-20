@@ -1,134 +1,197 @@
-﻿type RowChevron = {
-  label: string;
-  value: string;
+﻿'use client';
+import { useState } from 'react';
+import PushDeviceSettings from '@/components/featured/notification/components/PushDeviceSettings';
+import PriceAlertsSettings from '@/components/featured/notification/components/PriceAlertsSettings';
+import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ChevronLeft } from '@untitledui/icons';
+import { Switch } from '@/components/shared/atoms/web/switch';
+import { apiClient } from '@/services/apiClient';
+import { CLIENT_BASE_URL } from '@/services/baseUrl';
+import { useAuthStore } from '@/store/authStore';
+type Preferences = {
+  language?: string;
+  governanceEmail: boolean;
+  email: string;
+  emailConfigured: boolean;
+  groups?: Record<
+    string,
+    { inApp: boolean; email: boolean; push?: boolean; followedPosts?: boolean }
+  >;
 };
-
-type RowToggle = {
-  label: string;
-  description?: string;
-  enabled: boolean;
-};
-
-const popupRows: RowChevron[] = [{ label: 'Event Popup', value: 'Always' }];
-
-const emailRows: RowToggle[] = [
-  {
-    label: 'Promotional Email',
-    description: 'Get the latest news on member benefits and ongoing activities.',
-    enabled: true,
-  },
-];
-
-const pushRows: RowChevron[] = [{ label: 'System Notification', value: 'Off' }];
-
-const messageCenterRows: RowToggle[] = [
-  { label: 'Promotions', enabled: true },
-  { label: 'Copy Trading', enabled: true },
-  { label: 'Social', enabled: true },
-  { label: 'Promotions', enabled: true },
-];
-
-function Toggle({ enabled }: { enabled: boolean }) {
-  return (
-    <span
-      className={[
-        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-        enabled ? 'bg-[#0B63F6]' : 'bg-[#CFD3DC]',
-      ].join(' ')}
-      aria-hidden="true"
-    >
-      <span
-        className={[
-          'inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform',
-          enabled ? 'translate-x-5' : 'translate-x-0.5',
-        ].join(' ')}
-      />
-    </span>
-  );
-}
-
-function SectionHeader({ title }: { title: string }) {
-  return <h2 className="px-4 py-3 text-[22px] leading-none font-semibold text-[#222]">{title}</h2>;
-}
-
-function ChevronRow({ row }: { row: RowChevron }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <span className="text-[15px] font-medium text-[#333]">{row.label}</span>
-      <div className="flex items-center gap-2 text-[15px] text-[#8D93A1]">
-        <span>{row.value}</span>
-        <span className="text-[18px] leading-none">&gt;</span>
-      </div>
-    </div>
-  );
-}
-
-function ToggleRow({ row }: { row: RowToggle }) {
-  return (
-    <div className="px-4 py-3">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-[15px] font-medium text-[#333]">{row.label}</span>
-        <Toggle enabled={row.enabled} />
-      </div>
-      {row.description ? (
-        <p className="mt-1 text-[13px] leading-5 text-[#9AA0AA]">{row.description}</p>
-      ) : null}
-    </div>
-  );
-}
-
 export default function NotificationSettingsPage() {
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const [pushReady, setPushReady] = useState(false);
+  const client = useQueryClient();
+  const userId = useAuthStore((s) => s.user?.id);
+  const key = ['notification-preferences', userId];
+  const query = useQuery({
+    queryKey: key,
+    enabled: Boolean(userId),
+    queryFn: () =>
+      apiClient.get<Preferences>('/api/notifications/preferences', undefined, {
+        baseUrl: CLIENT_BASE_URL,
+      }),
+  });
+  const mutation = useMutation({
+    mutationFn: (payload: {
+      governanceEmail?: boolean;
+      language?: string;
+      groups?: Record<
+        string,
+        { inApp?: boolean; email?: boolean; push?: boolean; followedPosts?: boolean }
+      >;
+    }) =>
+      apiClient.patch<Preferences>('/api/notifications/preferences', payload, {
+        baseUrl: CLIENT_BASE_URL,
+      }),
+    onSuccess: (value) => client.setQueryData(key, value),
+  });
   return (
-    <main className="bg-background min-h-screen w-full py-4">
-      <div className="bg-background mx-auto w-full max-w-[420px] rounded-none text-[#111]">
-        <header className="relative flex items-center justify-center px-4 pt-2 pb-4">
+    <main className="bg-background text-foreground min-h-dvh px-4 py-6 pb-28">
+      <div className="mx-auto max-w-2xl">
+        <header className="mb-6 flex items-center gap-3">
           <button
-            type="button"
-            className="absolute top-2 left-4 text-2xl leading-none font-normal text-[#4A4F59]"
-            aria-label="Back"
+            onClick={() => router.back()}
+            className="hover:bg-muted rounded-lg p-2"
+            aria-label={t('common.back')}
           >
-            &lt;
+            <ChevronLeft className="size-5" />
           </button>
-          <h1 className="text-[22px] font-semibold text-[#1A1D24]">Settings</h1>
+          <h1 className="text-xl font-semibold">{t('notificationSettings.title')}</h1>
         </header>
-
-        <section className="bg-white">
-          <SectionHeader title="Popup" />
-          {popupRows.map((row, index) => (
-            <div key={`${row.label}-${index}`}>
-              <ChevronRow row={row} />
+        {query.isLoading ? (
+          <p>{t('common.loading')}</p>
+        ) : query.isError ? (
+          <p role="alert">{t('verification.loadError')}</p>
+        ) : (
+          <section className="border-border rounded-xl border p-5">
+            <div className="flex items-start justify-between gap-5">
+              <div>
+                <h2 className="font-semibold">{t('notificationSettings.governance')}</h2>
+                <p className="text-muted-foreground mt-2 text-sm leading-6">
+                  {t('notificationSettings.description')}
+                </p>
+                <p className="mt-3 text-sm break-all">
+                  {t('notificationSettings.recipient')}: {query.data?.email}
+                </p>
+              </div>
+              <Switch
+                aria-label={t('notificationSettings.governance')}
+                checked={query.data?.governanceEmail ?? false}
+                disabled={mutation.isPending || !query.data}
+                onCheckedChange={(value) =>
+                  mutation.mutate({
+                    governanceEmail: value,
+                    language:
+                      query.data?.language ??
+                      (i18n.resolvedLanguage ?? i18n.language).split('-')[0],
+                  })
+                }
+              />
             </div>
-          ))}
-        </section>
-
-        <section className="mt-3 bg-white">
-          <SectionHeader title="Email" />
-          {emailRows.map((row, index) => (
-            <div key={`${row.label}-${index}`}>
-              <ToggleRow row={row} />
+            <PushDeviceSettings onReady={setPushReady} />
+            <div className="border-border mt-6 border-t pt-5">
+              <p className="text-muted-foreground mb-4 text-sm">
+                {t(
+                  'notificationSettings.groupHint',
+                  'Choose in-app, email and push notifications for each group. Changes apply to new events.',
+                )}
+              </p>
+              <div
+                style={{ gridTemplateColumns: 'minmax(0, 1fr) 48px 48px 48px' }}
+                className="border-border grid gap-3 border-b pb-3 text-sm font-medium"
+              >
+                <span>{t('notificationSettings.group', 'Group')}</span>
+                <span className="text-center">{t('notificationSettings.inApp', 'In app')}</span>
+                <span className="text-center">Email</span>
+                <span className="text-center">Push</span>
+              </div>
+              {['finance', 'trading', 'asset', 'user', 'security', 'system'].map((group) => (
+                <div
+                  key={group}
+                  style={{ gridTemplateColumns: 'minmax(0, 1fr) 48px 48px 48px' }}
+                  className="border-border grid items-center gap-3 border-b py-4 text-sm"
+                >
+                  <div>
+                    <span>{t('notifications.groups.' + group)}</span>
+                    {group === 'user' && (
+                      <label className="text-muted-foreground mt-2 flex items-center gap-2 text-xs leading-5">
+                        <input
+                          type="checkbox"
+                          checked={query.data?.groups?.user?.followedPosts ?? false}
+                          disabled={mutation.isPending}
+                          onChange={(event) =>
+                            mutation.mutate({
+                              groups: { user: { followedPosts: event.target.checked } },
+                            })
+                          }
+                        />
+                        {t('notificationSettings.followedPosts', 'New posts from followed authors')}
+                      </label>
+                    )}
+                  </div>
+                  {(['inApp', 'email', 'push'] as const).map((channel) => (
+                    <div key={channel} className="flex justify-center">
+                      <Switch
+                        aria-label={
+                          t('notifications.groups.' + group) +
+                          ' — ' +
+                          t('notificationSettings.' + channel, channel)
+                        }
+                        checked={query.data?.groups?.[group]?.[channel] ?? channel === 'inApp'}
+                        disabled={
+                          mutation.isPending ||
+                          !query.data ||
+                          (channel === 'push' && !pushReady && !query.data?.groups?.[group]?.push)
+                        }
+                        onCheckedChange={(value) =>
+                          mutation.mutate({ groups: { [group]: { [channel]: value } } })
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
-          ))}
-        </section>
-
-        <section className="mt-3 bg-white">
-          <SectionHeader title="App Push" />
-          {pushRows.map((row, index) => (
-            <div key={`${row.label}-${index}`}>
-              <ChevronRow row={row} />
-            </div>
-          ))}
-        </section>
-
-        <section className="mt-3 bg-white">
-          <SectionHeader title="Message Center" />
-          {messageCenterRows.map((row, index) => (
-            <div key={`${row.label}-${index}`}>
-              <ToggleRow row={row} />
-            </div>
-          ))}
-        </section>
+            <label className="mt-5 block space-y-2 text-sm font-medium">
+              {t('notificationSettings.language')}
+              <select
+                className="border-border bg-background h-11 w-full rounded-lg border px-3"
+                disabled={mutation.isPending || !query.data}
+                value={query.data?.language?.startsWith('vi') ? 'vi' : 'en'}
+                onChange={(e) =>
+                  mutation.mutate({
+                    governanceEmail: query.data?.governanceEmail ?? false,
+                    language: e.target.value,
+                  })
+                }
+              >
+                <option value="vi">Tiếng Việt</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            {query.data && !query.data.emailConfigured && (
+              <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
+                {t('notificationSettings.missingSmtp')}
+              </p>
+            )}
+            {mutation.isError && (
+              <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">
+                {t('notificationSettings.saveError')}
+              </p>
+            )}
+            {mutation.isSuccess && (
+              <p role="status" className="mt-3 text-sm text-green-600 dark:text-green-400">
+                {t('notificationSettings.saved')}
+              </p>
+            )}
+          </section>
+        )}
+        {userId && <PriceAlertsSettings />}
       </div>
     </main>
   );
 }
-

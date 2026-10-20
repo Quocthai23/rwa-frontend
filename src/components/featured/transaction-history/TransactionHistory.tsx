@@ -3,7 +3,7 @@
 
 import { ChevronLeft, HelpCircle, SearchLg, FilterFunnel01 } from '@untitledui/icons';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Button } from '@/components/shared/atoms/button';
 import { Skeleton } from '@/components/shared/atoms/skeleton';
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
@@ -51,6 +51,8 @@ export default function TransactionHistory() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const linkedTransactionId = searchParams.get('transactionId');
+  const openedTransaction = useRef<string | null>(null);
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const { data: accounts = [] } = useAccounts();
   const isDemoAccount = selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO;
@@ -69,6 +71,7 @@ export default function TransactionHistory() {
     startDate?: string;
     endDate?: string;
   }>(() => {
+    if (searchParams.get('transactionId')) return {};
     const start = searchParams.get('startDate');
     const end = searchParams.get('endDate');
     if (start && end) {
@@ -94,6 +97,7 @@ export default function TransactionHistory() {
 
   useEffect(() => {
     const newParams = new URLSearchParams();
+    if (linkedTransactionId) newParams.set('transactionId', linkedTransactionId);
     if (dateRange.startDate) newParams.set('startDate', dateRange.startDate);
     if (dateRange.endDate) newParams.set('endDate', dateRange.endDate);
     if (selectedAccountId) newParams.set('accountId', selectedAccountId);
@@ -101,7 +105,7 @@ export default function TransactionHistory() {
     filters.status?.forEach((s) => newParams.append('status', s));
 
     router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
-  }, [dateRange, filters, selectedAccountId, router, pathname]);
+  }, [dateRange, filters, selectedAccountId, router, pathname, linkedTransactionId]);
 
   const apiType = useMemo(() => {
     if (!filters.type || filters.type.length === 0) return undefined;
@@ -114,6 +118,7 @@ export default function TransactionHistory() {
   }, [filters.status]);
 
   const { data, isFetching } = useGetPaymentHistory({
+    transactionId: linkedTransactionId ?? undefined,
     accountId: selectedAccountId || '',
     take: pagination.take,
     skip: pagination.skip,
@@ -157,6 +162,15 @@ export default function TransactionHistory() {
     }
   }, [newTransactions, isFetching, pagination.skip]);
 
+  useEffect(() => {
+    if (!linkedTransactionId || openedTransaction.current === linkedTransactionId) return;
+    const transaction = allTransactions.find((row) => row.id === linkedTransactionId);
+    if (transaction) {
+      openedTransaction.current = linkedTransactionId;
+      setSelectedTransaction(transaction);
+      setIsModalVisible(true);
+    }
+  }, [allTransactions, linkedTransactionId]);
   const hasTransactions = allTransactions.length > 0;
   const hasMore = allTransactions.length < totalTransactions;
 
@@ -338,4 +352,3 @@ export default function TransactionHistory() {
     </div>
   );
 }
-

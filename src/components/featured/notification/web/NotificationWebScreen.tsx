@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { Bell01, CheckCircle, X } from '@untitledui/icons';
+import { Bell01, CheckCircle, X, Settings01 } from '@untitledui/icons';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import type { UIEvent } from 'react';
@@ -36,15 +36,18 @@ export default function NotificationWebScreen({
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<NotificationTabId>('all');
+  const [actionOnly, setActionOnly] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [requestedTake, setRequestedTake] = useState(NOTIFICATIONS_PAGE_SIZE);
   const notificationQueryParams = useMemo(
     () => ({
+      category: activeTab === 'all' ? undefined : activeTab,
+      requiresAction: actionOnly ? true : undefined,
       isRead: showUnreadOnly ? false : undefined,
       skip: 0,
       take: requestedTake,
     }),
-    [requestedTake, showUnreadOnly],
+    [requestedTake, showUnreadOnly, activeTab, actionOnly],
   );
   const { data, error, isError, isLoading, isFetching, refetch } =
     useNotifications(notificationQueryParams);
@@ -55,32 +58,18 @@ export default function NotificationWebScreen({
   const hasMoreNotifications = notifications.length < totalNotifications;
   const isLoadingMore = isFetching && requestedTake > NOTIFICATIONS_PAGE_SIZE;
 
-  const filteredNotifications = useMemo(() => {
-    const tabFiltered =
-      activeTab === 'all'
-        ? notifications
-        : notifications.filter((item) => item.category === activeTab);
-    return showUnreadOnly ? tabFiltered.filter((item) => !item.read) : tabFiltered;
-  }, [activeTab, notifications, showUnreadOnly]);
+  const filteredNotifications = notifications;
 
   const unreadTotal = useMemo(
     () => data?.unreadTotal ?? notifications.filter((item) => !item.read).length,
     [data?.unreadTotal, notifications],
   );
 
-  const tabCounts = useMemo(
-    () =>
-      NOTIFICATION_TABS.reduce<Record<NotificationTabId, number>>(
-        (acc, tab) => ({
-          ...acc,
-          [tab.id]:
-            tab.id === 'all'
-              ? notifications.filter((item) => !item.read).length
-              : notifications.filter((item) => item.category === tab.id && !item.read).length,
-        }),
-        { all: 0, system: 0, trading: 0, user: 0 },
-      ),
-    [notifications],
+  const tabCounts = Object.fromEntries(
+    NOTIFICATION_TABS.map((tab) => [
+      tab.id,
+      tab.id === 'all' ? unreadTotal : (data?.unreadByCategory?.[tab.id] ?? 0),
+    ]),
   );
 
   const handleMarkAllAsRead = () => {
@@ -88,12 +77,12 @@ export default function NotificationWebScreen({
       return;
     }
 
-    void readAllMutation.mutateAsync();
+    readAllMutation.mutate();
   };
 
   const handleNotificationClick = (item: NotificationItem) => {
     if (!item.read && !readMutation.isPending) {
-      void readMutation.mutateAsync(item.id);
+      readMutation.mutate(item.id);
     }
 
     if (!item.targetUrl) {
@@ -169,6 +158,17 @@ export default function NotificationWebScreen({
 
             <Button
               variant="white-contained"
+              className="text-muted-foreground h-8 w-8 rounded p-0"
+              aria-label={t('notificationSettings.title')}
+              onClick={() => {
+                onClose?.();
+                router.push('/notifications/settings');
+              }}
+            >
+              <Settings01 className="size-5" />
+            </Button>
+            <Button
+              variant="white-contained"
               className="text-muted-foreground hover:text-foreground h-8 w-8 rounded p-0"
               onClick={handleMarkAllAsRead}
               aria-label={t('notifications.markAllAsRead', 'Mark all as read')}
@@ -188,10 +188,26 @@ export default function NotificationWebScreen({
           </div>
         </header>
 
+        {(readMutation.isError || readAllMutation.isError) && (
+          <p role="alert" className="px-4 py-2 text-sm text-red-600 dark:text-red-400">
+            {t('notifications.readFailed', 'Unable to mark as read. Please try again.')}
+          </p>
+        )}
         <main className="flex min-h-0 flex-1">
           <div className="grid h-full w-full grid-cols-1 lg:grid-cols-[217px_minmax(0,1fr)]">
             <aside className="border-border flex flex-col justify-between border-b p-4 lg:border-r lg:border-b-0 lg:px-4 lg:py-6">
-              <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-foreground mb-4 flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={actionOnly}
+                    onChange={(e) => {
+                      setRequestedTake(NOTIFICATIONS_PAGE_SIZE);
+                      setActionOnly(e.target.checked);
+                    }}
+                  />
+                  {t('notifications.actionOnly', 'Needs action')}
+                </label>
                 {NOTIFICATION_TABS.map((tab) => {
                   const isActive = tab.id === activeTab;
                   const count = tabCounts[tab.id];
@@ -201,20 +217,23 @@ export default function NotificationWebScreen({
                       key={tab.id}
                       type="button"
                       variant="white-contained"
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`h-10 w-full items-center justify-between rounded px-3 py-2 transition-colors ${
+                      onClick={() => {
+                        setRequestedTake(NOTIFICATIONS_PAGE_SIZE);
+                        setActiveTab(tab.id);
+                      }}
+                      className={`h-10 w-full items-center justify-between gap-2 rounded px-3 py-2 transition-colors ${
                         isActive
                           ? 'border-primary-500 bg-primary-500/10 text-primary-500 border'
                           : 'border-border text-foreground hover:bg-muted/30 border'
                       }`}
                     >
                       <span
-                        className={`text-body-large-semibold ${isActive ? 'text-primary-500' : ''}`}
+                        className={`text-body-small-semibold min-w-0 truncate ${isActive ? 'text-primary-500' : ''}`}
                       >
                         {t(tab.labelKey, tab.labelDefault)}
                       </span>
                       <span
-                        className={`text-caption-medium inline-flex size-6 items-center justify-center rounded-full ${
+                        className={`text-caption-medium inline-flex size-6 shrink-0 items-center justify-center rounded-full ${
                           isActive
                             ? 'bg-primary-500 text-white'
                             : 'border-border text-foreground border bg-transparent'
@@ -303,4 +322,3 @@ export default function NotificationWebScreen({
     </div>
   );
 }
-

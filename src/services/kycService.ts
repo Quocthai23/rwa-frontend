@@ -24,8 +24,7 @@ async function uploadFileThroughServer(file: File): Promise<string> {
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     throw new Error(
-      (body as { errors?: string }).errors ||
-        `Upload failed with status ${response.status}`,
+      (body as { errors?: string }).errors || `Upload failed with status ${response.status}`,
     );
   }
 
@@ -35,9 +34,26 @@ async function uploadFileThroughServer(file: File): Promise<string> {
   return url;
 }
 
+export type KycProfile = {
+  documentType: 'ID_CARD' | 'PASSPORT';
+  sex: string;
+  nationality: string;
+  issueDate: string;
+  expiryDate?: string;
+  noExpiry: boolean;
+  issuingAuthority: string;
+  phone: string;
+  permanentAddress: string;
+  residentialAddress: string;
+  countryOfResidence: string;
+  occupation: string;
+  consent: boolean;
+};
+
 export type KycStatus = 'PENDING' | 'APPROVING' | 'APPROVED' | 'REJECTED' | 'NOT_STARTED';
 
 export type KycData = {
+  documentExpiresAt?: string | null;
   id: string;
   userId: string;
   fullName: string;
@@ -47,12 +63,14 @@ export type KycData = {
   idBackImg: string;
   selfieImg: string;
   status: KycStatus;
+  profile?: KycProfile;
   rejectReason?: string;
   createdAt: string;
   updatedAt: string;
 };
 
 export type SubmitKycRequest = {
+  profile: KycProfile;
   fullName: string;
   dob: string;
   idNumber: string;
@@ -93,8 +111,7 @@ export const kycService = {
     // Client context: route through the server BFF to avoid needing a
     // JS-readable token (the httpOnly cookie is sent automatically).
     return uploadFileThroughServer(file);
-  }
+  },
 };
 
 export default kycService;
-

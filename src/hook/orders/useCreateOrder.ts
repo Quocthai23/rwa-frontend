@@ -19,7 +19,7 @@ export function useCreateOrder() {
     onSuccess: () => {
       // Refresh orders and related lists after a new order is created
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['infinite-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['infinite-orders-v2'] });
       // Also refresh portfolio data (Spot trading model)
       queryClient.invalidateQueries({ queryKey: ['portfolio-overview'] });
       queryClient.invalidateQueries({ queryKey: ['infinite-portfolio-items'] });

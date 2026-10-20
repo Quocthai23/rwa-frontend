@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   Check,
@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/shared/atoms/button';
-import { Sheet, SheetContent } from '@/components/shared/atoms/web/sheet';
+import { TransactionDetailSheet } from '@/components/shared/components/TransactionDetailSheet';
 import { cn } from '@/lib/utils';
 import type { PaymentHistoryItem } from '@/types/payment';
 import { copyText } from '@/utils/copy';
@@ -57,10 +57,16 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
   const isWithdrawal = transaction?.type === 'WITHDRAW';
 
   const TYPE_DISPLAY: Record<string, string> = {
-    DEPOSIT: 'Deposit', WITHDRAW: 'Withdrawal', TRANSFER: 'Transfer', DIVIDEND_CLAIM: 'Dividend',
+    DEPOSIT: 'Deposit',
+    WITHDRAW: 'Withdrawal',
+    TRANSFER: 'Transfer',
+    DIVIDEND_CLAIM: 'Dividend',
   };
   const STATUS_DISPLAY: Record<string, string> = {
-    COMPLETED: 'Completed', PENDING: 'Pending', FAILED: 'Failed', CANCELLED: 'Cancelled',
+    COMPLETED: 'Completed',
+    PENDING: 'Pending',
+    FAILED: 'Failed',
+    CANCELLED: 'Cancelled',
   };
 
   const typeName = isTransfer
@@ -101,153 +107,185 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
   const isCompleted = transaction?.status === 'COMPLETED';
 
   return (
-    <Sheet open={isVisible} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent
-        side="center"
-        showCloseButton={false}
-        className="bg-background border-border mx-auto w-full max-w-[520px] overflow-hidden border p-0"
-      >
-        {transaction ? (
-          <div className="max-h-[85dvh] overflow-y-auto">
-            <div className="dark:bg-card flex flex-col gap-4 p-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      {isDeposit ? (
-                        <ArrowCircleBrokenDownLeft className={cn('size-6', statusColor.text)} />
-                      ) : isTransfer ? (
-                        <SwitchHorizontal01 className={cn('size-6', statusColor.text)} />
-                      ) : isWithdrawal ? (
-                        <ArrowCircleBrokenUpRight className={cn('size-6', statusColor.text)} />
-                      ) : (
-                        <ArrowCircleRight className={cn('size-6', statusColor.text)} />
-                      )}
-                      <div className="flex items-center gap-1">
-                        <span className="text-h3-medium text-foreground">{typeName}</span>
-                        <div
-                          className={cn('border-border rounded border px-1 py-1', statusColor.bg)}
-                        >
-                          <span className={cn('text-caption-medium text-sm', statusColor.text)}>
-                            {statusName}
-                          </span>
-                        </div>
+    <TransactionDetailSheet open={isVisible} onOpenChange={(open) => !open && onClose()}>
+      {transaction ? (
+        <div>
+          <div className="dark:bg-card flex flex-col gap-4 p-4">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start justify-between">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    {isDeposit ? (
+                      <ArrowCircleBrokenDownLeft className={cn('size-6', statusColor.text)} />
+                    ) : isTransfer ? (
+                      <SwitchHorizontal01 className={cn('size-6', statusColor.text)} />
+                    ) : isWithdrawal ? (
+                      <ArrowCircleBrokenUpRight className={cn('size-6', statusColor.text)} />
+                    ) : (
+                      <ArrowCircleRight className={cn('size-6', statusColor.text)} />
+                    )}
+                    <div className="flex items-center gap-1">
+                      <span className="text-h3-medium text-foreground">{typeName}</span>
+                      <div className={cn('border-border rounded border px-1 py-1', statusColor.bg)}>
+                        <span className={cn('text-caption-medium text-sm', statusColor.text)}>
+                          {statusName}
+                        </span>
                       </div>
                     </div>
-                    <span className="text-body-small-regular text-muted-foreground">
-                      {t('transactionHistory.invoiceId')} {transaction.id.slice(-10)}
-                    </span>
                   </div>
+                  <span className="text-body-small-regular text-muted-foreground">
+                    {t('transactionHistory.invoiceId')} {transaction.id.slice(-10)}
+                  </span>
+                </div>
 
+                <Button
+                  variant="white-contained"
+                  className="hover:bg-muted h-7 w-7 rounded-full p-0"
+                  onClick={onClose}
+                >
+                  <X className="text-foreground size-5" />
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <span className="text-body-small-regular text-muted-foreground">
+                    {t('transactionHistory.txh')}
+                  </span>
+                  <span className="text-body-small-regular text-primary-500">
+                    {transaction.id.slice(-12)}
+                  </span>
                   <Button
                     variant="white-contained"
-                    className="hover:bg-muted h-7 w-7 rounded-full p-0"
-                    onClick={onClose}
+                    className="ml-1 h-6 w-6 p-0"
+                    onClick={() => handleCopy(transaction.id)}
                   >
-                    <X className="text-foreground size-5" />
+                    {isCopied ? (
+                      <Check className="size-4 text-green-500" />
+                    ) : (
+                      <Copy01 className="text-foreground size-4" />
+                    )}
                   </Button>
                 </div>
+                <span className="text-h2-semibold text-foreground">{formatAmount()}</span>
+              </div>
+            </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <span className="text-body-small-regular text-muted-foreground">
-                      {t('transactionHistory.txh')}
-                    </span>
-                    <span className="text-body-small-regular text-primary-500">
-                      {transaction.id.slice(-12)}
-                    </span>
-                    <Button
-                      variant="white-contained"
-                      className="ml-1 h-6 w-6 p-0"
-                      onClick={() => handleCopy(transaction.id)}
-                    >
-                      {isCopied ? (
-                        <Check className="size-4 text-green-500" />
-                      ) : (
-                        <Copy01 className="text-foreground size-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <span className="text-h2-semibold text-foreground">{formatAmount()}</span>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <div className="bg-primary-100 flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <Check className="text-primary-500 size-4" />
+                </div>
+                <div className="flex flex-1 flex-col gap-0.5">
+                  <span className="text-body-small-semibold text-foreground">
+                    {t('transactionHistory.created')}
+                  </span>
+                  <span className="text-caption-regular text-muted-foreground">
+                    {formatDate(transaction.createdAt || new Date().toISOString())}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <div className="bg-primary-100 flex size-8 shrink-0 items-center justify-center rounded-full">
+              <DotsVertical className="text-primary-500 ml-1 size-6" />
+
+              <div className="flex gap-2">
+                <div className="bg-primary-100 flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <Check className="text-primary-500 size-4" />
+                </div>
+                <div className="flex flex-1 flex-col gap-0.5">
+                  <span className="text-body-small-semibold text-foreground">
+                    {t('transactionHistory.processedByMtx')}
+                  </span>
+                  <span className="text-caption-regular text-muted-foreground">
+                    {formatDate(transaction.createdAt || new Date().toISOString())}
+                  </span>
+                </div>
+              </div>
+
+              <DotsVertical
+                className={cn('ml-1 size-6', isCompleted ? 'text-primary-500' : 'text-muted')}
+              />
+
+              <div className="flex gap-2">
+                <div
+                  className={cn(
+                    'flex size-8 shrink-0 items-center justify-center rounded-full',
+                    isCompleted ? 'bg-primary-100' : 'bg-muted',
+                  )}
+                >
+                  {isCompleted ? (
                     <Check className="text-primary-500 size-4" />
-                  </div>
-                  <div className="flex flex-1 flex-col gap-0.5">
-                    <span className="text-body-small-semibold text-foreground">
-                      {t('transactionHistory.created')}
-                    </span>
+                  ) : (
+                    <Clock className="text-muted-foreground size-4" />
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col gap-0.5">
+                  <span className="text-body-small-semibold text-foreground">
+                    {isDeposit
+                      ? t('transactionHistory.creditingToAccount')
+                      : t('transactionHistory.transferComplete')}
+                  </span>
+                  {isCompleted ? (
                     <span className="text-caption-regular text-muted-foreground">
                       {formatDate(transaction.createdAt || new Date().toISOString())}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-primary-400 bg-primary-50 dark:bg-card rounded border p-3">
+              <p className="text-body-small-regular text-primary-500 m-0">
+                {t('transactionHistory.infoProcessed')}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="bg-border h-px w-full" />
+
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-body-small-regular text-muted-foreground">
+                    {t('transactionHistory.from')}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/assets/images/transaction-history/icon.png"
+                      alt="Icon"
+                      width={24}
+                      height={24}
+                      className="size-6"
+                    />
+                    <span className="text-body-large-medium text-foreground">
+                      {transaction.userId}
                     </span>
                   </div>
                 </div>
 
-                <DotsVertical className="text-primary-500 ml-1 size-6" />
-
-                <div className="flex gap-2">
-                  <div className="bg-primary-100 flex size-8 shrink-0 items-center justify-center rounded-full">
-                    <Check className="text-primary-500 size-4" />
-                  </div>
-                  <div className="flex flex-1 flex-col gap-0.5">
-                    <span className="text-body-small-semibold text-foreground">
-                      {t('transactionHistory.processedByMtx')}
+                {isWithdrawal && transaction.txHash ? (
+                  <div className="flex w-full items-center justify-between gap-1">
+                    <span className="text-body-small-regular text-muted-foreground">
+                      {t('transactionHistory.to')}
                     </span>
-                    <span className="text-caption-regular text-muted-foreground">
-                      {formatDate(transaction.createdAt || new Date().toISOString())}
-                    </span>
-                  </div>
-                </div>
-
-                <DotsVertical
-                  className={cn('ml-1 size-6', isCompleted ? 'text-primary-500' : 'text-muted')}
-                />
-
-                <div className="flex gap-2">
-                  <div
-                    className={cn(
-                      'flex size-8 shrink-0 items-center justify-center rounded-full',
-                      isCompleted ? 'bg-primary-100' : 'bg-muted',
-                    )}
-                  >
-                    {isCompleted ? (
-                      <Check className="text-primary-500 size-4" />
-                    ) : (
-                      <Clock className="text-muted-foreground size-4" />
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col gap-0.5">
-                    <span className="text-body-small-semibold text-foreground">
-                      {isDeposit
-                        ? t('transactionHistory.creditingToAccount')
-                        : t('transactionHistory.transferComplete')}
-                    </span>
-                    {isCompleted ? (
-                      <span className="text-caption-regular text-muted-foreground">
-                        {formatDate(transaction.createdAt || new Date().toISOString())}
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src="/assets/images/97.png"
+                        alt="Chain"
+                        width={24}
+                        height={24}
+                        className="size-6"
+                      />
+                      <span className="text-body-large-medium text-foreground max-w-[200px] truncate">
+                        {transaction.txHash}
                       </span>
-                    ) : null}
+                    </div>
                   </div>
-                </div>
-              </div>
+                ) : null}
 
-              <div className="border-primary-400 bg-primary-50 dark:bg-card rounded border p-3">
-                <p className="text-body-small-regular text-primary-500 m-0">
-                  {t('transactionHistory.infoProcessed')}
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="bg-border h-px w-full" />
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-1">
+                {isTransfer ? (
+                  <div className="flex w-full items-center justify-between gap-1">
                     <span className="text-body-small-regular text-muted-foreground">
-                      {t('transactionHistory.from')}
+                      {t('transactionHistory.to')}
                     </span>
                     <div className="flex items-center gap-2">
                       <Image
@@ -258,57 +296,16 @@ export default function TransactionCardDetailsWeb({ transaction, isVisible, onCl
                         className="size-6"
                       />
                       <span className="text-body-large-medium text-foreground">
-                        {transaction.userId}
+                        {t('transactionHistory.transfer')}
                       </span>
                     </div>
                   </div>
-
-                  {isWithdrawal && transaction.txHash ? (
-                    <div className="flex w-full items-center justify-between gap-1">
-                      <span className="text-body-small-regular text-muted-foreground">
-                        {t('transactionHistory.to')}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/assets/images/97.png"
-                          alt="Chain"
-                          width={24}
-                          height={24}
-                          className="size-6"
-                        />
-                        <span className="text-body-large-medium text-foreground max-w-[200px] truncate">
-                          {transaction.txHash}
-                        </span>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {isTransfer ? (
-                    <div className="flex w-full items-center justify-between gap-1">
-                      <span className="text-body-small-regular text-muted-foreground">
-                        {t('transactionHistory.to')}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/assets/images/transaction-history/icon.png"
-                          alt="Icon"
-                          width={24}
-                          height={24}
-                          className="size-6"
-                        />
-                        <span className="text-body-large-medium text-foreground">
-                          {t('transactionHistory.transfer')}
-                        </span>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
+                ) : null}
               </div>
             </div>
           </div>
-        ) : null}
-      </SheetContent>
-    </Sheet>
+        </div>
+      ) : null}
+    </TransactionDetailSheet>
   );
 }
-

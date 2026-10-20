@@ -1,9 +1,9 @@
-﻿import { apiClient } from './apiClient';
+import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
 const isServer = typeof window === 'undefined';
 
-export type ProposalStatus = 'ACTIVE' | 'PASSED' | 'REJECTED' | 'EXECUTED';
+export type ProposalStatus = 'ACTIVE' | 'PASSED' | 'REJECTED' | 'EXECUTED' | 'EXPIRED';
 
 export type DaoProposal = {
   id: string;
@@ -15,7 +15,9 @@ export type DaoProposal = {
   createdAt: string;
   snapshotDate: string;
   endDate: string;
-  type?: 'GENERAL' | 'INCREASE_RELEASED_TOKEN_PERCENTAGE' | 'BUYOUT_PROPOSAL';
+  type?: 'GENERAL' | 'INCREASE_RELEASED_TOKEN_PERCENTAGE' | 'BUYOUT_PROPOSAL' | 'RENTAL_ENABLEMENT' | 'RENTAL_APPLICATION';
+  viewerCanVote?: boolean;
+  viewerHasVoted?: boolean;
   metadata?: Record<string, unknown> | null;
   asset?: { symbol?: string; tokenPrice?: string | number };
   votes?: Array<{ isFor: boolean; votingPower: string | number }>;
@@ -46,6 +48,7 @@ export type BuyoutEscrowState = {
     claimableAmount: string;
     claimableTokenAmount: string;
     claimablePeriods: number;
+    installments?: import('@/types/dao').BuyoutPaymentPeriod[];
   } | null;
   escrow?: {
     status: number;
@@ -77,6 +80,7 @@ export type CreateProposalRequest = {
   endDate: string;
   type?: 'GENERAL' | 'INCREASE_RELEASED_TOKEN_PERCENTAGE';
   category?: 'GENERAL' | 'MAINTENANCE' | 'OPERATOR_CHANGE' | 'RENT_CHANGE' | 'ASSET_SALE';
+  monthlyRentVnd?: string; depositVnd?: string; maintenanceBudgetVnd?: string; operatorName?: string; operatorContact?: string; salePriceVnd?: string; salePlan?: string;
 };
 
 export type VoteProposalRequest = {
@@ -171,8 +175,8 @@ export const daoApi = {
 
   getBuyoutState: async (
     proposalId: string,
-  ): Promise<{ success: boolean; data: BuyoutEscrowState }> =>
-    apiClient.get<{ success: boolean; data: BuyoutEscrowState }>(
+  ): Promise<BuyoutEscrowState> =>
+    apiClient.get<BuyoutEscrowState>(
       `/api/proposals/${proposalId}/buyout`,
       undefined,
       { baseUrl: CLIENT_BASE_URL, skipAuth: false },

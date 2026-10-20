@@ -2,9 +2,12 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAssetActionCounts } from '@/hook/useAssetActionCounts';
+import { AssetActionBadge } from '@/features/asset-management/web/components/AssetActionBadge';
+
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/shared/atoms/button';
+import { AssetManagementButton as Button } from '@/features/asset-management/web/components/AssetManagementButton';
 import { Skeleton } from '@/components/shared/atoms/skeleton';
 import { useActiveAssets } from '@/hook/useAssets';
 import { useInfinitePortfolioItems } from '@/hook/usePortfolio';
@@ -14,6 +17,7 @@ import { formatBalance } from '@/utils/currency';
 export default function AssetManagementWebScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: actionCounts } = useAssetActionCounts();
   const accountId = useAccountStore((state) => state.selectedAccount?.id || '');
   const { data: assets = [], isLoading: loadingAssets } = useActiveAssets();
   const { data: portfolio, isLoading: loadingPortfolio } = useInfinitePortfolioItems(
@@ -53,7 +57,7 @@ export default function AssetManagementWebScreen() {
                 <div><p className="text-foreground text-sm font-semibold">{asset.name}</p><p className="text-muted-foreground mt-1 text-xs">{asset.symbol} · {asset.location || asset.propertyType || t('assetManagement.property', { defaultValue: 'Tokenized property' })}</p></div>
                 <div className="md:text-right"><p className="text-muted-foreground text-xs">{t('portfolio.table.quantity', { defaultValue: 'Tokens owned' })}</p><p className="text-foreground mt-1 text-sm tabular-nums">{formatBalance(holding.quantity)}</p></div>
                 <div className="md:text-right"><p className="text-muted-foreground text-xs">{t('portfolio.table.avgBuyPrice', { defaultValue: 'Ownership share' })}</p><p className="text-foreground mt-1 text-sm tabular-nums">{ownership.toFixed(4)}%</p></div>
-                <Button variant="neutral-outline" onClick={() => router.push(`/asset-management/${asset.id}`)}>{t('assetManagement.manageAsset')}</Button>
+                <Button variant="neutral-outline" onClick={() => router.push(`/asset-management/${asset.id}`)}>{t('assetManagement.manageAsset')}<AssetActionBadge count={actionCounts?.[asset.id]?.total} /></Button>
               </div>
             );
           })}

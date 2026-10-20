@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { X } from '@untitledui/icons';
 import { useCallback, useEffect, useState } from 'react';

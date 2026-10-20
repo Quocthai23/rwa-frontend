@@ -9,7 +9,8 @@ type NotificationQueryParams = {
   take?: number;
   skip?: number;
   isRead?: boolean;
-  category?: number;
+  category?: number | string;
+  requiresAction?: boolean;
 };
 
 export const getNotifications = async (
@@ -23,10 +24,6 @@ export const getNotifications = async (
   // });
 
   if (isServer) {
-    if (typeof params.isRead !== 'boolean') {
-      throw new Error('Server-side notification fetch requires an explicit isRead filter.');
-    }
-
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     return apiClient.get<NotificationResponse>(
       NOTIFICATION_ENDPOINTS.LIST,
@@ -36,6 +33,18 @@ export const getNotifications = async (
     );
   }
 
+  if ((params.take ?? 20) > 100) {
+    const pages = await Promise.all(
+      Array.from({ length: Math.ceil(params.take! / 100) }, (_, index) =>
+        getNotifications({
+          ...params,
+          skip: (params.skip ?? 0) + index * 100,
+          take: Math.min(100, params.take! - index * 100),
+        }),
+      ),
+    );
+    return { ...pages[0], data: pages.flatMap((page) => page.data), total: pages[0]?.total ?? 0 };
+  }
   return apiClient.get<NotificationResponse>('/api/notifications', params, {
     baseUrl: CLIENT_BASE_URL,
     skipAuth: false,
@@ -106,4 +115,3 @@ export const getUnreadCount = async (accessToken?: string) => {
     { baseUrl: CLIENT_BASE_URL },
   );
 };
-

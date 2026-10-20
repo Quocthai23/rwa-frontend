@@ -92,6 +92,7 @@ export type Asset = {
   buyoutMinHolding?: string;
   buyoutHoldingMonths?: number;
   buyoutOwnershipThreshold?: string;
+  buyoutMatureOwnershipThreshold?: string;
   buyoutMinorityQuorum?: string;
   buyoutApprovalThreshold?: string;
   buyoutBasePremium?: string;
@@ -131,13 +132,21 @@ export type Asset = {
   auditReportUrl?: string;
   legalDocsIpfs?: string;
   rentalSummary?: {
-    status: 'RENTED' | 'AVAILABLE';
+    status: 'LOCKED' | 'OPEN' | 'VOTING' | 'PENDING_FUNDING' | 'RENTED';
     monthlyRentVnd?: string | number | null;
+    expectedMonthlyRentVnd?: string | number | null;
+    expectedDepositVnd?: string | number | null;
     currency: 'VND' | string;
     dueDay?: number | null;
     startDate?: string | null;
     endDate?: string | null;
     lastPaidAt?: string | null;
+    nextDueAt?: string | null;
+    walletBalanceVnd?: string | number | null;
+    walletReservedVnd?: string | number | null;
+    applicationsEnabledUntil?: string | null;
+    purposeSector?: string | null;
+    votingEndsAt?: string | null;
     latestDistribution?: {
       id: string;
       periodStart?: string | null;

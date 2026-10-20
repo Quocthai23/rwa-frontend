@@ -27,7 +27,7 @@ export interface MarketRowVM {
   buyoutNextPaymentVnd?: number;
   buyoutNextRecordAt?: string;
   buyoutBuyerGuestNumber?: number;
-  rentalStatus?: 'RENTED' | 'AVAILABLE';
+  rentalStatus?: 'LOCKED' | 'OPEN' | 'VOTING' | 'PENDING_FUNDING' | 'RENTED';
   monthlyRentVnd?: number;
   rentalDueDay?: number;
   latestRentalPeriod?: string;

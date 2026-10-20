@@ -423,9 +423,7 @@ function OrderHistoryTable({
                       {t('position.modal.avgFillPrice', { defaultValue: 'Avg Fill Price' })}:
                     </p>
                     <p className="text-body-small-medium text-foreground">
-                      {selectedOrder.executedPrice
-                        ? formatValue(selectedOrder.executedPrice)
-                        : '-'}
+                      {selectedOrder.executedPrice ? formatValue(selectedOrder.executedPrice) : '-'}
                     </p>
                   </div>
                   <div className="flex flex-row justify-between">
@@ -433,9 +431,7 @@ function OrderHistoryTable({
                       {t('position.modal.totalCost', { defaultValue: 'Total Cost' })}:
                     </p>
                     <p className="text-body-small-medium text-foreground">
-                      {selectedOrder.totalCost
-                        ? `VNĐ${formatValue(selectedOrder.totalCost)}`
-                        : '-'}
+                      {selectedOrder.totalCost ? `VNĐ${formatValue(selectedOrder.totalCost)}` : '-'}
                     </p>
                   </div>
                   <div className="flex flex-row justify-between">
@@ -443,9 +439,7 @@ function OrderHistoryTable({
                       {t('position.modal.fee', { defaultValue: 'Fee' })}:
                     </p>
                     <p className="text-body-small-medium text-foreground">
-                      {selectedOrder.fee
-                        ? `VNĐ${formatValue(selectedOrder.fee)}`
-                        : '-'}
+                      {selectedOrder.fee ? `VNĐ${formatValue(selectedOrder.fee)}` : '-'}
                     </p>
                   </div>
                   <div className="flex flex-row justify-between">
@@ -480,6 +474,7 @@ type OrderHistoryTabContentProps = {
 };
 
 function OrderHistoryTabContent({ accountId, dateRange }: OrderHistoryTabContentProps) {
+  const { t } = useTranslation();
   const sortStorageKey = `${ORDER_HISTORY_SORT_STORAGE_KEY}:${accountId}`;
   const [sortKey, setSortKey] = useState<OrderHistorySortKey | null>(
     () => readOrderHistorySort(sortStorageKey)?.sortKey ?? DEFAULT_ORDER_HISTORY_SORT.sortKey,
@@ -489,17 +484,13 @@ function OrderHistoryTabContent({ accountId, dateRange }: OrderHistoryTabContent
   );
 
   useEffect(() => {
-    const persisted = readOrderHistorySort(sortStorageKey);
-    setSortKey(persisted?.sortKey ?? DEFAULT_ORDER_HISTORY_SORT.sortKey);
-    setSortDir(persisted?.sortDir ?? DEFAULT_ORDER_HISTORY_SORT.sortDir);
-  }, [sortStorageKey]);
-
-  useEffect(() => {
     persistOrderHistorySort(sortStorageKey, { sortKey, sortDir });
   }, [sortDir, sortKey, sortStorageKey]);
   const {
     data: historyOrdersData,
     isLoading,
+    isError,
+    refetch,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -565,6 +556,23 @@ function OrderHistoryTabContent({ accountId, dateRange }: OrderHistoryTabContent
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading) return <TableLoadingState />;
+  if (isError) {
+    return (
+      <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-foreground text-sm font-semibold">
+          {t('position.orderHistory.loadError', { defaultValue: 'Unable to load order history' })}
+        </p>
+        <p className="text-muted-foreground text-xs">
+          {t('position.orderHistory.loadErrorDescription', {
+            defaultValue: 'The server did not return your order history. Please try again.',
+          })}
+        </p>
+        <Button type="button" variant="neutral-outline" onClick={() => void refetch()}>
+          {t('common.retry', { defaultValue: 'Retry' })}
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div ref={scrollContainerRef} className="flex min-h-0 overflow-auto" onScroll={handleScroll}>
@@ -579,4 +587,3 @@ const MemoizedOrderHistoryTabContent = memo(OrderHistoryTabContent);
 MemoizedOrderHistoryTabContent.displayName = 'OrderHistoryTabContent';
 
 export default MemoizedOrderHistoryTabContent;
-

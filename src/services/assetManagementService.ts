@@ -1,4 +1,4 @@
-﻿import { ASSET_MANAGEMENT_ENDPOINTS } from '../constants/api';
+import { ASSET_MANAGEMENT_ENDPOINTS } from '../constants/api';
 import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
@@ -20,6 +20,21 @@ export type AssetStatus = Record<string, unknown> & {
     depositVnd?: string;
     currency?: 'VND';
     dueDate?: number;
+    walletBalanceVnd?: string;
+    walletReservedVnd?: string;
+    depositFundedVnd?: string;
+    nextDueAt?: string | null;
+    fundingDeadlineAt?: string | null;
+    walletEntries?: Array<{
+      id: string;
+      type: string;
+      direction: 'CREDIT' | 'DEBIT';
+      amountVnd: string;
+      balanceAfterVnd: string;
+      referenceId?: string | null;
+      createdAt: string;
+      metadata?: Record<string, unknown> | null;
+    }>;
     tenant?: { id?: string; walletAddress?: string; displayName?: string; username?: string };
   } | null;
 };
@@ -28,7 +43,7 @@ export type BuyoutProposal = {
   id: string;
   title: string;
   description?: string;
-  status: 'ACTIVE' | 'PASSED' | 'REJECTED' | 'EXECUTED';
+  status: 'ACTIVE' | 'PASSED' | 'REJECTED' | 'EXECUTED' | 'EXPIRED';
   endDate?: string;
   votes?: Array<{ isFor: boolean; votingPower: string }>;
   snapshots?: Array<{ userId: string; votingPower: string }>;
@@ -51,6 +66,12 @@ export type BuyoutQuote = {
     eligible: boolean;
     reasonCode?: string;
     reason?: string;
+    currentHolding?: string;
+    continuouslyHeldBalance?: string;
+    requiredCurrentHolding?: string;
+    minContinuousHolding?: string;
+    matureOwnershipThreshold?: string;
+    holdingMonths?: number;
   };
   terms: {
     durationMonths: number;
@@ -113,7 +134,7 @@ export type AssetLiquiditySnapshot = {
   assetId: string;
   symbol: string;
   currency: 'VND';
-  settlementAsset: 'VNDT';
+  settlementAsset: 'VND_LEDGER';
   tradingStatus: 'OPEN' | 'BUYOUT_ACTIVE' | 'PAUSED' | 'CLOSED';
   lastPrice: string;
   bestBid: string | null;
@@ -132,16 +153,49 @@ export type AssetLiquiditySnapshot = {
 export type RentalApplicationState = {
   available: boolean;
   requiresTokenOwnership: false;
+  eligibility: {
+    tokenizedAt?: string | null;
+    rentalEnabledUntil?: string | null;
+    expectedMonthlyRentVnd?: string | null;
+    expectedDepositVnd?: string | null;
+    allowedPurposeSectors?: string[] | null;
+  };
   application: {
     id: string;
     message?: string | null;
     desiredStartDate?: string | null;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+    durationMonths?: number | null;
+    proposedRentVnd?: string | null;
+    proposedDepositVnd?: string | null;
+    purposeSector?: string | null;
+    purposeCode?: string | null;
+    purposeDetails?: string | null;
+    proposalId?: string | null;
+    votingStartedAt?: string | null;
+    votingEndsAt?: string | null;
+    status:
+      | 'DRAFT'
+      | 'PENDING'
+      | 'PENDING_VOTE'
+      | 'APPROVED_PENDING_FUNDING'
+      | 'APPROVED'
+      | 'REJECTED'
+      | 'CANCELLED';
     reviewedAt?: string | null;
     rejectionReason?: string | null;
     createdAt: string;
     updatedAt: string;
     applicant?: RentalApplicant;
+    voteSummary?: {
+      proposalId: string;
+      status: string;
+      endsAt: string;
+      voterCount: number;
+      yesPower: string;
+      noPower: string;
+      blankPower: string;
+      eligiblePower: string;
+    } | null;
   } | null;
 };
 
@@ -150,7 +204,8 @@ export type RentalApplicant = {
   displayName?: string | null;
   username?: string | null;
   avatar?: string | null;
-  walletAddress?: string | null;
+  kycStatus?: string;
+  createdAt?: string;
 };
 
 export type RentalApplicationItem = NonNullable<RentalApplicationState['application']>;
@@ -211,10 +266,35 @@ export const getMyRentalApplication = async (assetId: string): Promise<RentalApp
 
 export const submitRentalApplication = async (
   assetId: string,
-  payload: { message?: string; desiredStartDate?: string },
+  payload: {
+    message?: string;
+    desiredStartDate?: string;
+    durationMonths: number;
+    proposedRentVnd: string;
+    proposedDepositVnd: string;
+    purposeSector: string;
+    purposeCode: string;
+    purposeDetails?: string;
+  },
 ) =>
   apiClient.post<{ success: boolean; application: RentalApplicationState['application'] }>(
     `/api/asset-management/${assetId}/rental-application`,
+    payload,
+    { baseUrl: CLIENT_BASE_URL, skipAuth: false },
+  );
+
+export const createRentalEnablementProposal = async (
+  assetId: string,
+  payload: {
+    title?: string;
+    expectedMonthlyRentVnd: string;
+    expectedDepositVnd: string;
+    allowedPurposeSectors: string[];
+    description: string;
+  },
+) =>
+  apiClient.post(
+    `/api/asset-management/${assetId}/dao/rental-enablement-proposals`,
     payload,
     { baseUrl: CLIENT_BASE_URL, skipAuth: false },
   );

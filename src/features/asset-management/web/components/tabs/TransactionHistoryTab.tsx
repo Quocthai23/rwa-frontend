@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getIntlLocale } from '@/i18n/formatting';
 import { ChevronRight } from '@untitledui/icons';
 
 import { Skeleton } from '@/components/shared/atoms/skeleton';
@@ -16,7 +17,7 @@ export default function TransactionHistoryTab({ asset }: { asset: Asset }) {
   const [selectedTransaction, setSelectedTransaction] = useState<AssetTransactionItem | null>(null);
   const { data: transactions = [], isLoading, isError } = useAssetTransactions(asset.id);
   const { data: status, isLoading: statusLoading } = useAssetStatus(asset.id);
-  const locale = i18n.resolvedLanguage?.startsWith('vi') ? 'vi-VN' : 'en-US';
+  const locale = getIntlLocale(i18n.resolvedLanguage ?? i18n.language);
 
   if (isLoading || statusLoading) return <Skeleton className="h-64 w-full" />;
 

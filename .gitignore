@@ -45,3 +45,22 @@ next-env.d.ts
 .vscode
 .cursor
 .codex
+
+# Local-only files: never include runtime data or secrets
+.tmp/
+.temp/
+*.code-workspace
+*.tsbuildinfo
+.env*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+/backups/
+/dumps/
+*.dump
+*.sql.gz
+/playwright-report/
+/test-results/

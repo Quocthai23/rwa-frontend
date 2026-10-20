@@ -6,9 +6,10 @@ import { localizeApiError } from './apiErrors';
 const translations: Record<string, string> = {
   'apiErrors.generic': 'Đã xảy ra lỗi',
   'apiErrors.unauthorized': 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+  'apiErrors.rentalFundingAccountCannotChange': 'Hợp đồng đang liên kết với tài khoản khác.',
   'trade.errors.failedCreateOrder': 'Không thể tạo lệnh. Vui lòng thử lại.',
   'trade.errors.insufficientAvailableBalance': 'Số dư khả dụng không đủ.',
-  'trade.errors.maxOrderValueExceeded': 'Giá trị tối đa mỗi lệnh là {{value}} VNDT.',
+  'trade.errors.maxOrderValueExceeded': 'Giá trị tối đa mỗi lệnh là {{value}} VND.',
   'trade.buyoutTrading.buyerLockedShort':
     'Người thâu tóm không thể đặt lệnh khi chương trình đang hoạt động.',
 };
@@ -30,6 +31,18 @@ describe('localizeApiError', () => {
     );
   });
 
+  it('localizes rental wallet machine error codes', () => {
+    expect(
+      localizeApiError(
+        {
+          code: 'rental-funding-account-cannot-change',
+          message: 'rental-funding-account-cannot-change',
+        },
+        t,
+      ),
+    ).toBe(translations['apiErrors.rentalFundingAccountCannotChange']);
+  });
+
   it('does not expose unknown backend messages', () => {
     expect(localizeApiError({ message: 'Database driver exploded' }, t)).toBe(
       translations['apiErrors.generic'],
@@ -37,8 +50,8 @@ describe('localizeApiError', () => {
   });
 
   it('localizes the maximum order value and keeps its configured amount', () => {
-    expect(localizeApiError({ message: 'Order value must not exceed 2000000000 VNDT' }, t)).toBe(
-      'Giá trị tối đa mỗi lệnh là 2.000.000.000 VNDT.',
+    expect(localizeApiError({ message: 'Order value must not exceed 2000000000 VND' }, t)).toBe(
+      'Giá trị tối đa mỗi lệnh là 2.000.000.000 VND.',
     );
   });
 

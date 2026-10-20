@@ -1,5 +1,6 @@
 const vi = {
   common: {
+    retry: 'Th\u1eed l\u1ea1i',
     search: 'Tìm kiếm',
     all: 'Tất cả',
     cancel: 'Hủy',
@@ -64,6 +65,14 @@ const vi = {
     noPositions: 'Không có vị thế nào !',
     unknownError: 'Đã xảy ra lỗi không xác định',
     noData: 'Không có dữ liệu',
+
+    back: 'Quay lại',
+    description: 'Mô tả',
+    loadMore: 'Tải thêm',
+    loading: 'Đang tải…',
+    unknown: 'Không xác định',
+    viewDetails: 'Xem chi tiết',
+    next: 'Tiếp tục',
   },
   apiErrors: {
     activeRentalContractNotFound: 'Không tìm thấy hợp đồng thuê đang có hiệu lực.',
@@ -73,6 +82,16 @@ const vi = {
     rentalFuturePeriod: 'Chưa thể thanh toán trước cho một kỳ thuê trong tương lai.',
     rentalPeriodAlreadyPaid: 'Tiền thuê tháng này đã được thanh toán.',
     rentalFundingMissing: 'Kỳ chia tiền thuê chưa có tài khoản ký quỹ hợp lệ.',
+    rentalWalletTenantOnly: 'Chỉ người thuê hiện tại mới có thể nạp ví hợp đồng này.',
+    rentalWalletContractUnavailable:
+      'Hợp đồng thuê ở trạng thái hiện tại không thể nhận thêm tiền.',
+    rentalFundingWindowExpired: 'Thời hạn nạp tiền cho hợp đồng thuê đã kết thúc.',
+    rentalFundingAccountCannotChange: 'Hợp đồng đang liên kết với một tài khoản nguồn khác.',
+    rentalWalletConcurrentUpdate:
+      'V\u00ed h\u1ee3p \u0111\u1ed3ng v\u1eeba \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt \u0111\u1ed3ng th\u1eddi. Vui l\u00f2ng b\u1ea5m n\u1ea1p ti\u1ec1n l\u1ea1i.',
+    rentalWalletAmountPositive: 'Vui lòng nhập số tiền lớn hơn 0 VND.',
+    balanceNotFound: 'Tài khoản đã chọn chưa có số dư VND.',
+    liveAccountMissing: 'Không có tài khoản VND thực đang hoạt động.',
     generic: 'Đã xảy ra lỗi',
     unauthorized: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
     tokenExpired: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
@@ -91,6 +110,9 @@ const vi = {
     assetInactive: 'Bất động sản đang tạm dừng nên chưa thể nhận hồ sơ.',
     assetAlreadyRented: 'Bất động sản này đã có người thuê đang hoạt động.',
     rentalApplicationExists: 'Bạn đã có hồ sơ thuê đang được xử lý cho bất động sản này.',
+    rentalApplicationsNotEnabled: 'Bất động sản hiện chưa mở nhận hồ sơ thuê.',
+    rentalPurposeNotApproved: 'Lĩnh vực sử dụng này chưa được cổ đông cho phép.',
+    rentalApplicationVoteActive: 'Một hồ sơ thuê khác đang được biểu quyết. Vui lòng thử lại sau.',
     rentalStartDateFuture: 'Ngày bắt đầu dự kiến phải ở tương lai.',
     proposalTokenHolderOnly: 'Chỉ người đang sở hữu token của bất động sản mới có thể tạo đề xuất.',
     buyoutNotEligible: 'Bạn chưa đủ tỷ lệ sở hữu hoặc thời gian nắm giữ để tạo đề xuất thâu tóm.',
@@ -189,6 +211,7 @@ const vi = {
     market: 'Thị trường',
     trade: 'Giao dịch',
     positions: 'Tài sản của tôi',
+    myRentals: 'Đang thuê',
     discover: 'Khám phá',
     news: 'Tin tức',
     account: 'Tài khoản',
@@ -371,26 +394,53 @@ const vi = {
     topUpSuccessTitle: 'Nạp thành công',
     topUpSuccessMessage: 'Đã nạp tài khoản demo thành công',
     depositTitle: 'Nạp tiền',
+    bankTransferName: 'Chuyển khoản ngân hàng (VND)',
+    bankTransferTime: 'Tức thì (1–5 phút)',
+    bankTransferLimit: 'Tối thiểu 10.000 VND',
+    vndOnlyNotice: 'Nền tảng hiện chỉ chấp nhận nạp tiền bằng VND.',
+    depositUnavailableTitle: 'Không thể nạp tiền',
+    selectReceivingAccount: 'Vui lòng chọn tài khoản nhận tiền.',
+    payosSuccessTitle: 'Thành công',
+    payosSuccessMessage: 'Đã tạo mã QR chuyển khoản ngân hàng.',
+    qrCreateErrorTitle: 'Không thể tạo mã QR',
+    qrCreateErrorMessage: 'Vui lòng mở trang thanh toán PayOS.',
+    amountCopied: 'Đã sao chép số tiền.',
+    transferContentCopied: 'Đã sao chép nội dung chuyển khoản.',
+    invalidCheckoutTitle: 'Liên kết không hợp lệ',
+    invalidCheckoutMessage: 'Không thể mở trang thanh toán PayOS.',
+    vietQrTitle: 'Thanh toán VietQR',
+    vietQrInstruction: 'Mở ứng dụng ngân hàng và quét mã QR bên dưới để nạp tiền.',
+    transferContent: 'Nội dung chuyển khoản',
+    openPayos: 'Mở trang thanh toán PayOS',
+    vndDepositTitle: 'Nạp tiền VND',
+    amountLabel: 'Số tiền (VND)',
+    amountPlaceholder: 'Nhập số tiền nạp',
+    minimumAmount: 'Tối thiểu: 10.000 VND',
+    minimumAmountError: 'Số tiền nạp tối thiểu là 10.000 VND.',
+    continue: 'Tiếp tục',
     comingSoonBadge: 'Sắp ra mắt',
     comingSoonMethodMessage: 'Phương thức nạp này sẽ sớm có.',
     processingTime: 'Thời gian xử lý',
     limit: 'Hạn mức',
     minDepositPrefix: 'Số tiền nạp tối thiểu là',
-    minDepositAmount: '$10 VNDT',
+    minDepositAmount: '$10 VND',
     depositQrAlt: 'Mã QR nạp tiền',
     copyAddressAria: 'Sao chép địa chỉ',
     copySuccessTitle: 'Sao chép thành công',
     copySuccessMessage: 'Đã sao chép địa chỉ vào bộ nhớ tạm.',
     shareSuccessTitle: 'Chia sẻ thành công',
     shareSuccessMessage: 'Đã chia sẻ địa chỉ thành công.',
-    sendOnlyPrefix: 'Chỉ gửi VNDT qua mạng',
+    sendOnlyPrefix: 'Chỉ gửi VND qua mạng',
     networkSuffix: '',
     fundsWarning: 'Tiền gửi sai mạng sẽ không thể khôi phục.',
     copyAddress: 'Sao chép địa chỉ',
     share: 'Chia sẻ',
     methods: {
-      tetherErc20: 'Tether (VNDT ERC20)',
-      tetherBep20: 'Tether (VNDT BEP20)',
+      vndtErc20: 'Nạp VNDT từ ví (ERC20)',
+      vndtBep20: 'Nạp VNDT từ ví (BEP20)',
+      vndtLimit: '10.000 - 200.000.000 VND',
+      tetherErc20: 'Tether (VND ERC20)',
+      tetherBep20: 'Tether (VND BEP20)',
       card: 'Thẻ',
       instantTime15Min: 'Tức thì - 15 phút',
       instantTime2Min: 'Tức thì - 2 phút',
@@ -460,9 +510,9 @@ const vi = {
   withdraw: {
     common: {
       usd: 'USD',
-      vndt: 'VNDT',
+      vndt: 'VND',
       amountWithUsd: '{{amount}} USD',
-      amountWithUsdt: '{{amount}} VNDT',
+      amountWithUsdt: '{{amount}} VND',
       networkFee: 'Phí mạng',
       amountReceived: 'Số tiền nhận được',
       processing: 'Đang xử lý...',
@@ -474,17 +524,17 @@ const vi = {
       processingTime: 'Thời gian xử lý',
       limitLabel: 'Giới hạn',
       demoAccountError: 'Tài khoản demo không thể rút tiền. Vui lòng nạp tiền vào tài khoản trước.',
-      vndtErc20Alt: 'VNDT ERC20',
-      vndtBep20Alt: 'VNDT BEP20',
-      vndt: 'Tether (VNDT)',
+      vndtErc20Alt: 'VND ERC20',
+      vndtBep20Alt: 'VND BEP20',
+      vndt: 'Tether (VND)',
       instantTime15Min: 'Tức thì - 15 phút',
       limit: '$10 - $200,000',
     },
     detail: {
-      walletUsdtAddress: 'Địa chỉ ví VNDT',
-      walletAddressHelpAria: 'Địa chỉ ví VNDT là gì?',
+      walletUsdtAddress: 'Địa chỉ ví VND',
+      walletAddressHelpAria: 'Địa chỉ ví VND là gì?',
       walletAddressHelpDescription:
-        'là nơi chúng tôi gửi VNDT on-chain cho bạn (ví dụ: TRC20). Hãy dùng đúng địa chỉ ví của bạn theo đúng mạng - sai địa chỉ hoặc sai mạng có thể làm mất tiền.',
+        'là nơi chúng tôi gửi VND on-chain cho bạn (ví dụ: TRC20). Hãy dùng đúng địa chỉ ví của bạn theo đúng mạng - sai địa chỉ hoặc sai mạng có thể làm mất tiền.',
       enterWalletAddress: 'Nhập địa chỉ ví',
       paste: 'Dán',
       max: 'Tối đa',
@@ -504,9 +554,9 @@ const vi = {
       description: 'Vui lòng đảm bảo toàn bộ thông tin bên dưới là chính xác',
       walletAddress: 'Địa chỉ ví',
       network: 'Mạng',
-      vndtEthereum: 'VNDT(Ethereum)',
+      vndtEthereum: 'VND(Ethereum)',
       withdrawalAmount: 'Số tiền rút',
-      networkFeeValue: '0.1 VNDT',
+      networkFeeValue: '0.1 VND',
     },
     verifyOtp: {
       title: 'Xác minh giao dịch',
@@ -883,6 +933,8 @@ const vi = {
     failed: 'Thất bại',
     rejected: 'Từ chối',
     cancelled: 'Đã hủy',
+
+    detailClose: 'Đóng chi tiết giao dịch',
   },
   symbolDetail: {
     tabs: {
@@ -987,6 +1039,17 @@ const vi = {
     loadingChart: 'Đang tải biểu đồ...',
     sheetTitle: 'Giao dịch {{symbol}}',
     buyoutTrading: {
+      paymentEstimate: 'Ước tính đến khi chốt quyền sở hữu của kỳ tiếp theo.',
+      buyerTitle: 'Theo dõi chương trình thâu tóm',
+      buyerRole: 'Bạn là người thâu tóm',
+      buyerMonitoring:
+        'Theo dõi thị trường và tiến độ thanh toán. Giao dịch thứ cấp được tạm khóa với người thâu tóm trong thời gian chương trình hoạt động.',
+      paymentOverview: 'Nghĩa vụ thanh toán',
+      recordDate: 'Ngày chốt quyền',
+      principalPart: 'Phần gốc',
+      premiumPart: 'Lợi tức chờ',
+      viewOnly: 'Chế độ theo dõi',
+      manageProgram: 'Quản lý chương trình',
       title: 'Giao dịch thứ cấp trong thời gian thâu tóm',
       active: 'Đang thâu tóm',
       buyer: 'Người thâu tóm: Guest {{number}}',
@@ -997,6 +1060,8 @@ const vi = {
       nextPayment: 'Kỳ thanh toán tiếp theo',
       progress: 'Tiến độ chương trình',
       progressValue: '{{completed}}/{{total}} tháng',
+      remainingTokens: 'Số token còn phải thâu tóm',
+      paidToDate: 'Đã trả cho cổ đông',
       minorityCanTrade:
         'Bạn vẫn có thể mua từ hoặc bán cho các cổ đông khác. Lệnh thứ cấp khớp theo giá thị trường, không phải giá thâu tóm đã khóa.',
       buyerLocked:
@@ -1077,7 +1142,7 @@ const vi = {
         'Ngoài crypto (thường giao dịch 24/7), Forex, kim loại, chỉ số và hầu hết thị trường phi-crypto đều có phiên nghỉ hàng tuần theo UTC (cùng thời điểm toàn cầu). Vui lòng thử lại khi phiên mở. Ngày lễ từng nước do sàn quyết định cuối.',
       marketClosedMessage: 'Thị trường đang đóng cửa. Vui lòng thử lại sau.',
       failedCreateOrder: 'Không thể tạo lệnh. Vui lòng thử lại.',
-      maxOrderValueExceeded: 'Giá trị tối đa mỗi lệnh là {{value}} VNDT. Vui lòng giảm khối lượng.',
+      maxOrderValueExceeded: 'Giá trị tối đa mỗi lệnh là {{value}} VND. Vui lòng giảm khối lượng.',
       orderPlacementFailedTitle: 'Đặt lệnh thất bại',
     },
     success: {
@@ -1109,6 +1174,10 @@ const vi = {
       accept: 'Chấp nhận',
     },
     orderForm: {
+      loginToTrade: 'Đăng nhập để giao dịch',
+      noBidAskHint:
+        'Chưa có đủ lệnh đối ứng cho lệnh thị trường. Bạn có thể đặt lệnh giới hạn và chờ khớp.',
+      loginDescription: 'Đăng nhập để xem số dư và đặt lệnh mua bán.',
       maximum: 'Tối đa',
       estimatedPrice: 'Giá dự kiến',
       quantity: 'Khối lượng',
@@ -1505,6 +1574,13 @@ const vi = {
       status: 'Trạng thái thuê',
       rented: 'Đang cho thuê',
       available: 'Đang nhận đăng ký',
+      statuses: {
+        OPEN: 'Đang nhận hồ sơ',
+        VOTING: 'Đang biểu quyết',
+        PENDING_FUNDING: 'Chờ người thuê nạp tiền',
+        RENTED: 'Đang cho thuê',
+        LOCKED: 'Chưa mở cho thuê',
+      },
       monthlyRent: 'Tiền thuê / tháng',
       expectedApy: 'Lợi suất dự kiến',
       paymentCycle: 'Chu kỳ thanh toán',
@@ -1647,9 +1723,14 @@ const vi = {
       description: 'Quyền sở hữu được tính từ số dư token ghi nhận trong sổ cái tài khoản của bạn.',
       properties: 'bất động sản',
       locked: 'Đang chờ bán',
+
+      returnSincePurchase: '{{percent}}% so với giá vốn',
+      returnBasis:
+        'Lãi/lỗ chưa thực hiện theo giá vốn bình quân của bạn; chưa gồm phí và tiền thuê.',
+      noCostBasis: 'Chưa có giá vốn',
     },
     table: {
-      asset: 'Bất động sản',
+      asset: 'Mã tài sản',
       quantity: 'Token sở hữu',
       avgBuyPrice: 'Tỷ lệ sở hữu',
       currentPrice: 'Định giá mỗi token',
@@ -1667,9 +1748,20 @@ const vi = {
     },
   },
   position: {
+    orders: {
+      loadError: 'Kh\u00f4ng th\u1ec3 t\u1ea3i l\u1ec7nh ch\u1edd kh\u1edbp',
+      loadErrorDescription:
+        'M\u00e1y ch\u1ee7 ch\u01b0a tr\u1ea3 v\u1ec1 danh s\u00e1ch l\u1ec7nh. Vui l\u00f2ng th\u1eed l\u1ea1i.',
+    },
+    orderHistory: {
+      loadError: 'Kh\u00f4ng th\u1ec3 t\u1ea3i l\u1ecbch s\u1eed l\u1ec7nh',
+      loadErrorDescription:
+        'M\u00e1y ch\u1ee7 ch\u01b0a tr\u1ea3 v\u1ec1 l\u1ecbch s\u1eed l\u1ec7nh. Vui l\u00f2ng th\u1eed l\u1ea1i.',
+    },
     tabs: {
       positions: 'Vị thế',
       portfolio: 'Bất động sản đang sở hữu',
+      myRentals: 'Bất động sản đang thuê',
       orders: 'Lệnh chờ khớp',
       positionHistory: 'Lịch sử vị thế',
       orderHistory: 'Lịch sử lệnh',
@@ -1793,13 +1885,16 @@ const vi = {
       closeAllPositions: 'Đóng tất cả vị thế',
       closeProfitablePositions: 'Đóng vị thế có lãi',
       closeLosingPositions: 'Đóng vị thế lỗ',
+
+      avgFillPrice: 'Giá khớp trung bình',
+      totalCost: 'Tổng giá trị',
     },
   },
   account: {
     assetOverview: 'Danh mục sở hữu bất động sản',
     assetOverviewDescription:
       'Theo dõi quyền sở hữu bất động sản token hóa và nguồn tiền đầu tư của bạn.',
-    addInvestmentFunds: 'Bổ sung vốn',
+    addInvestmentFunds: 'Nạp tiền',
     availableInvestmentFunds: 'Vốn sẵn sàng đầu tư',
     reservedForOrders: 'Vốn giữ cho lệnh mua',
     totalCashBalance: 'Tổng số dư tiền',
@@ -2042,6 +2137,748 @@ const vi = {
         withMessage: '{{message}}',
       },
     },
+
+    actions: {
+      RENT_CLAIM_AVAILABLE: {
+        title: 'Có tiền thuê chờ nhận',
+        description: '{{asset}}: bạn có {{amount}} tiền thuê chờ nhận.',
+      },
+      BUYOUT_CLAIM_AVAILABLE: {
+        title: 'Có tiền thâu tóm chờ nhận',
+        description: '{{asset}}: bạn có {{amount}} tiền thâu tóm chờ nhận.',
+      },
+      GOVERNANCE_VOTE_OPEN: {
+        title: 'Có đề xuất đang chờ bạn biểu quyết',
+        description: '{{asset}} có một đề xuất đang diễn ra mà bạn chưa bỏ phiếu.',
+      },
+      RENT_PAYMENT_DUE: {
+        title: 'Cần nạp ví để trả tiền thuê',
+        description:
+          '{{asset}}: tiền thuê {{amount}} đã đến hạn, số dư khả dụng trong ví thuê chưa đủ.',
+      },
+    },
+    loadedEmptyTitle: 'Chưa có mục phù hợp trong phần đã tải',
+    loadedEmptyDescription: 'Tải thêm để xem các thông báo cũ hơn trong nhóm này.',
+    groups: {
+      finance: 'Tiền và tài khoản',
+      trading: 'Giao dịch',
+      asset: 'Tài sản và biểu quyết',
+      user: 'Cộng đồng',
+      security: 'Bảo mật',
+      system: 'Hệ thống và hỗ trợ',
+    },
+    events: {
+      DEPOSIT_COMPLETED: {
+        title: 'Nạp tiền thành công',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      DEPOSIT_FAILED: {
+        title: 'Nạp tiền thất bại',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      DEPOSIT_CANCELLED: {
+        title: 'Yêu cầu nạp đã hủy',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      DEPOSIT_EXPIRED: {
+        title: 'Yêu cầu nạp hết hạn',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      DEPOSIT_REVIEW_REQUIRED: {
+        title: 'Khoản nạp cần đối soát',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      WITHDRAWAL_REQUESTED: {
+        title: 'Đã tiếp nhận yêu cầu rút',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      WITHDRAWAL_SUBMITTED: {
+        title: 'Rút tiền đang chờ xác nhận',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      WITHDRAWAL_COMPLETED: {
+        title: 'Rút tiền hoàn tất',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      WITHDRAWAL_FAILED: {
+        title: 'Rút tiền thất bại',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      WITHDRAWAL_CANCELLED: {
+        title: 'Yêu cầu rút đã hủy',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      WITHDRAWAL_DELAYED: {
+        title: 'Yêu cầu rút xử lý lâu hơn dự kiến',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      TRANSFER_SENT: {
+        title: 'Chuyển tiền thành công',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      TRANSFER_RECEIVED: {
+        title: 'Bạn đã nhận tiền',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      COMMISSION_UNLOCKED: {
+        title: 'Hoa hồng đã khả dụng',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      COMMISSION_PAID: {
+        title: 'Đã nhận hoa hồng',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem trạng thái ghi nhận.',
+      },
+      ORDER_PARTIALLY_FILLED: {
+        title: 'Lệnh đã khớp một phần',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      ORDER_FILLED: {
+        title: 'Lệnh đã khớp toàn bộ',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      ORDER_CANCELLED: {
+        title: 'Lệnh đã hủy',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      ORDER_REJECTED: {
+        title: 'Lệnh bị từ chối',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      SETTLEMENT_CONFIRMED: {
+        title: 'Đã xác nhận thanh toán blockchain',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      SETTLEMENT_FAILED: {
+        title: 'Thanh toán blockchain cần kiểm tra',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      POST_LIKED: {
+        title: 'Bài viết có lượt thích mới',
+        body: 'Mở cộng đồng để xem tương tác này.',
+      },
+      POST_COMMENTED: {
+        title: 'Bài viết có bình luận mới',
+        body: 'Mở cộng đồng để xem tương tác này.',
+      },
+      COMMENT_LIKED: {
+        title: 'Bình luận có lượt thích mới',
+        body: 'Mở cộng đồng để xem tương tác này.',
+      },
+      COMMENT_REPLIED: {
+        title: 'Bình luận có phản hồi mới',
+        body: 'Mở cộng đồng để xem tương tác này.',
+      },
+      USER_FOLLOWED: {
+        title: 'Bạn có người theo dõi mới',
+        body: 'Mở cộng đồng để xem tương tác này.',
+      },
+      KYC_SUBMITTED: {
+        title: 'Đã gửi hồ sơ xác minh',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      KYC_APPROVED: {
+        title: 'Hồ sơ xác minh đã được duyệt',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      KYC_REJECTED: {
+        title: 'Hồ sơ xác minh cần bổ sung',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      PASSWORD_CHANGED: {
+        title: 'Mật khẩu đã thay đổi',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      MFA_CHANGED: {
+        title: 'Xác thực hai bước đã thay đổi',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      EMAIL_CHANGED: {
+        title: 'Email tài khoản đã thay đổi',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      ACCOUNT_STATUS_CHANGED: {
+        title: 'Trạng thái tài khoản thay đổi',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      NEW_DEVICE_SIGN_IN: {
+        title: 'Đăng nhập từ thiết bị mới',
+        body: 'Kiểm tra mục bảo mật tài khoản. Liên hệ hỗ trợ nếu bạn không thực hiện thao tác này.',
+      },
+      RENTAL_APPLICATION_UPDATED: {
+        title: 'Đơn đăng ký thuê đã cập nhật',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      RENTAL_CONTRACT_UPDATED: {
+        title: 'Hợp đồng thuê đã cập nhật',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      GOVERNANCE_RESULT: {
+        title: 'Đã có kết quả biểu quyết',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      SUPPORT_STATUS_CHANGED: {
+        title: 'Yêu cầu hỗ trợ đổi trạng thái',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      SUPPORT_REPLY: {
+        title: 'Bạn có phản hồi hỗ trợ',
+        body: 'Yêu cầu của bạn đã được cập nhật. Mở chi tiết để kiểm tra.',
+      },
+      RENTAL_PAYMENT_COMPLETED: {
+        title: 'Đã ghi nhận thanh toán tiền thuê',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem chi tiết.',
+      },
+      RENTAL_WALLET_DEPOSIT_COMPLETED: {
+        title: 'Đã nạp ví cho thuê',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem chi tiết.',
+      },
+      RENTAL_INCOME_CLAIM_COMPLETED: {
+        title: 'Đã nhận thu nhập cho thuê',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem chi tiết.',
+      },
+      BUYOUT_INSTALLMENT_COMPLETED: {
+        title: 'Đã thanh toán kỳ thâu tóm',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem chi tiết.',
+      },
+      BUYOUT_PROCEEDS_CLAIM_COMPLETED: {
+        title: 'Đã nhận tiền thâu tóm',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem chi tiết.',
+      },
+      DIVIDEND_CLAIM_COMPLETED: {
+        title: 'Đã nhận lợi tức',
+        body: 'Số tiền: {{amount}} {{currency}}. Mở lịch sử giao dịch để xem chi tiết.',
+      },
+      POST_REPOSTED: {
+        title: 'Bài viết được chia sẻ lại',
+        body: 'Mở cộng đồng để xem tương tác này.',
+      },
+      USER_MENTIONED: {
+        title: 'Bạn được nhắc đến',
+        body: 'Mở cộng đồng để xem tương tác này.',
+      },
+      SETTLEMENT_DELAYED: {
+        title: 'Thanh toán blockchain đang chậm',
+        body: 'Giao dịch đã được ghi sổ; xác nhận blockchain vẫn đang chờ. Mở chi tiết để kiểm tra.',
+      },
+
+      NEW_AUTHOR_POST: {
+        title: 'Người bạn theo dõi có bài viết mới',
+        body: 'Mở cộng đồng để xem bài viết mới.',
+      },
+
+      RENTAL_APPLICATION_STATUS_PENDING: {
+        title: 'Đơn đăng ký thuê: chờ xét duyệt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_PENDING_VOTE: {
+        title: 'Đơn đăng ký thuê: chờ biểu quyết',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_APPROVED: {
+        title: 'Đơn đăng ký thuê: được chấp thuận',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Đơn đăng ký thuê: được duyệt, chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_PENDING_FUNDING: {
+        title: 'Đơn đăng ký thuê: chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_ACTIVE: {
+        title: 'Đơn đăng ký thuê: đang hoạt động',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_DELINQUENT: {
+        title: 'Đơn đăng ký thuê: quá hạn thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_EXPIRED: {
+        title: 'Đơn đăng ký thuê: hết hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_REJECTED: {
+        title: 'Đơn đăng ký thuê: bị từ chối',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_CANCELLED: {
+        title: 'Đơn đăng ký thuê: đã hủy',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_TERMINATED: {
+        title: 'Đơn đăng ký thuê: đã chấm dứt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_COMPLETED: {
+        title: 'Đơn đăng ký thuê: hoàn tất',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_FUNDING: {
+        title: 'Đơn đăng ký thuê: chờ tiền kích hoạt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_DEFAULTED: {
+        title: 'Đơn đăng ký thuê: vi phạm nghĩa vụ thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_DUE: {
+        title: 'Đơn đăng ký thuê: đến hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_FUNDED: {
+        title: 'Đơn đăng ký thuê: đã được nạp đủ tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_RESERVED: {
+        title: 'Đơn đăng ký thuê: đã giữ chỗ',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_APPLICATION_STATUS_SETTLED: {
+        title: 'Đơn đăng ký thuê: đã thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_PENDING: {
+        title: 'Hợp đồng thuê: chờ xét duyệt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_PENDING_VOTE: {
+        title: 'Hợp đồng thuê: chờ biểu quyết',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_APPROVED: {
+        title: 'Hợp đồng thuê: được chấp thuận',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Hợp đồng thuê: được duyệt, chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_PENDING_FUNDING: {
+        title: 'Hợp đồng thuê: chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_ACTIVE: {
+        title: 'Hợp đồng thuê: đang hoạt động',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_DELINQUENT: {
+        title: 'Hợp đồng thuê: quá hạn thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_EXPIRED: {
+        title: 'Hợp đồng thuê: hết hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_REJECTED: {
+        title: 'Hợp đồng thuê: bị từ chối',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_CANCELLED: {
+        title: 'Hợp đồng thuê: đã hủy',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_TERMINATED: {
+        title: 'Hợp đồng thuê: đã chấm dứt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_COMPLETED: {
+        title: 'Hợp đồng thuê: hoàn tất',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_FUNDING: {
+        title: 'Hợp đồng thuê: chờ tiền kích hoạt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_DEFAULTED: {
+        title: 'Hợp đồng thuê: vi phạm nghĩa vụ thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_DUE: {
+        title: 'Hợp đồng thuê: đến hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_FUNDED: {
+        title: 'Hợp đồng thuê: đã được nạp đủ tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_RESERVED: {
+        title: 'Hợp đồng thuê: đã giữ chỗ',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_STATUS_SETTLED: {
+        title: 'Hợp đồng thuê: đã thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_PENDING: {
+        title: 'Chương trình thâu tóm: chờ xét duyệt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_PENDING_VOTE: {
+        title: 'Chương trình thâu tóm: chờ biểu quyết',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_APPROVED: {
+        title: 'Chương trình thâu tóm: được chấp thuận',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Chương trình thâu tóm: được duyệt, chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_PENDING_FUNDING: {
+        title: 'Chương trình thâu tóm: chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_ACTIVE: {
+        title: 'Chương trình thâu tóm: đang hoạt động',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_DELINQUENT: {
+        title: 'Chương trình thâu tóm: quá hạn thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_EXPIRED: {
+        title: 'Chương trình thâu tóm: hết hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_REJECTED: {
+        title: 'Chương trình thâu tóm: bị từ chối',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_CANCELLED: {
+        title: 'Chương trình thâu tóm: đã hủy',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_TERMINATED: {
+        title: 'Chương trình thâu tóm: đã chấm dứt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_COMPLETED: {
+        title: 'Chương trình thâu tóm: hoàn tất',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_FUNDING: {
+        title: 'Chương trình thâu tóm: chờ tiền kích hoạt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_DEFAULTED: {
+        title: 'Chương trình thâu tóm: vi phạm nghĩa vụ thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_DUE: {
+        title: 'Chương trình thâu tóm: đến hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_FUNDED: {
+        title: 'Chương trình thâu tóm: đã được nạp đủ tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_RESERVED: {
+        title: 'Chương trình thâu tóm: đã giữ chỗ',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_STATUS_SETTLED: {
+        title: 'Chương trình thâu tóm: đã thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_PENDING: {
+        title: 'Kỳ thanh toán thâu tóm: chờ xét duyệt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_PENDING_VOTE: {
+        title: 'Kỳ thanh toán thâu tóm: chờ biểu quyết',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_APPROVED: {
+        title: 'Kỳ thanh toán thâu tóm: được chấp thuận',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_APPROVED_PENDING_FUNDING: {
+        title: 'Kỳ thanh toán thâu tóm: được duyệt, chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_PENDING_FUNDING: {
+        title: 'Kỳ thanh toán thâu tóm: chờ nạp tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_ACTIVE: {
+        title: 'Kỳ thanh toán thâu tóm: đang hoạt động',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_DELINQUENT: {
+        title: 'Kỳ thanh toán thâu tóm: quá hạn thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_EXPIRED: {
+        title: 'Kỳ thanh toán thâu tóm: hết hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_REJECTED: {
+        title: 'Kỳ thanh toán thâu tóm: bị từ chối',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_CANCELLED: {
+        title: 'Kỳ thanh toán thâu tóm: đã hủy',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_TERMINATED: {
+        title: 'Kỳ thanh toán thâu tóm: đã chấm dứt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_COMPLETED: {
+        title: 'Kỳ thanh toán thâu tóm: hoàn tất',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_FUNDING: {
+        title: 'Kỳ thanh toán thâu tóm: chờ tiền kích hoạt',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_DEFAULTED: {
+        title: 'Kỳ thanh toán thâu tóm: vi phạm nghĩa vụ thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_DUE: {
+        title: 'Kỳ thanh toán thâu tóm: đến hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_FUNDED: {
+        title: 'Kỳ thanh toán thâu tóm: đã được nạp đủ tiền',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_RESERVED: {
+        title: 'Kỳ thanh toán thâu tóm: đã giữ chỗ',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_INSTALLMENT_STATUS_SETTLED: {
+        title: 'Kỳ thanh toán thâu tóm: đã thanh toán',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      ASSET_TRADING_STATUS_CHANGED: {
+        title: 'Trạng thái giao dịch tài sản thay đổi',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_AVAILABILITY_CHANGED: {
+        title: 'Quyền cho thuê tài sản thay đổi',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_TERMS_CHANGED: {
+        title: 'Điều khoản giá thuê hoặc tiền cọc thay đổi',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      CORPORATE_ACTION_STATUS_CHANGED: {
+        title: 'Hoạt động tài sản đã cập nhật',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      GOVERNANCE_VOTE_CLOSING: {
+        title: 'Biểu quyết sắp kết thúc trong 24 giờ',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_ACTIVATION_DUE: {
+        title: 'Đến hạn nạp tiền kích hoạt thâu tóm',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_PAYMENT_DUE: {
+        title: 'Đến hạn thanh toán kỳ thâu tóm',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      BUYOUT_PAYMENT_OVERDUE: {
+        title: 'Kỳ thanh toán thâu tóm đã quá hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_FUNDING_DUE: {
+        title: 'Đến hạn nạp tiền hợp đồng thuê',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENT_PAYMENT_UPCOMING: {
+        title: 'Sắp đến kỳ thanh toán tiền thuê',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_CONTRACT_ENDING: {
+        title: 'Hợp đồng thuê sắp kết thúc',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      RENTAL_PERMISSION_EXPIRING: {
+        title: 'Quyền cho thuê sắp hết hạn',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      INTEREST_PAYMENT_DUE: {
+        title: 'Đến hạn trả lợi tức tài sản',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+      KYC_DOCUMENT_EXPIRING: {
+        title: 'Giấy tờ xác minh sắp hết hạn',
+        body: 'Vui lòng cập nhật giấy tờ tại mục bảo mật tài khoản.',
+      },
+      KYC_DOCUMENT_EXPIRED: {
+        title: 'Giấy tờ xác minh đã hết hạn',
+        body: 'Vui lòng cập nhật giấy tờ tại mục bảo mật tài khoản.',
+      },
+      PRICE_ALERT_TRIGGERED: {
+        title: 'Giá đã đạt ngưỡng bạn đặt',
+        body: '{{asset}}: giá ghi nhận {{amount}} {{currency}}. Cảnh báo một lần này đã dừng.',
+      },
+      RENT_CLAIM_AVAILABLE: {
+        title: 'Có tiền thuê chờ nhận',
+        body: '{{asset}}: {{amount}} VND. Mở chi tiết bất động sản để xử lý.',
+      },
+      BUYOUT_CLAIM_AVAILABLE: {
+        title: 'Có tiền thâu tóm chờ nhận',
+        body: '{{asset}}: {{amount}} VND. Mở chi tiết bất động sản để xử lý.',
+      },
+      DIVIDEND_AVAILABLE: {
+        title: 'Có lợi tức chờ nhận',
+        body: '{{asset}}: {{amount}} VND. Mở chi tiết bất động sản để xử lý.',
+      },
+      RENT_PAYMENT_DUE: {
+        title: 'Đến kỳ thanh toán tiền thuê',
+        body: '{{asset}}: {{amount}} VND. Mở chi tiết bất động sản để xử lý.',
+      },
+      GOVERNANCE_VOTE_OPEN: {
+        title: 'Có đề xuất chờ bạn biểu quyết',
+        body: 'Mở chi tiết bất động sản để xem trạng thái mới nhất.',
+      },
+
+      SESSION_REVOKED: {
+        title: 'Phiên đăng nhập đã bị thu hồi',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      LINKED_WALLET_CHANGED: {
+        title: 'Ví liên kết đã thay đổi',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      REFUND_STATUS_CHANGED: {
+        title: 'Trạng thái hoàn tiền đã cập nhật',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      WITHDRAWAL_REPLACED: {
+        title: 'Giao dịch rút đã được thay thế',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      ASSET_ONBOARDING_STATUS_CHANGED: {
+        title: 'Yêu cầu phát hành tài sản đã cập nhật',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      ASSET_REDEMPTION_STATUS_CHANGED: {
+        title: 'Yêu cầu đổi tài sản đã cập nhật',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      INTEREST_PAYMENT_STATUS_CHANGED: {
+        title: 'Trạng thái trả lợi tức đã cập nhật',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      SUPPORT_REQUEST_RECEIVED: {
+        title: 'Đã tiếp nhận yêu cầu hỗ trợ',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      SUPPORT_ASSIGNED: {
+        title: 'Yêu cầu hỗ trợ đã được tiếp nhận xử lý',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+      KYC_APPROVING: {
+        title: 'Hồ sơ xác minh đang được xử lý',
+        body: 'Mở chi tiết để xem trạng thái đã ghi nhận.',
+      },
+    },
+    actionOnly: 'Cần xử lý',
+    readFailed: 'Không thể đánh dấu đã đọc. Vui lòng thử lại.',
+  },
+  rentalPurposes: {
+    sectors: {
+      COMMERCIAL: 'Kinh doanh và thương mại',
+      HOSPITALITY: 'Lưu trú và du lịch',
+      RESIDENTIAL: 'Cư trú',
+      SERVICES: 'Dịch vụ và cộng đồng',
+      PRODUCTION: 'Sản xuất nhẹ',
+      OTHER: 'Khác',
+    },
+    activities: {
+      RESTAURANT: 'Nhà hàng',
+      CAFE: 'Quán cà phê và đồ uống',
+      RETAIL: 'Cửa hàng bán lẻ',
+      SHOWROOM: 'Showroom',
+      MINIMART: 'Siêu thị mini',
+      OFFICE: 'Văn phòng',
+      COWORKING: 'Không gian làm việc chung',
+      SALON_SPA: 'Salon hoặc spa',
+      TRAINING_CENTER: 'Trung tâm đào tạo',
+      CLINIC_PHARMACY: 'Phòng khám hoặc nhà thuốc',
+      WAREHOUSE_LOGISTICS: 'Kho hàng hoặc logistics',
+      HOTEL: 'Khách sạn',
+      GUESTHOUSE: 'Nhà nghỉ',
+      HOMESTAY: 'Homestay',
+      SERVICED_APARTMENT: 'Căn hộ dịch vụ',
+      SHORT_STAY: 'Lưu trú ngắn hạn',
+      FAMILY_HOME: 'Gia đình ở',
+      INDIVIDUAL_HOME: 'Cá nhân ở',
+      STAFF_HOUSING: 'Nhà ở nhân viên',
+      LONG_TERM_RESIDENCE: 'Cư trú dài hạn',
+      GYM: 'Phòng tập',
+      STUDIO: 'Studio',
+      EVENT_SPACE: 'Không gian sự kiện',
+      COMMUNITY_CENTER: 'Trung tâm sinh hoạt',
+      CARE_SERVICE: 'Dịch vụ chăm sóc',
+      CLEAN_WORKSHOP: 'Xưởng sạch',
+      LIGHT_MANUFACTURING: 'Sản xuất nhẹ',
+      PACKAGING: 'Đóng gói',
+      OTHER: 'Mục đích khác',
+    },
+  },
+  myRentals: {
+    loadError: 'Kh\u00f4ng th\u1ec3 t\u1ea3i h\u1ee3p \u0111\u1ed3ng thu\u00ea',
+    totalContracts: 'H\u1ee3p \u0111\u1ed3ng thu\u00ea',
+    totalWallet: 'T\u1ed5ng s\u1ed1 d\u01b0 v\u00ed h\u1ee3p \u0111\u1ed3ng',
+    monthlyCommitment: 'Chi ph\u00ed thu\u00ea m\u1ed7i th\u00e1ng',
+    needsAttention: '{{count}} h\u1ee3p \u0111\u1ed3ng c\u1ea7n x\u1eed l\u00fd',
+    depositProgress: 'Ti\u1ebfn \u0111\u1ed9 ti\u1ec1n c\u1ecdc',
+    fundDialogTitle: 'N\u1ea1p ti\u1ec1n v\u00e0o v\u00ed h\u1ee3p \u0111\u1ed3ng',
+    fundDialogDescription:
+      'N\u1ea1p VND \u0111\u1ec3 thanh to\u00e1n ti\u1ec1n c\u1ecdc v\u00e0 ti\u1ec1n thu\u00ea c\u1ee7a {{asset}}.',
+    availableForRent: 'S\u1ed1 d\u01b0 v\u00ed h\u1ee3p \u0111\u1ed3ng',
+    fundingAccount: 'T\u00e0i kho\u1ea3n ngu\u1ed3n',
+    accountAvailable: 'VND kh\u1ea3 d\u1ee5ng',
+    noFundingAccount: 'Ch\u01b0a c\u00f3 t\u00e0i kho\u1ea3n VND th\u1ef1c',
+    noFundingAccountDescription:
+      'H\u00e3y t\u1ea1o ho\u1eb7c k\u00edch ho\u1ea1t t\u00e0i kho\u1ea3n VND th\u1ef1c tr\u01b0\u1edbc khi n\u1ea1p.',
+    insufficientFundingBalance:
+      'T\u00e0i kho\u1ea3n ngu\u1ed3n kh\u00f4ng \u0111\u1ee7 s\u1ed1 d\u01b0 VND kh\u1ea3 d\u1ee5ng.',
+    useMaximum: 'D\u00f9ng t\u1ed1i \u0111a',
+    walletAfterFunding: 'S\u1ed1 d\u01b0 v\u00ed sau khi n\u1ea1p',
+    minimumNeeded: 'S\u1ed1 ti\u1ec1n t\u1ed1i thi\u1ec3u c\u1ea7n n\u1ea1p',
+    suggestedAmount: 'S\u1ed1 ti\u1ec1n g\u1ee3i \u00fd',
+    autoDebitNote:
+      'V\u00ed h\u1ee3p \u0111\u1ed3ng s\u1ebd t\u1ef1 \u0111\u1ed9ng thanh to\u00e1n ti\u1ec1n c\u1ecdc v\u00e0 ti\u1ec1n thu\u00ea h\u00e0ng th\u00e1ng.',
+    fundError:
+      'Kh\u00f4ng th\u1ec3 n\u1ea1p ti\u1ec1n v\u00e0o v\u00ed h\u1ee3p \u0111\u1ed3ng. Vui l\u00f2ng th\u1eed l\u1ea1i.',
+    loadErrorDescription:
+      'M\u00e1y ch\u1ee7 ch\u01b0a tr\u1ea3 v\u1ec1 h\u1ee3p \u0111\u1ed3ng thu\u00ea. Vui l\u00f2ng th\u1eed l\u1ea1i.',
+    title: 'Bất động sản đang thuê',
+    description: 'Nạp ví hợp đồng VND và theo dõi từng lần hệ thống tự động trừ tiền.',
+    emptyTitle: 'Chưa có hợp đồng thuê đang hoạt động',
+    emptyDescription: 'Mục này xuất hiện sau khi hồ sơ của bạn được cổ đông thông qua.',
+    walletBalance: 'Số dư ví hợp đồng',
+    reserved: 'Đang chờ cổ đông nhận',
+    monthlyRent: 'Tiền thuê mỗi tháng',
+    deposit: 'Tiền cọc đã nạp',
+    nextDue: 'Kỳ thanh toán tiếp theo',
+    contractEnd: 'Ngày kết thúc hợp đồng',
+    fundAmount: 'Nạp VND vào ví hợp đồng',
+    minimumRequired: 'Tối thiểu {{amount}}',
+    fund: 'Nạp tiền',
+    fundSuccess: 'Đã nạp tiền vào ví hợp đồng.',
+    walletHistory: 'Lịch sử ví hợp đồng',
+    noHistory: 'Chưa có giao dịch trong ví.',
+    status: {
+      PENDING_FUNDING: 'Chờ nạp tiền',
+      ACTIVE: 'Đang hoạt động',
+      DELINQUENT: 'Quá hạn thanh toán',
+      SUSPENDED: 'Tạm ngưng',
+    },
+    entryType: {
+      TOP_UP: 'Nạp ví',
+      MONTHLY_RENT: 'Trừ tiền thuê tháng',
+      UNALLOCATED_REFUND: 'Hoàn phần chưa phân bổ',
+    },
   },
   rentalListing: {
     backToMarket: 'Quay lại thị trường',
@@ -2063,8 +2900,25 @@ const vi = {
     unavailableDescription:
       'Tài sản này hiện không nhận hồ sơ mới. Trạng thái sẽ tự cập nhật khi hợp đồng thuê kết thúc.',
     notFound: 'Không tìm thấy tài sản cho thuê',
+    voteEndsAt: 'Biểu quyết kết thúc lúc {{time}}',
+    durationMonths: 'Thời hạn hợp đồng (tháng)',
+    proposedRent: 'Giá thuê đề xuất mỗi tháng (VND)',
+    proposedDeposit: 'Tiền cọc đề xuất (VND)',
+    purposeSector: 'Lĩnh vực sử dụng',
+    purposeCode: 'Ngành nghề cụ thể',
+    purposeDetails: 'Kế hoạch sử dụng chi tiết',
+    kycVerified: 'Đã xác minh KYC',
+    kycNotVerified: 'Chưa xác minh KYC',
+    approvedRent: 'Giá thuê được cổ đông thông qua',
+    approvedDeposit: 'Tiền cọc được cổ đông thông qua',
+    shareholderTermsTitle: 'Điều khoản tham chiếu đã được thông qua',
+    shareholderTermsHint:
+      'Các mức này được điền sẵn làm cơ sở. Bạn có thể đề xuất mức khác và cổ đông sẽ biểu quyết hồ sơ.',
+    applicationsClosedTitle: 'Chưa mở nhận hồ sơ thuê',
+    applicationsClosedDescription: 'Cổ đông chưa thông qua hoặc thời hạn mở đăng ký đã kết thúc.',
   },
   assetManagement: {
+    actions: { pending: '{{count}} việc cần xử lý' },
     title: 'Quản lý bất động sản',
     portfolioTitle: 'Bất động sản của tôi',
     portfolioDesc: 'Theo dõi vận hành, dòng tiền, thanh khoản và quản trị từng bất động sản.',
@@ -2116,6 +2970,9 @@ const vi = {
       },
     },
     buyout: {
+      paymentTitle: 'Thanh toán thâu tóm',
+      availableProceeds: 'Tiền thâu tóm chờ nhận',
+      claimExplanation: 'Người thâu tóm đã thanh toán. Nhận tiền để cộng vào số dư có sẵn.',
       title: 'Thâu tóm tài sản',
       desc: 'Khóa giá gốc và mở biểu quyết bảo vệ cổ đông thiểu số trong 7 ngày.',
       status: 'Trạng thái',
@@ -2160,9 +3017,30 @@ const vi = {
       confirmDescription: 'Hành động chỉ được thực hiện sau khi xác thực MFA hợp lệ.',
       mfaPlaceholder: 'Nhập mã 6 chữ số',
       confirming: 'Đang xác nhận...',
+
+      periodNumber: 'Kỳ {{count}}',
+      pendingPeriods: 'Xem {{count}} kỳ chờ nhận',
+      claimedHistory: 'Lịch sử đã nhận tiền ({{count}} kỳ)',
     },
     rentalOperations: {
+      claimRent: 'Nhận tiền thuê',
+      paymentPeriod: 'Kỳ tiền thuê',
+      periodTotal: 'Tổng tiền đã nộp',
+      yourShare: 'Phần của bạn',
+      awaitingPaymentExplanation:
+        'Người thuê chưa nộp tiền để chia cho cổ đông. Nút Nhận tiền thuê sẽ xuất hiện khi kỳ tiền đã được nộp và bạn có khoản chờ nhận.',
+      manageRentPayment: 'Quản lý và nạp tiền thuê',
+      contractWallet: 'Số dư ví thuê có thể sử dụng',
+      reservedForClaims: 'Tiền giữ để chia cho cổ đông',
+      historyError: 'Không tải được lịch sử chia tiền thuê.',
+      privateVoteNotice:
+        'Chỉ hiển thị tổng quyền biểu quyết. Lựa chọn của từng cổ đông được giữ riêng tư.',
+      unclaimed: 'Chưa nhận',
+      claimed: 'Đã nhận',
+      noEntitlement: 'Không có quyền nhận trong kỳ này',
       title: 'Quản lý hoạt động cho thuê',
+      expectedRent: 'Giá thuê kỳ vọng mỗi tháng (VND)',
+      expectedDeposit: 'Tiền cọc kỳ vọng (VND)',
       description: 'Thông tin hợp đồng thuê được ghi nhận cho bất động sản này.',
       status: 'Trạng thái hợp đồng',
       tenant: 'Người thuê hiện tại',
@@ -2199,6 +3077,9 @@ const vi = {
       step3Text: 'Chỉ mở sau khi hai bên xác nhận điều khoản và hạ tầng escrow sẵn sàng.',
       applicationStatuses: {
         PENDING: 'Đang chờ đơn vị vận hành xem xét',
+        DRAFT: 'Bản nháp',
+        PENDING_VOTE: 'Đang được cổ đông biểu quyết',
+        APPROVED_PENDING_FUNDING: 'Đã thông qua · chờ nạp tiền',
         APPROVED: 'Đã được chấp thuận',
         REJECTED: 'Chưa được chấp thuận',
         CANCELLED: 'Đã hủy',
@@ -2242,8 +3123,25 @@ const vi = {
       incomeClaimable: 'Chờ nhận',
       noIncomeForAccount: 'Tài khoản này không có phần được chia',
       noIncomeHistory: 'Chưa có kỳ tiền thuê nào được nộp.',
+
+      allocatedAmount: 'Đã phân bổ cho cổ đông',
+      allowedPurposes: 'Mục đích sử dụng được phép',
+      daoDescription:
+        'Quyền cho thuê và hồ sơ người thuê được quyết định bằng biểu quyết của cổ đông.',
+      enablementSubmitted: 'Đã gửi đề xuất cho thuê.',
+      grossAmount: 'Tổng tiền thuê đã nộp',
+      openEnablementVote: 'Đề xuất mở cho thuê',
+      period: 'Kỳ tiền thuê',
+      submitToDao: 'Gửi đề xuất biểu quyết',
+      transactionDetails: 'Chi tiết chia tiền thuê',
+      voteNow: 'Xem và biểu quyết',
+      yourAmount: 'Quyền nhận tiền của bạn',
+      voters: '{{count}} người biểu quyết',
     },
     governance: {
+      loadError: 'Không tải được đề xuất. Vui lòng thử lại.',
+      rentalProposal: 'Đề xuất cho thuê',
+      alreadyVoted: 'Bạn đã bỏ phiếu cho đề xuất này.',
       eligibilityTitle: 'Điều kiện thâu tóm bất động sản',
       eligibilityDescription:
         'Điều kiện được tính trực tiếp từ số dư token và lịch sử nắm giữ trong database.',
@@ -2437,6 +3335,37 @@ const vi = {
       CANCELLED: 'Đã hủy',
       FAILED: 'Thất bại',
       DRAFT: 'Bản nháp',
+
+      INITIAL: 'Chưa kích hoạt',
+      FUNDING: 'Chờ nạp tiền',
+      DEFAULTED: 'Vi phạm thanh toán',
+      PENDING_FUNDING: 'Chờ nộp tiền thuê',
+      DELINQUENT: 'Quá hạn tiền thuê',
+      SUSPENDED: 'Tạm ngừng',
+      RENTED: 'Đang cho thuê',
+      OPEN: 'Đang mở',
+      LOCKED: 'Chưa mở',
+      VOTING: 'Đang biểu quyết',
+      EXPIRED: 'Đã hết hạn',
+    },
+
+    processing: 'Đang xử lý…',
+    general: {
+      lessThanMonth: 'Chưa đầy một tháng',
+    },
+    terms: {
+      monthlyRentVnd: 'Tiền thuê hàng tháng đề xuất (VND)',
+      depositVnd: 'Tiền cọc đề xuất (VND)',
+      maintenanceBudgetVnd: 'Ngân sách bảo trì (VND)',
+      operatorName: 'Đơn vị vận hành mới',
+      operatorContact: 'Thông tin liên hệ đơn vị vận hành',
+      salePriceVnd: 'Giá bán đề xuất (VND)',
+      salePlan: 'Phương án bán và phân chia tiền',
+      nextRentalOnly:
+        'Giá chào thuê đã duyệt áp dụng cho lần thuê mới. Hợp đồng hiện tại giữ nguyên tiền thuê và tiền cọc đã thỏa thuận.',
+      approvedRentalTerms: 'Giá chào thuê đã được biểu quyết thông qua',
+      openingVoteInProgress: 'Đã có biểu quyết mở cho thuê đang diễn ra.',
+      invalid: 'Vui lòng nhập đủ điều khoản cho loại đề xuất này.',
     },
   },
   noSignIn: {
@@ -2462,6 +3391,128 @@ const vi = {
         description: 'Giao dịch một cách tự tin với bảo vệ SSL.',
       },
     },
+  },
+
+  verification: {
+    secureIdentity: 'ĐỊNH DANH & BẢO MẬT',
+    title: 'Xác minh danh tính',
+    introTitle: 'Xác minh danh tính để quản lý tài sản an tâm.',
+    introDescription:
+      'Chuẩn bị giấy tờ gốc còn hiệu lực và kiểm tra kỹ thông tin trước khi gửi hồ sơ.',
+    prepareDocument:
+      'CCCD/căn cước hoặc hộ chiếu còn hiệu lực. Chụp trọn giấy tờ, rõ nét, không lóa hay cắt góc.',
+    prepareFace:
+      'Ảnh chân dung mới chụp ở nơi đủ sáng, không khẩu trang, kính râm hoặc bộ lọc ảnh.',
+    prepareDetails:
+      'Họ tên trên giấy tờ, thông tin cấp giấy tờ, số liên hệ, địa chỉ và nghề nghiệp.',
+    privacy:
+      'Chỉ cung cấp giấy tờ của chính bạn. Hồ sơ cần được duyệt trước khi tài khoản được xác minh. Không tải thông tin người khác.',
+    documents: 'Giấy tờ',
+    information: 'Thông tin',
+    portrait: 'Ảnh chân dung',
+    review: 'Kiểm tra',
+    documentType: 'Loại giấy tờ',
+    idCard: 'CCCD / Căn cước',
+    passport: 'Hộ chiếu',
+    ID_CARD: 'CCCD / Căn cước',
+    PASSPORT: 'Hộ chiếu',
+    idFrontImg: 'Trang thông tin / mặt trước',
+    idBackImg: 'Mặt sau căn cước',
+    selfieImg: 'Chụp hoặc chọn ảnh chân dung',
+    fileHint: 'JPG, PNG hoặc WEBP · tối đa 10 MB',
+    fileError: 'Chọn ảnh JPG, PNG hoặc WEBP dung lượng tối đa 10 MB.',
+    documentHint:
+      'Giữ đầy đủ các góc giấy tờ. Nội dung cần đọc được và khớp thông tin ở bước tiếp theo.',
+    fullName: 'Họ và tên trên giấy tờ',
+    dob: 'Ngày sinh',
+    idNumber: 'Số giấy tờ',
+    sex: 'Giới tính trên giấy tờ',
+    select: 'Chọn thông tin',
+    MALE: 'Nam',
+    FEMALE: 'Nữ',
+    OTHER: 'Khác',
+    nationality: 'Quốc tịch',
+    phone: 'Số điện thoại liên hệ (ví dụ +84912345678)',
+    issueDate: 'Ngày cấp',
+    expiryDate: 'Ngày hết hạn',
+    noExpiry: 'Giấy tờ không có thời hạn',
+    issuingAuthority: 'Cơ quan cấp',
+    occupation: 'Nghề nghiệp',
+    permanentAddress: 'Địa chỉ thường trú',
+    residentialAddress: 'Địa chỉ hiện tại',
+    countryOfResidence: 'Quốc gia cư trú',
+    portraitHint: 'Nhìn thẳng camera, để rõ toàn bộ khuôn mặt và sử dụng ảnh mới, không chỉnh sửa.',
+    manualReview:
+      'Ảnh phục vụ đối chiếu danh tính khi duyệt hồ sơ. Đây chưa phải bước đọc chip NFC hay kiểm tra người thật chuyên dụng.',
+    reviewTitle: 'Kiểm tra trước khi gửi',
+    consent:
+      'Tôi xác nhận thông tin và giấy tờ là của chính tôi, chính xác và đồng ý xử lý chúng để xác minh danh tính.',
+    processing: 'Đang xử lý…',
+    submit: 'Gửi hồ sơ xét duyệt',
+    start: 'Bắt đầu xác minh',
+    submitted: 'Đã tiếp nhận hồ sơ xác minh của bạn.',
+    submittedTitle: 'Đã gửi hồ sơ',
+    approvedTitle: 'Danh tính đã xác minh',
+    approvedDescription: 'Hồ sơ xác minh danh tính của bạn đã được phê duyệt.',
+    pendingTitle: 'Hồ sơ đang được xét duyệt',
+    pendingDescription:
+      'Hệ thống đã tiếp nhận giấy tờ. Bạn có thể quay lại để kiểm tra kết quả xét duyệt.',
+    refresh: 'Cập nhật trạng thái',
+    rejected: 'Hồ sơ cần bổ sung',
+    ocrUnavailable:
+      'Hiện chưa đọc tự động được giấy tờ. Vui lòng nhập thông tin chính xác từ giấy tờ.',
+    submitError: 'Chưa gửi được hồ sơ. Vui lòng kiểm tra thông tin và thử lại.',
+    dateError: 'Kiểm tra ngày sinh, ngày cấp và ngày hết hạn của giấy tờ.',
+    loadError: 'Chưa tải được trạng thái xác minh. Vui lòng thử lại.',
+
+    renew: 'Cập nhật giấy tờ',
+    renewalHint: 'Giấy tờ sắp hoặc đã hết hạn. Ngày hết hạn:',
+
+    completeLegacyProfile:
+      'Hồ sơ cũ chưa có thông tin hạn giấy tờ. Vui lòng cập nhật để nhận nhắc hạn phù hợp.',
+  },
+  notificationSettings: {
+    title: 'Cài đặt thông báo',
+    governance: 'Email biểu quyết',
+    description:
+      'Nhận email khi có đề xuất mới và kết quả biểu quyết của tài sản bạn có quyền bỏ phiếu.',
+    recipient: 'Gửi đến',
+    missingSmtp: 'Máy chủ chưa cấu hình gửi email. Lựa chọn của bạn vẫn được lưu.',
+    saved: 'Đã lưu tùy chọn',
+    saveError: 'Chưa lưu được tùy chọn. Vui lòng thử lại.',
+    language: 'Ngôn ngữ email',
+    groupHint:
+      'Chọn thông báo trong ứng dụng, email và push cho từng nhóm. Thay đổi áp dụng cho sự kiện mới.',
+    group: 'Nhóm thông báo',
+    inApp: 'Ứng dụng',
+    email: 'Email',
+
+    followedPosts: 'Bài mới từ người đang theo dõi',
+
+    devicePush: 'Thông báo trên thiết bị này',
+    pushHint:
+      'Bật nhận trên thiết bị này, sau đó chọn Push cho từng nhóm. Nội dung chi tiết chỉ hiển thị trong ứng dụng.',
+    pushUnavailable:
+      'Push cần trình duyệt hỗ trợ, HTTPS và cấu hình máy chủ. Trên iPhone, hãy mở ứng dụng đã thêm vào Màn hình chính.',
+    pushError: 'Không thể cập nhật push. Kiểm tra quyền thông báo của trình duyệt rồi thử lại.',
+    disableDevice: 'Tắt trên thiết bị này',
+    enableDevice: 'Bật trên thiết bị này',
+    priceAlerts: 'Cảnh báo giá',
+    priceHint:
+      'Đặt ngưỡng giá ghi nhận. Mỗi cảnh báo báo một lần rồi dừng; bạn có thể bật lại. Tối đa 20 cảnh báo đang hoạt động.',
+    asset: 'Tài sản',
+    chooseAsset: 'Chọn tài sản',
+    condition: 'Điều kiện',
+    above: 'Đạt hoặc vượt',
+    below: 'Bằng hoặc thấp hơn',
+    threshold: 'Ngưỡng giá (VND)',
+    addAlert: 'Tạo cảnh báo',
+    alertError:
+      'Không thể cập nhật cảnh báo. Kiểm tra ngưỡng giá và giới hạn cảnh báo rồi thử lại.',
+    armed: 'Đang theo dõi',
+    triggered: 'Đã thông báo',
+    rearm: 'Bật lại',
+    push: 'Push',
   },
 };
 

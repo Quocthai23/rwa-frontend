@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -455,7 +455,7 @@ function TradePanel({
                 availableBalanceValue={
                   transactionType === 'sell'
                     ? `${formatBalance(baseAvailableQuantity)} ${symbol}`
-                    : `${formatBalance(availableBalance.toNumber())} VNDT`
+                    : `${formatBalance(availableBalance.toNumber())} VND`
                 }
                 onSell={() => {
                   setTransactionType('sell');

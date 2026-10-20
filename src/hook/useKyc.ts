@@ -8,14 +8,16 @@ import { localizeApiError } from '@/i18n/apiErrors';
 export function useKyc() {
   const { showError, showSuccess } = useToast();
   const { t } = useTranslation();
+  const userId = useAuthStore((state) => state.user?.id);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const {
     data: kycStatus,
     refetch: refetchKyc,
     isLoading: isKycLoading,
+    isError: isKycError,
   } = useQuery({
-    queryKey: ['kyc-status'],
+    queryKey: ['kyc-status', userId],
     queryFn: () => kycService.getMyKyc(),
     enabled: isAuthenticated,
   });
@@ -23,7 +25,7 @@ export function useKyc() {
   const submitKycMutation = useMutation({
     mutationFn: (data: SubmitKycRequest) => kycService.submitKyc(data),
     onSuccess: () => {
-      showSuccess('KYC Submitted', 'Your verification request has been received.');
+      showSuccess(t('common.success'), t('verification.submitted'));
       refetchKyc();
     },
     onError: (error: unknown) => {
@@ -34,8 +36,9 @@ export function useKyc() {
   return {
     kycStatus,
     isKycLoading,
+    isKycError,
     refetchKyc,
-    submitKyc: submitKycMutation.mutate,
+    submitKyc: submitKycMutation.mutateAsync,
     isSubmitting: submitKycMutation.isPending,
   };
 }

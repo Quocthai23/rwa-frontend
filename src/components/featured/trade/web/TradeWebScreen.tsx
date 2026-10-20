@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -7,17 +7,13 @@ import { useAssetById, useAssetCategories } from '@/hook/useAssets';
 import { useSymbols } from '@/hook/useSymbols';
 import { useMarketViewModel } from '@/features/market/shared/hooks/useMarketViewModel';
 import { cn } from '@/lib/utils';
-import { useAccountStore } from '@/store/useAccountStore';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
-import { useAppHydrated } from '@/hook/useAppHydrated';
-import { useAppStore } from '@/store/useAppStore';
 import { ONE_CLICK_TRADING_ACCEPTED_KEY } from '../components/constants';
 import { OneClickTrading } from './components/OneClickTrading';
 import { TradeOrderPanelAside } from './components/TradeOrderPanelAside';
 import { TradeFloatingOneClickBar } from './components/TradeFloatingOneClickBar';
 import {
   TradeWebMarketAside,
-  hashToPercent,
   normalizeDigits,
 } from './components/TradeWebMarketAside';
 import { toPositiveAssetNumber } from '@/components/shared/chart/components/web/tradePanel/utils/tradePanelInputHelpers';
@@ -182,8 +178,6 @@ export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard
   const tradePanelRef = useRef<TradePanelSheetHandle | null>(null);
   const asideOrderFormRef = useRef<TradeWebAsideOrderFormHandle | null>(null);
   const tradeShareCaptureRef = useRef<HTMLElement | null>(null);
-  const hasHydratedApp = useAppHydrated();
-  const appLanguage = useAppStore((s) => s.language);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(
@@ -333,7 +327,7 @@ export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard
 
   const selectedAssetName = symbolAsset?.name || currentSymbol;
   const digit = normalizeDigits(symbolAsset?.digit ?? 2);
-  const chg = hashToPercent(currentSymbol || '');
+  const chg = Number(rtBySymbol?.[currentSymbol]?.changePercent ?? 0);
   const chgClass = chg >= 0 ? 'text-green-500' : 'text-red-500';
   const buyoutBuyerLocked = Boolean(
     symbolAsset?.buyoutSummary?.status === 'ACTIVE' && symbolAsset.buyoutSummary.viewerIsBuyer,
@@ -415,6 +409,7 @@ export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard
             currentSymbol={currentSymbol}
             onSymbolSelect={handleSymbolSelect}
             symbolAssetId={symbolAsset?.id}
+            disableOrderActions={buyoutBuyerLocked}
           />
 
           <TradeOrderPanelAside
@@ -436,6 +431,7 @@ export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard
             isOneClickEnabled={isOneClickEnabled}
             isAsideLimitMode={isAsideLimitMode}
             disableOrderActions={buyoutBuyerLocked}
+            buyoutSummary={symbolAsset?.buyoutSummary}
             orderSide={asideOrderSide}
             onOrderSideChange={setAsideOrderSide}
             onAsideQuantityLabelChange={setAsideQuantityLabel}

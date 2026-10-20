@@ -1,6 +1,17 @@
 import type { TFunction } from 'i18next';
 
 const API_ERROR_CODE_KEY_MAP: Record<string, string> = {
+  'rental-must-be-enabled-before-changing-terms': 'apiErrors.rentalApplicationsNotEnabled',
+  'rental-terms-changed-since-proposal': 'assetManagement.terms.invalid',
+  'rental-terms-proposal-already-active': 'assetManagement.terms.invalid',
+  'monthly-rent-invalid': 'assetManagement.terms.invalid',
+  'rental-deposit-invalid': 'assetManagement.terms.invalid',
+  'maintenance-budget-invalid': 'assetManagement.terms.invalid',
+  'operator-name-invalid': 'assetManagement.terms.invalid',
+  'operator-contact-invalid': 'assetManagement.terms.invalid',
+  'sale-price-invalid': 'assetManagement.terms.invalid',
+  'sale-plan-invalid': 'assetManagement.terms.invalid',
+  'rental-enablement-vote-already-active': 'assetManagement.terms.openingVoteInProgress',
   'account-forbidden': 'apiErrors.accountForbidden',
   'email-already-exists': 'apiErrors.emailAlreadyExists',
   'insufficient-balance': 'apiErrors.insufficientBalance',
@@ -25,6 +36,9 @@ const API_ERROR_CODE_KEY_MAP: Record<string, string> = {
   'asset-is-not-active': 'apiErrors.assetInactive',
   'asset-already-has-active-tenant': 'apiErrors.assetAlreadyRented',
   'rental-application-already-exists': 'apiErrors.rentalApplicationExists',
+  'rental-applications-not-enabled': 'apiErrors.rentalApplicationsNotEnabled',
+  'rental-purpose-not-approved': 'apiErrors.rentalPurposeNotApproved',
+  'another-rental-application-is-voting': 'apiErrors.rentalApplicationVoteActive',
   'desired-start-date-must-be-in-the-future': 'apiErrors.rentalStartDateFuture',
   'only-token-holders-can-create-proposals': 'apiErrors.proposalTokenHolderOnly',
   'rental-applications-operator-only': 'apiErrors.rentalApplicationsOperatorOnly',
@@ -39,6 +53,14 @@ const API_ERROR_CODE_KEY_MAP: Record<string, string> = {
   'future-rental-period-cannot-be-paid': 'apiErrors.rentalFuturePeriod',
   'rental-period-already-paid': 'apiErrors.rentalPeriodAlreadyPaid',
   'rental-income-funding-account-is-missing': 'apiErrors.rentalFundingMissing',
+  'only-current-tenant-can-fund-wallet': 'apiErrors.rentalWalletTenantOnly',
+  'rental-contract-cannot-be-funded': 'apiErrors.rentalWalletContractUnavailable',
+  'rental-funding-window-expired': 'apiErrors.rentalFundingWindowExpired',
+  'rental-funding-account-cannot-change': 'apiErrors.rentalFundingAccountCannotChange',
+  'rental-wallet-concurrent-update': 'apiErrors.rentalWalletConcurrentUpdate',
+  'rental-wallet-amount-must-be-positive': 'apiErrors.rentalWalletAmountPositive',
+  'balance-not-found': 'apiErrors.balanceNotFound',
+  'no-active-live-account-is-available': 'apiErrors.liveAccountMissing',
 };
 
 const API_ERROR_MESSAGE_RULES: Array<{ pattern: RegExp; key: string }> = [
@@ -71,6 +93,18 @@ const API_ERROR_MESSAGE_RULES: Array<{ pattern: RegExp; key: string }> = [
     key: 'apiErrors.assetAlreadyRented',
   },
   {
+    pattern: /rental-applications-not-enabled/i,
+    key: 'apiErrors.rentalApplicationsNotEnabled',
+  },
+  {
+    pattern: /rental-purpose-not-approved/i,
+    key: 'apiErrors.rentalPurposeNotApproved',
+  },
+  {
+    pattern: /another-rental-application-is-voting/i,
+    key: 'apiErrors.rentalApplicationVoteActive',
+  },
+  {
     pattern: /rental-application-already-exists/i,
     key: 'apiErrors.rentalApplicationExists',
   },
@@ -99,6 +133,14 @@ const API_ERROR_MESSAGE_RULES: Array<{ pattern: RegExp; key: string }> = [
   {
     pattern: /insufficient (available )?(balance|funds)|not enough (balance|funds)/i,
     key: 'trade.errors.insufficientAvailableBalance',
+  },
+  {
+    pattern: /balance not found/i,
+    key: 'apiErrors.balanceNotFound',
+  },
+  {
+    pattern: /no active live account is available/i,
+    key: 'apiErrors.liveAccountMissing',
   },
   {
     pattern:
@@ -208,7 +250,7 @@ export function localizeApiError(
 
   const message = extractMessage(error);
   if (message) {
-    const maxOrderValueMatch = message.match(/order value must not exceed\s+([\d.,]+)\s+VNDT/i);
+    const maxOrderValueMatch = message.match(/order value must not exceed\s+([\d.,]+)\s+VND/i);
     if (maxOrderValueMatch) {
       const numericValue = Number(maxOrderValueMatch[1].replace(/,/g, ''));
       const value = Number.isFinite(numericValue)

@@ -31,11 +31,7 @@ type MainTabId = 'chart' | 'analysis' | 'info';
 type PositionPanelTab = 'portfolio' | 'orders' | 'order-history';
 
 const MAIN_TAB_IDS: MainTabId[] = ['chart', 'analysis', 'info'];
-const POSITION_PANEL_TAB_IDS: PositionPanelTab[] = [
-  'portfolio',
-  'orders',
-  'order-history',
-];
+const POSITION_PANEL_TAB_IDS: PositionPanelTab[] = ['portfolio', 'orders', 'order-history'];
 
 /** Below this viewport height the positions panel stays collapsed to leave room for the chart. */
 const POSITION_PANEL_COLLAPSE_MAX_VIEWPORT_HEIGHT_PX = 790;
@@ -56,6 +52,7 @@ type TradeWebMainContentProps = {
   currentSymbol: string;
   onSymbolSelect: (symbol: string) => void;
   symbolAssetId?: string;
+  disableOrderActions?: boolean;
 };
 
 export function TradeWebMainContent({
@@ -74,6 +71,7 @@ export function TradeWebMainContent({
   currentSymbol,
   onSymbolSelect,
   symbolAssetId,
+  disableOrderActions = false,
 }: TradeWebMainContentProps) {
   const { t } = useTranslation();
   const [activeMainTab, setActiveMainTab] = useState<MainTabId>('chart');
@@ -103,11 +101,14 @@ export function TradeWebMainContent({
       window.removeEventListener('resize', syncViewport);
       window.visualViewport?.removeEventListener('resize', syncViewport);
     };
-  }, []);
+  }, [setIsPositionPanelExpanded]);
 
-  const applyPositionPanelExpanded = useCallback((update: SetStateAction<boolean>) => {
-    setIsPositionPanelExpanded((prev) => (typeof update === 'function' ? update(prev) : update));
-  }, []);
+  const applyPositionPanelExpanded = useCallback(
+    (update: SetStateAction<boolean>) => {
+      setIsPositionPanelExpanded((prev) => (typeof update === 'function' ? update(prev) : update));
+    },
+    [setIsPositionPanelExpanded],
+  );
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const accountId = selectedAccount?.id || '';
 
@@ -147,54 +148,58 @@ export function TradeWebMainContent({
               <p className="text-body-large-semibold text-foreground">{currentSymbol}</p>
             </div>
             <div className="flex items-center justify-end gap-2">
-              <Button
-                variant="white-contained"
-                className="p-0"
-                type="button"
-                onClick={toggleAsideLimitMode}
-                aria-pressed={isAsideLimitMode}
-              >
-                <Image
-                  src={
-                    isAsideLimitMode || !isOneClickEnabled
-                      ? '/assets/icons/chart/limitOrder.svg'
-                      : isDarkMode
-                        ? '/icons/Limitorder.svg'
-                        : '/assets/icons/chart/Limit-order-disable.svg'
-                  }
-                  alt={t('trade.a11y.limitOrder')}
-                  width={24}
-                  height={24}
-                />
-              </Button>
+              {!disableOrderActions && (
+                <>
+                  <Button
+                    variant="white-contained"
+                    className="p-0"
+                    type="button"
+                    onClick={toggleAsideLimitMode}
+                    aria-pressed={isAsideLimitMode}
+                  >
+                    <Image
+                      src={
+                        isAsideLimitMode || !isOneClickEnabled
+                          ? '/assets/icons/chart/limitOrder.svg'
+                          : isDarkMode
+                            ? '/icons/Limitorder.svg'
+                            : '/assets/icons/chart/Limit-order-disable.svg'
+                      }
+                      alt={t('trade.a11y.limitOrder')}
+                      width={24}
+                      height={24}
+                    />
+                  </Button>
 
-              <Button
-                variant="white-contained"
-                className="p-0"
-                type="button"
-                onClick={onOneClickHeaderPress}
-              >
-                {isAcceptedTerms && isOneClickEnabled ? (
-                  <Image
-                    src="/assets/icons/chart/oneClick.svg"
-                    alt={t('trade.a11y.oneClickTrading')}
-                    width={24}
-                    height={24}
-                  />
-                ) : (
-                  <Image
-                    src={
-                      isDarkMode
-                        ? '/icons/One-click.svg'
-                        : '/assets/icons/chart/One-Click-disable.svg'
-                    }
-                    alt={t('trade.a11y.oneClickTrading')}
-                    width={24}
-                    height={24}
-                    className="opacity-70"
-                  />
-                )}
-              </Button>
+                  <Button
+                    variant="white-contained"
+                    className="p-0"
+                    type="button"
+                    onClick={onOneClickHeaderPress}
+                  >
+                    {isAcceptedTerms && isOneClickEnabled ? (
+                      <Image
+                        src="/assets/icons/chart/oneClick.svg"
+                        alt={t('trade.a11y.oneClickTrading')}
+                        width={24}
+                        height={24}
+                      />
+                    ) : (
+                      <Image
+                        src={
+                          isDarkMode
+                            ? '/icons/One-click.svg'
+                            : '/assets/icons/chart/One-Click-disable.svg'
+                        }
+                        alt={t('trade.a11y.oneClickTrading')}
+                        width={24}
+                        height={24}
+                        className="opacity-70"
+                      />
+                    )}
+                  </Button>
+                </>
+              )}
               <Button
                 type="button"
                 variant="white-contained"
@@ -297,7 +302,9 @@ export function TradeWebMainContent({
                   const getTabLabel = () => {
                     switch (tabId) {
                       case 'portfolio':
-                        return t('position.tabs.portfolio', { defaultValue: 'My Portfolio / Assets' });
+                        return t('position.tabs.portfolio', {
+                          defaultValue: 'My Portfolio / Assets',
+                        });
                       case 'orders':
                         return t('position.tabs.orders', { defaultValue: 'Open Orders' });
                       default:
@@ -340,4 +347,3 @@ export function TradeWebMainContent({
     </main>
   );
 }
-

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/shared/atoms/button';
+import { AssetManagementButton as Button } from '@/features/asset-management/web/components/AssetManagementButton';
 import { Input } from '@/components/shared/atoms/input';
 import { Skeleton } from '@/components/shared/atoms/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/shared/atoms/app/sheet';

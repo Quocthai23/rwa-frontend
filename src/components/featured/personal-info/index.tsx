@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
@@ -430,7 +430,7 @@ export default function PersonalInfo() {
                 {t('commissions.unclaimedBalance', { defaultValue: 'Unclaimed' })}
               </div>
               <div className="text-body-large-semibold text-foreground mt-0.5">
-                ${Number(commStats?.unclaimedCommissions ?? 0).toFixed(2)} <span className="text-xs text-muted-foreground font-normal">VNDT</span>
+                ${Number(commStats?.unclaimedCommissions ?? 0).toFixed(2)} <span className="text-xs text-muted-foreground font-normal">VND</span>
               </div>
             </div>
             <Button
