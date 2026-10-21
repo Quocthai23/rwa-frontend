@@ -1,4 +1,10 @@
 const en = {
+  demoAvailability: {
+    paymentsDescription:
+      'Deposits, withdrawals and transfers are only available for live accounts. Switch to a live account to continue.',
+    title: 'Not available for demo accounts',
+    description: 'Switch to a live account to use this feature.',
+  },
   common: {
     retry: 'Retry',
     search: 'Search',

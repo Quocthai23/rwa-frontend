@@ -1,4 +1,11 @@
 export type Account = {
+  environment?: 'DEMO' | 'LIVE';
+  equity?: string;
+  pnl?: string;
+  unrealizedPnl?: string;
+  realizedPnl?: string;
+  totalFee?: string;
+
   accountTypeId: string;
   availableBalance: string;
   balance: string;

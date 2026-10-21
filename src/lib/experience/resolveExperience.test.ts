@@ -12,3 +12,10 @@ describe('buyout trading experience', () => {
     expect(resolveRouteExperience('/buyout-trading/MTX-BUYOUT-DEMO', 'app')).toBe('app');
   });
 });
+
+describe('notification settings experience', () => {
+  it('uses desktop navigation on desktop and mobile navigation on mobile', () => {
+    expect(resolveRouteExperience('/notifications/settings', 'web')).toBe('web');
+    expect(resolveRouteExperience('/notifications/settings', 'app')).toBe('app');
+  });
+});

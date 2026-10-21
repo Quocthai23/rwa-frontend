@@ -1,18 +1,17 @@
-﻿'use client';
+'use client';
 
+import { notifyIfDemoAccount } from '@/store/demoNoticeStore';
 import {
   Check,
   ChevronRight,
   Copy01,
   Edit02,
-  Gift01,
   Loading01,
   LogOut01,
   MessageChatCircle,
   MessageTextSquare01,
   Settings01,
   ClockRewind,
-  Share07,
   User01,
 } from '@untitledui/icons';
 import Image from 'next/image';
@@ -35,7 +34,6 @@ import ChatSupportWebScreen from '@/components/featured/chat/web/ChatSupportWebS
 import SupportScreenWeb from '@/components/featured/support-history/web/SupportScreenWeb';
 import TransactionHistoryWeb from '@/components/featured/transaction-history/web/TransactionHistoryWeb';
 import DepositFlowSheet from '@/components/featured/deposit/web/DepositFlowSheet';
-import TopUpFlowSheet from '@/components/featured/top-up/web/TopUpFlowSheet';
 import WithdrawFlowSheet from '@/components/featured/withdraw/web/WithdrawFlowSheet';
 import { authApi } from '@/services/auth';
 import { imageApi } from '@/services/imageService';
@@ -52,7 +50,6 @@ import EditGender from '@/components/featured/personal-info/web/components/EditG
 import { SupportTicketStatus } from '@/types/support';
 import TransferFlowSheet from '@/components/featured/transfer/web/TransferFlowSheet';
 import { useToast } from '@/hook/useToast';
-import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { cn } from '@/lib/utils';
 import { User } from '@/types/auth';
 
@@ -166,7 +163,6 @@ export default function WebScreen() {
   const logout = useAuthStore((state) => state.logout);
   const clearFavorites = useFavoriteAssetsStore((state) => state.clearFavorites);
   const clearSelection = useAccountStore((state) => state.clearSelection);
-  const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const clearAuth = useAppStore((state) => state.clearAuth);
   const { me, refetchAssets, refetchMe } = useGetData();
   const { showError, showSuccess } = useToast();
@@ -177,7 +173,6 @@ export default function WebScreen() {
   const [isDisplayNameSheetOpen, setDisplayNameSheetOpen] = useState(false);
   const [isGenderSheetOpen, setGenderSheetOpen] = useState(false);
   const [isDepositSheetOpen, setDepositSheetOpen] = useState(false);
-  const [isTopUpSheetOpen, setTopUpSheetOpen] = useState(false);
   const [isWithdrawSheetOpen, setWithdrawSheetOpen] = useState(false);
   const [isTransferSheetOpen, setTransferSheetOpen] = useState(false);
   const [supportChatState, setSupportChatState] = useState<SupportChatState>({ mode: 'history' });
@@ -294,40 +289,19 @@ export default function WebScreen() {
   ]);
 
   const handleDepositClick = useCallback(() => {
-    if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-      setTopUpSheetOpen(true);
-    } else {
-      setDepositSheetOpen(true);
-    }
-  }, [selectedAccount?.accountTypeId]);
+    if (notifyIfDemoAccount()) return;
+    setDepositSheetOpen(true);
+  }, []);
 
   const handleWithdrawClick = useCallback(() => {
-    if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-      showError(
-        t('home.withdrawFailedTitle', 'Withdraw failed'),
-        t(
-          'home.withdrawDemoError',
-          'Demo accounts cannot perform withdrawals. Please top up your account.',
-        ),
-      );
-    } else {
-      setWithdrawSheetOpen(true);
-    }
-  }, [selectedAccount?.accountTypeId, showError, t]);
+    if (notifyIfDemoAccount()) return;
+    setWithdrawSheetOpen(true);
+  }, []);
 
   const handleTransferClick = useCallback(() => {
-    if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-      showError(
-        t('home.transferFailedTitle', 'Transfer failed'),
-        t(
-          'home.transferDemoError',
-          'Demo accounts cannot perform transfers. Please switch to a live account.',
-        ),
-      );
-    } else {
-      setTransferSheetOpen(true);
-    }
-  }, [selectedAccount?.accountTypeId, showError, t]);
+    if (notifyIfDemoAccount()) return;
+    setTransferSheetOpen(true);
+  }, []);
 
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -411,7 +385,7 @@ export default function WebScreen() {
       <EditDisplayName open={isDisplayNameSheetOpen} onOpenChange={setDisplayNameSheetOpen} />
       <EditGender open={isGenderSheetOpen} onOpenChange={setGenderSheetOpen} />
       <DepositFlowSheet isOpen={isDepositSheetOpen} onOpenChange={setDepositSheetOpen} />
-      <TopUpFlowSheet isOpen={isTopUpSheetOpen} onOpenChange={setTopUpSheetOpen} />
+
       <WithdrawFlowSheet isOpen={isWithdrawSheetOpen} onOpenChange={setWithdrawSheetOpen} />
       <TransferFlowSheet isOpen={isTransferSheetOpen} onOpenChange={setTransferSheetOpen} />
       <div className="grid h-full min-h-0 grid-cols-[344px_minmax(0,1fr)] gap-12 px-6 py-6 min-[1123px]:px-20">
@@ -500,7 +474,7 @@ export default function WebScreen() {
           ) : null}
         </section>
 
-        <section className="bg-background min-h-0 overflow-y-auto rounded pr-1 no-scrollbar">
+        <section className="bg-background no-scrollbar min-h-0 overflow-y-auto rounded pr-1">
           {activeItem === 'security' ? (
             <SecurityWebScreen />
           ) : activeItem === 'transaction-history' ? (
@@ -631,4 +605,3 @@ export default function WebScreen() {
     </div>
   );
 }
-

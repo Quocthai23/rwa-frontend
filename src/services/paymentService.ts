@@ -1,4 +1,5 @@
-﻿import {
+import { demoTradingEndpoint, assertLiveTradingMode } from './tradingScope';
+import {
   type CreateWalletPayload,
   type CreateWalletResponse,
   type WithdrawPayload,
@@ -17,6 +18,7 @@ import { CLIENT_BASE_URL } from './baseUrl';
 const isServer = typeof window === 'undefined';
 
 export const payosCheckout = async (payload: PayosCheckoutPayload, accessToken?: string) => {
+  assertLiveTradingMode();
   if (isServer) {
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     return apiClient.post<PayosCheckoutResponse>('/payment/payos/checkout', payload, {
@@ -30,6 +32,7 @@ export const payosCheckout = async (payload: PayosCheckoutPayload, accessToken?:
   });
 };
 export const createWallet = (payload: CreateWalletPayload, accessToken?: string) => {
+  assertLiveTradingMode();
   if (isServer) {
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     return apiClient.post<CreateWalletResponse>(PAYMENT_ENDPOINTS.CREATE_WALLET, payload, {
@@ -45,6 +48,7 @@ export const createWallet = (payload: CreateWalletPayload, accessToken?: string)
 };
 
 export const withdraw = (payload: WithdrawPayload, accessToken?: string) => {
+  assertLiveTradingMode();
   if (isServer) {
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     return apiClient.post<WithdrawResponse>(PAYMENT_ENDPOINTS.WITHDRAW, payload, {
@@ -60,6 +64,7 @@ export const withdraw = (payload: WithdrawPayload, accessToken?: string) => {
 };
 
 export const transferAPI = (payload: TransferPayload, accessToken?: string) => {
+  assertLiveTradingMode();
   if (isServer) {
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     return apiClient.post<{ success: boolean }>(PAYMENT_ENDPOINTS.TRANSFER, payload, {
@@ -106,7 +111,7 @@ export const getPaymentHistoryAPI = async (
   }
 
   return apiClient.get<GetPaymentHistoryResponse>(
-    '/api/payment/history',
+    demoTradingEndpoint(parameters.accountId, 'history') ?? '/api/payment/history',
     normalized as Record<string, string | number>,
     {
       baseUrl: CLIENT_BASE_URL,

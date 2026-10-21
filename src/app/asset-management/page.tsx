@@ -14,7 +14,7 @@ export default function AssetManagementPage() {
 
   // For MVP, we default to the Web layout.
   return (
-    <WebLayout>
+    <WebLayout liveOnly>
       <AssetManagementWebScreen />
     </WebLayout>
   );

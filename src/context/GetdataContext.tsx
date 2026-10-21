@@ -1,7 +1,6 @@
 'use client';
 
 import { ACCOUNT_TYPES_ID } from '@/constants/account';
-import { IS_APP_PRODUCTION } from '@/constants/env';
 import { useAccounts } from '@/hook/useAccount';
 import { useAuthHydrated } from '@/hook/useAuthHydrated';
 import { apiClient } from '@/services/apiClient';
@@ -59,7 +58,11 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
   const useMe = () => {
     return useQuery({
       enabled: hasHydratedAuth,
-      queryFn: () => apiClient.get<User | null>('/api/auth/session', undefined, { baseUrl: CLIENT_BASE_URL, skipAuth: true }),
+      queryFn: () =>
+        apiClient.get<User | null>('/api/auth/session', undefined, {
+          baseUrl: CLIENT_BASE_URL,
+          skipAuth: true,
+        }),
       retry: false,
       queryKey: ['me', authUser?.id ?? 'unknown'],
     });
@@ -103,9 +106,7 @@ export function GetdataProvider({ children }: GetdataProviderProps) {
 
   useEffect(() => {
     if (accounts) {
-      const availableAccounts = IS_APP_PRODUCTION
-        ? accounts.filter((account) => account.accountTypeId !== ACCOUNT_TYPES_ID.DEMO)
-        : accounts;
+      const availableAccounts = accounts;
       setAccounts(availableAccounts);
 
       if (availableAccounts.length === 0) {

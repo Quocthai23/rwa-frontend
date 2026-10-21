@@ -103,7 +103,7 @@ function ItemSymbolChartView({
         <div className="flex min-w-0 items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-1">
             <span className="text-body-large-semibold min-w-0 truncate">{pair}</span>
-            <ToggleFavouriteAsset assetId={accessId} size={5} />
+            <ToggleFavouriteAsset assetId={accessId} size={20} />
           </div>
           <span
             className={`${isTinyPhone ? 'text-[12px]' : 'text-body-small-regular'} text-muted-foreground tabular-nums`}

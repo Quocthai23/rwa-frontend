@@ -1,13 +1,14 @@
-﻿import { Eye, EyeOff } from '@untitledui/icons';
+'use client';
+
+import { notifyIfDemoAccount } from '@/store/demoNoticeStore';
+import { Eye, EyeOff } from '@untitledui/icons';
 import { memo, useEffect, useState } from 'react';
-import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTheme } from '@/theme';
 import { formatBalance } from '@/utils/currency';
 import { useAccountBalance } from '@/hook/useAccountBalance';
 import { Button } from '@/components/shared/atoms/button';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hook/useToast';
 import DepositFlowSheet from '@/components/featured/deposit/DepositFlowSheet';
 import { useTranslation } from 'react-i18next';
 import { useAccounts } from '@/hook/useAccount';
@@ -31,7 +32,6 @@ const AccountInfo = () => {
   }, [selectedAccount?.id, dataUpdatedAt, refetchBalance]);
 
   const router = useRouter();
-  const { showError } = useToast();
 
   const notSymbol = balanceData?.currentBalance === '0' || !balanceData?.currentBalance;
   const currentBalanceNumber = parseFloat(balanceData?.currentBalance || '0');
@@ -40,18 +40,12 @@ const AccountInfo = () => {
   const pnlPercent = yesterdayBalanceNumber !== 0 ? (pnlNumber / yesterdayBalanceNumber) * 100 : 0;
 
   const handleTransfer = () => {
-    if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-      showError(t('home.transferFailedTitle'), t('home.transferDemoError'));
-      return;
-    }
+    if (notifyIfDemoAccount()) return;
     router.push('/transfer');
   };
 
   const handleShowDepositMethod = () => {
-    if (selectedAccount?.accountTypeId == ACCOUNT_TYPES_ID.DEMO) {
-      router.push('/top-up');
-      return;
-    }
+    if (notifyIfDemoAccount()) return;
     setIsDepositSheetOpen(true);
   };
 
@@ -76,7 +70,9 @@ const AccountInfo = () => {
 
           <div className="flex items-center gap-2">
             <span className="text-h1-semibold text-foreground">
-              {isBalanceVisible ? `VNĐ${formatBalance(balanceData?.currentBalance || '0')}` : '****'}
+              {isBalanceVisible
+                ? `VNĐ${formatBalance(balanceData?.currentBalance || '0')}`
+                : '****'}
             </span>
           </div>
           <Button onClick={handleShowDepositMethod} className="text-button-large-medium mt-2 py-2">
@@ -107,7 +103,9 @@ const AccountInfo = () => {
 
           <div className="flex items-center gap-2">
             <span className="text-h1-semibold text-foreground">
-              {isBalanceVisible ? `VNĐ${formatBalance(balanceData?.currentBalance || '0')}` : '****'}
+              {isBalanceVisible
+                ? `VNĐ${formatBalance(balanceData?.currentBalance || '0')}`
+                : '****'}
             </span>
 
             {isBalanceVisible && (
@@ -140,4 +138,3 @@ const AccountInfo = () => {
 };
 
 export default memo(AccountInfo);
-

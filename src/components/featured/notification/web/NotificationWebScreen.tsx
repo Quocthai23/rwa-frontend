@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { UIEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import NotificationSettings from '@/components/featured/notification/components/NotificationSettings';
 import NotificationCard from '@/components/featured/notification/components/NotificationCard';
 import {
   NOTIFICATION_TABS,
@@ -35,6 +36,7 @@ export default function NotificationWebScreen({
 }: NotificationWebScreenProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<NotificationTabId>('all');
   const [actionOnly, setActionOnly] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
@@ -126,6 +128,14 @@ export default function NotificationWebScreen({
     [hasMoreNotifications, isFetching, isLoading],
   );
 
+  if (inSheet && settingsOpen) {
+    return (
+      <div className="bg-background border-border h-[min(38.5rem,calc(100dvh-2rem))] w-[min(43.75rem,calc(100vw-2rem))] overflow-hidden rounded border dark:bg-neutral-900">
+        <NotificationSettings inSheet onBack={() => setSettingsOpen(false)} onClose={onClose} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={
@@ -161,8 +171,8 @@ export default function NotificationWebScreen({
               className="text-muted-foreground h-8 w-8 rounded p-0"
               aria-label={t('notificationSettings.title')}
               onClick={() => {
-                onClose?.();
-                router.push('/notifications/settings');
+                if (inSheet) setSettingsOpen(true);
+                else router.push('/notifications/settings');
               }}
             >
               <Settings01 className="size-5" />

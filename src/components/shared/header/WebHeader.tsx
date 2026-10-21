@@ -1,5 +1,6 @@
-﻿'use client';
+'use client';
 
+import { notifyIfDemoAccount } from '@/store/demoNoticeStore';
 import { Eye, EyeOff, Moon01, ChevronDown, ChevronRight, Sun, Check } from '@untitledui/icons';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from 'react';
@@ -9,13 +10,10 @@ import { Button } from '@/components/shared/atoms/button';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from 'react-i18next';
-import { ACCOUNT_TYPES_ID } from '@/constants/account';
-import { IS_APP_PRODUCTION } from '@/constants/env';
 import { formatBalance } from '@/utils/currency';
 import type { SharedHeaderProps } from './AppHeader';
 import { useTheme } from '@/theme';
 import DepositFlowSheet from '@/components/featured/deposit/web/DepositFlowSheet';
-import TopUpFlowSheet from '@/components/featured/top-up/web/TopUpFlowSheet';
 import Search from '@/components/featured/search/web/Search';
 import { cn } from '@/lib/utils';
 import { useAccountSummaryMetrics } from '@/hook/useAccountSummaryMetrics';
@@ -74,7 +72,6 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
   const router = useRouter();
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showDepositSheet, setShowDepositSheet] = useState(false);
-  const [showTopUpSheet, setShowTopUpSheet] = useState(false);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const [isThemeSwitching, setThemeSwitching] = useState(false);
   const [selectedMetricIds, setSelectedMetricIds] =
@@ -93,23 +90,18 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
   const lockedBalance = useMemo(() => balance.minus(availableBalance), [availableBalance, balance]);
 
   const handleSwitchMode = (mode: 'demo' | 'live') => {
-    const nextAccount = accounts.find((account) =>
-      mode === 'demo'
-        ? account.accountTypeId === ACCOUNT_TYPES_ID.DEMO
-        : account.accountTypeId !== ACCOUNT_TYPES_ID.DEMO,
+    const nextAccount = accounts.find(
+      (account) => account.accountTypeId.includes('demo') === (mode === 'demo'),
     );
     if (nextAccount && nextAccount.id !== selectedAccount?.id) {
       selectAccount(nextAccount);
     }
   };
   const handleDepositClick = useCallback(() => {
-    if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-      setShowTopUpSheet(true);
-      return;
-    }
+    if (notifyIfDemoAccount()) return;
 
     setShowDepositSheet(true);
-  }, [selectedAccount]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -349,41 +341,47 @@ export default function WebHeader({ label, rightItem }: WebHeaderProps) {
                 {t('features.deposit')}
               </Button>
               <DepositFlowSheet isOpen={showDepositSheet} onOpenChange={setShowDepositSheet} />
-              <TopUpFlowSheet isOpen={showTopUpSheet} onOpenChange={setShowTopUpSheet} />
 
-              {!IS_APP_PRODUCTION && (
-                <div className="flex shrink-0 rounded bg-neutral-100 dark:bg-neutral-800">
-                  <Button
-                    type="button"
-                    variant="white-contained"
-                    onClick={() => handleSwitchMode('demo')}
-                    aria-pressed={currentMode === 'demo'}
-                    className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
-                      currentMode === 'demo'
-                        ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
-                        : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
-                    }`}
-                  >
-                    <span>{t('market.accountDropdown.demo')}</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="white-contained"
-                    onClick={() => handleSwitchMode('live')}
-                    aria-pressed={currentMode === 'live'}
-                    className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
-                      currentMode === 'live'
-                        ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
-                        : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
-                    }`}
-                  >
-                    <span>{t('market.accountDropdown.live')}</span>
-                  </Button>
-                </div>
-              )}
+              <div className="flex shrink-0 rounded bg-neutral-100 dark:bg-neutral-800">
+                <Button
+                  type="button"
+                  variant="white-contained"
+                  onClick={() => handleSwitchMode('demo')}
+                  disabled={!accounts.some((account) => account.accountTypeId.includes('demo'))}
+                  aria-pressed={currentMode === 'demo'}
+                  className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
+                    currentMode === 'demo'
+                      ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
+                      : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
+                  }`}
+                >
+                  <span>{t('market.accountDropdown.demo')}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="white-contained"
+                  onClick={() => handleSwitchMode('live')}
+                  disabled={!accounts.some((account) => !account.accountTypeId.includes('demo'))}
+                  aria-pressed={currentMode === 'live'}
+                  className={`sm:text-body-small-medium rounded px-2 py-1.5 text-xs sm:px-3 sm:py-2 dark:border ${
+                    currentMode === 'live'
+                      ? 'dark:border-primary-500 bg-primary-50 text-primary-500 dark:bg-primary-1000 dark:text-primary-500'
+                      : 'text-muted-foreground border-transparent bg-neutral-100 dark:bg-neutral-800 dark:text-[#9497A9]'
+                  }`}
+                >
+                  <span>{t('market.accountDropdown.live')}</span>
+                </Button>
+              </div>
             </>
           ) : (
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <Button
+                variant="white-outline"
+                className="px-3 py-2 text-sm"
+                onClick={() => router.push('/login?redirect=/market?tradingMode=demo')}
+              >
+                Demo
+              </Button>
               <Button
                 type="button"
                 variant="white-outline"

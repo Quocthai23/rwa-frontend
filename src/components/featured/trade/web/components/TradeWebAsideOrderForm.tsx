@@ -20,6 +20,7 @@ import { useCreateOrder } from '@/hook/orders/useCreateOrder';
 import { useToast } from '@/hook/useToast';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAuthStore } from '@/store/authStore';
+import { demoOrderContext } from '@/lib/trading/demo-order-context';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useInfiniteOrders } from '@/hook/useOrder';
 import { TradePanelLimitPriceField } from '@/components/shared/chart/components/web/tradePanel/components/TradePanelLimitPriceField';
@@ -28,7 +29,6 @@ import {
   applyQuantityBlur,
   applyQuantityChange,
   normalizeDecimalInput,
-  toFiniteNumberFromNumberish,
   toPositiveAssetNumber,
 } from '@/components/shared/chart/components/web/tradePanel/utils/tradePanelInputHelpers';
 import { submitTradePanelOrder } from '@/components/shared/chart/components/web/tradePanel/utils/tradePanelSubmitOrder';
@@ -103,11 +103,12 @@ export const TradeWebAsideOrderForm = forwardRef<
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>(TABS[0]);
   // Limit orders use the entered price and the HTTP API; a realtime reconnect
   // should not block them. Market orders still require a live quote connection.
-  const canTrade = navigator.onLine && (activeTab === 'Limit' || (isConnected && !isReconnecting));
   const transactionType = orderSideProp;
   const [quantity, setQuantity] = useState('');
   const quantityRef = useRef(quantity);
-  useLayoutEffect(() => { quantityRef.current = quantity; }, [quantity]);
+  useLayoutEffect(() => {
+    quantityRef.current = quantity;
+  }, [quantity]);
   const [isQuantityTouched, setIsQuantityTouched] = useState(false);
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const submitLockRef = useRef(false);
@@ -147,6 +148,19 @@ export const TradeWebAsideOrderForm = forwardRef<
   }, [symbolAsset]);
 
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
+  const demo = Boolean(selectedAccount?.accountTypeId.includes('demo'));
+  const demoContext = demoOrderContext({
+    demo,
+    online: navigator.onLine,
+    connected: isConnected,
+    reconnecting: isReconnecting,
+    limit: activeTab === 'Limit',
+    bid: Number(rt?.bid ?? 0),
+    ask: Number(rt?.ask ?? 0),
+    publicPrice: Number(symbolAsset?.tokenPrice ?? symbolAsset?.referencePrice ?? 0),
+  });
+  const canTrade = demoContext.canTrade;
+
   const { data: portfolioItem } = usePortfolioItem({
     accountId: selectedAccount?.id || '',
     assetId: symbolAsset?.id,
@@ -154,8 +168,8 @@ export const TradeWebAsideOrderForm = forwardRef<
   const baseAvailableQuantity = Number(
     portfolioItem?.availableQuantity ?? portfolioItem?.quantity ?? 0,
   );
-  const sellPrice = toFiniteNumberFromNumberish(rt?.bid) ?? 0;
-  const buyPrice = toFiniteNumberFromNumberish(rt?.ask) ?? 0;
+  const sellPrice = demoContext.bid;
+  const buyPrice = demoContext.ask;
 
   const { refetch: refetchOrders } = useInfiniteOrders({
     accountId: selectedAccount?.id || '',
@@ -224,17 +238,17 @@ export const TradeWebAsideOrderForm = forwardRef<
     if (!Number.isFinite(minTradeSize) || minTradeSize <= 0) return;
     // Defaults follow the selected external asset; preserve any user edit.
     const timeout = window.setTimeout(() => {
-    const symbolChanged = lastSymbolRef.current !== symbol;
-    if (symbolChanged) {
-      lastSymbolRef.current = symbol;
-      setIsQuantityTouched(false);
-      setQuantity(defaultQuantityValue.toFixed(2));
-      return;
-    }
+      const symbolChanged = lastSymbolRef.current !== symbol;
+      if (symbolChanged) {
+        lastSymbolRef.current = symbol;
+        setIsQuantityTouched(false);
+        setQuantity(defaultQuantityValue.toFixed(2));
+        return;
+      }
 
-    if (!isQuantityTouched && !quantity) {
-      setQuantity(defaultQuantityValue.toFixed(2));
-    }
+      if (!isQuantityTouched && !quantity) {
+        setQuantity(defaultQuantityValue.toFixed(2));
+      }
     }, 0);
     return () => window.clearTimeout(timeout);
   }, [symbol, defaultQuantityValue, isQuantityTouched, quantity, minTradeSize]);
@@ -479,7 +493,7 @@ export const TradeWebAsideOrderForm = forwardRef<
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto scrollbar-neutral-slim">
+      <div className="scrollbar-neutral-slim flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {!oneClickMode && (
           <div className="bg-muted grid grid-cols-2 rounded-lg p-1">
             {TABS.map((tab) => (

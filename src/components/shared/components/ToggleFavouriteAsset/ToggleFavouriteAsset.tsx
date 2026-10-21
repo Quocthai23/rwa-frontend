@@ -50,7 +50,7 @@ export function ToggleFavouriteAsset({
     <Button
       variant="white-contained"
       aria-label={t('common.toggleFavoriteAsset')}
-      className={`flex items-center justify-center ${className} cursor-pointer`}
+      className={`flex min-h-7 min-w-7 items-center justify-center ${className} cursor-pointer`}
       disabled={!assetId}
       onClick={(event) => {
         event.stopPropagation();
@@ -58,10 +58,11 @@ export function ToggleFavouriteAsset({
       }}
     >
       <Star01
+        style={{ width: size, height: size, flexShrink: 0 }}
         className={
           isFavorite
-            ? `size-${size} fill-yellow-400 text-yellow-400`
-            : `size-${size} text-neutral-300 dark:text-neutral-600`
+            ? 'fill-yellow-400 text-yellow-400'
+            : 'text-neutral-300 dark:text-neutral-600'
         }
       />
     </Button>

@@ -15,7 +15,7 @@ export default function AssetDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <WebLayout>
+    <WebLayout liveOnly>
       <AssetDetailWebScreen assetId={resolvedParams.id} />
     </WebLayout>
   );

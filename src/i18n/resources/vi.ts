@@ -1,4 +1,10 @@
 const vi = {
+  demoAvailability: {
+    paymentsDescription:
+      'Nạp tiền, rút tiền và chuyển khoản chỉ áp dụng cho tài khoản thật. Vui lòng chuyển sang tài khoản thật để tiếp tục.',
+    title: 'Không áp dụng cho tài khoản Demo',
+    description: 'Chuyển sang tài khoản thật để sử dụng tính năng này.',
+  },
   common: {
     retry: 'Th\u1eed l\u1ea1i',
     search: 'Tìm kiếm',

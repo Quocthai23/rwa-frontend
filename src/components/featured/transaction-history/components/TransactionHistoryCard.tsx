@@ -5,10 +5,11 @@ import {
   ArrowRight,
   ArrowCircleBrokenUpRight,
   ArrowCircleBrokenDownLeft,
-  SwitchHorizontal01
+  SwitchHorizontal01,
 } from '@untitledui/icons';
 import Image from 'next/image';
 
+import { transactionAmount, transactionTypeLabel, transactionStatusLabel } from '../presentation';
 import { cn } from '@/lib/utils';
 import type { PaymentHistoryItem } from '@/types/payment';
 import { useTranslation } from 'react-i18next';
@@ -18,13 +19,9 @@ type Props = {
   onPress?: () => void;
 };
 
-const chainIconMap: Record<string, string> = {
-  '97': '/assets/images/97.png',
-  '11155111': '/assets/images/11155111.png',
-};
 
 const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const STATUS_COLOR_MAP: Record<string, { bg: string; text: string }> = {
     COMPLETED: { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-500 dark:text-green-200' },
     PENDING: { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-500 dark:text-green-200' },
@@ -32,27 +29,16 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
     CANCELLED: { bg: 'bg-red-50 dark:bg-red-900', text: 'text-red-500 dark:text-red-200' },
   };
 
-  const statusColor = STATUS_COLOR_MAP[transaction.status] ?? { bg: 'bg-muted', text: 'text-muted-foreground' };
-
-  const TYPE_DISPLAY: Record<string, string> = {
-    DEPOSIT: 'Deposit',
-    WITHDRAW: 'Withdrawal',
-    TRANSFER: 'Transfer',
-    DIVIDEND_CLAIM: 'Dividend',
+  const statusColor = STATUS_COLOR_MAP[transaction.status] ?? {
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
   };
 
   const isDeposit = transaction.type === 'DEPOSIT';
   const isTransfer = transaction.type === 'TRANSFER';
   const isWithdrawal = transaction.type === 'WITHDRAW';
-
-  const typeName = isTransfer
-    ? t('transactionHistory.transfer')
-    : TYPE_DISPLAY[transaction.type] || t('transactionHistory.unknown');
-
-  const STATUS_DISPLAY: Record<string, string> = {
-    COMPLETED: 'Completed', PENDING: 'Pending', FAILED: 'Failed', CANCELLED: 'Cancelled',
-  };
-  const statusName = STATUS_DISPLAY[transaction.status] || t('transactionHistory.unknown');
+  const typeName = transactionTypeLabel(transaction.type, i18n.language);
+  const statusName = transactionStatusLabel(transaction.status, i18n.language);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -66,11 +52,7 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
     return `${day} ${month}, ${time}`;
   };
 
-  const formatAmount = () => {
-    const amount = parseFloat(transaction.amount);
-    const sign = isDeposit ? '+' : '-';
-    return `${sign}${Math.abs(amount).toFixed(2)} ${t('transactionHistory.usd')}`;
-  };
+  const formatAmount = () => transactionAmount(transaction, i18n.language);
 
   return (
     <button
@@ -154,4 +136,3 @@ const TransactionHistoryCard = ({ transaction, onPress }: Props) => {
 };
 
 export default TransactionHistoryCard;
-

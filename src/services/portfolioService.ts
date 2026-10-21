@@ -1,5 +1,6 @@
-﻿import { PORTFOLIO_ENDPOINTS } from '@/constants/api';
-import type { PortfolioItem, PortfolioOverview, PortfoliosResponse } from '@/types';
+import { demoTradingEndpoint } from './tradingScope';
+import { PORTFOLIO_ENDPOINTS } from '@/constants/api';
+import type { PortfolioOverview, PortfoliosResponse } from '@/types';
 import { apiClient } from './apiClient';
 import { CLIENT_BASE_URL } from './baseUrl';
 
@@ -44,7 +45,8 @@ export const getPortfolioOverview = async (
   }
 
   const res = await apiClient.get<PortfolioOverview>(
-    '/api' + PORTFOLIO_ENDPOINTS.OVERVIEW,
+    demoTradingEndpoint(params?.accountId, 'portfolio/overview') ??
+      '/api' + PORTFOLIO_ENDPOINTS.OVERVIEW,
     params,
     {
       baseUrl: CLIENT_BASE_URL,
@@ -76,7 +78,7 @@ export const getPortfolioItems = async (
   }
 
   const res = await apiClient.get<PortfoliosResponse>(
-    '/api' + PORTFOLIO_ENDPOINTS.ITEMS,
+    demoTradingEndpoint(params?.accountId, 'portfolio/items') ?? '/api' + PORTFOLIO_ENDPOINTS.ITEMS,
     params,
     {
       baseUrl: CLIENT_BASE_URL,

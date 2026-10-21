@@ -5,7 +5,22 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { RefreshCcw01 } from '@untitledui/icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { newsService } from '@/services/newsService';
+import type { GetNewsListRequest, NewsDataItem, NewsDataResponse } from '@/types/news';
+const newsService = {
+  async getNewsTopics() {
+    return ['VnExpress', 'VietnamPlus'];
+  },
+  async getNewsList(parameters: GetNewsListRequest): Promise<NewsDataResponse> {
+    const query = new URLSearchParams({
+      skip: String(parameters.skip ?? 0),
+      take: String(parameters.take ?? 15),
+    });
+    if (parameters.topics?.length) query.set('topics', parameters.topics.join(','));
+    const response = await fetch('/api/news/press?' + query);
+    if (!response.ok) throw new Error('News unavailable');
+    return response.json();
+  },
+};
 import { Button } from '@/components/shared/atoms/button';
 import { NewsItemSkeleton } from '@/components/featured/home/skeletons';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +53,7 @@ export default function NewsContent() {
   const webLayout = true;
   const [topics, setTopics] = useState<string[]>([]);
   const [activeTopic, setActiveTopic] = useState<string>('All');
-  const [allEvents, setAllEvents] = useState<any[]>([]);
+  const [allEvents, setAllEvents] = useState<(NewsDataItem & { source?: string })[]>([]);
 
   const [skip, setSkip] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +126,7 @@ export default function NewsContent() {
       if (response.data && response.data.length > 0) {
         setAllEvents((prev) => {
           const existingIds = new Set(prev.map((item) => item.id));
-          const newEvents = response.data.filter((item: any) => !existingIds.has(item.id));
+          const newEvents = response.data.filter((item: NewsDataItem) => !existingIds.has(item.id));
           return [...prev, ...newEvents];
         });
         const nextSkip = currentSkip + TAKE;
@@ -290,13 +305,13 @@ export default function NewsContent() {
                     ? 'border-border hover:bg-muted/40 flex min-h-[108px] w-full items-center gap-3 border-b px-3 py-3 text-left transition-colors'
                     : 'border-border hover:bg-muted flex w-full gap-3 rounded border px-3 py-4 text-left transition-colors'
                 }
-                onClick={() => window.open(event.url, '_blank')}
+                onClick={() => window.open(event.url, '_blank', 'noopener,noreferrer')}
               >
                 {webLayout ? (
                   <>
                     <div className="min-w-0 flex-1">
                       <p
-                        className="text-body-large-semibold text-foreground truncate leading-6"
+                        className="text-body-large-semibold text-foreground line-clamp-2 leading-6 whitespace-normal"
                         title={event.title}
                       >
                         {event.title}
@@ -319,9 +334,7 @@ export default function NewsContent() {
                         alt={event.title}
                         className="bg-muted h-[72px] w-[112px] shrink-0 rounded object-cover"
                       />
-                    ) : (
-                      <div className="bg-muted h-[72px] w-[112px] shrink-0 rounded" />
-                    )}
+                    ) : null}
                   </>
                 ) : (
                   <>
@@ -391,4 +404,3 @@ export default function NewsContent() {
     </div>
   );
 }
-

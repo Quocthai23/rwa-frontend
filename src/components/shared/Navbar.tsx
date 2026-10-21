@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { resolveRouteExperience } from '@/lib/experience/resolveExperience';
@@ -21,14 +21,15 @@ const LOCAL_LAYOUT_NAV_ROUTES = [
 
 const HYDRATION_SENSITIVE_ROUTES = ['/portfolio', '/discover', '/'];
 
+const subscribeToMount = () => () => {};
 export function Navbar() {
   const pathname = usePathname() || '/';
   const viewportExperience = useExperience();
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
+  const hasMounted = useSyncExternalStore(
+    subscribeToMount,
+    () => true,
+    () => false,
+  );
 
   const shouldDelayUntilMounted = HYDRATION_SENSITIVE_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
@@ -50,4 +51,3 @@ export function Navbar() {
 
   return experience === 'web' ? <WebNavbar /> : <AppNavbar />;
 }
-

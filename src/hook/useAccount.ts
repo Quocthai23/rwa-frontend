@@ -14,12 +14,16 @@ import type { Account, CreateAccountRequest } from '@/types/account';
 
 export const useAccounts = () => {
   const userId = useAuthStore((state) => state.user?.id);
+  const demo = useAccountStore((state) =>
+    Boolean(state.selectedAccount?.accountTypeId.includes('demo')),
+  );
 
   return useQuery<Account[]>({
     enabled: !!userId,
     queryFn: () => getAccounts(userId),
     queryKey: ['accounts', userId],
-    staleTime: Infinity,
+    staleTime: 10_000,
+    refetchInterval: demo ? 5000 : false,
     gcTime: Infinity,
   });
 };

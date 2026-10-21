@@ -1,3 +1,4 @@
+import { useAccountStore } from '@/store/useAccountStore';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 
 import { cancelAllOrdersAPI, getOrdersListAPI } from '@/services/orderService';
@@ -10,6 +11,7 @@ export const useInfiniteOrders = (
   pageSize?: number,
   queryScope: 'active' | 'history' = 'active',
 ) => {
+  const demo = useAccountStore((s) => Boolean(s.selectedAccount?.accountTypeId.includes('demo')));
   return useInfiniteQuery({
     enabled: !!params.accountId,
     initialPageParam: null as string | null,
@@ -50,6 +52,7 @@ export const useInfiniteOrders = (
       return lastPage.nextCursor || undefined;
     },
     staleTime: 15_000,
+    refetchInterval: demo ? 5000 : false,
     refetchOnMount: 'always',
     refetchOnReconnect: 'always',
     refetchOnWindowFocus: true,
@@ -69,7 +72,7 @@ export const useCancelOrders = (accountId: string) => {
           order.status === OrderStatus.PARTIALLY_FILLED ||
           order.status === 'PENDING' ||
           order.status === 'OPEN' ||
-          order.status === 'PARTIALLY_FILLED'
+          order.status === 'PARTIALLY_FILLED',
       );
       const orderIds = cancellableOrders.map((order) => order.id);
       if (orderIds.length === 0) {

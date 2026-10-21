@@ -1,7 +1,8 @@
-import { ACCOUNT_TYPES_ID } from '@/constants/account';
+'use client';
+
+import { notifyIfDemoAccount } from '@/store/demoNoticeStore';
 import { FEATURES_CONFIG, FeatureId } from '@/constants/featuresConfig';
 import { useAuthStore } from '@/store/authStore';
-import { useAccountStore } from '@/store/useAccountStore';
 import { useAppStore } from '@/store/useAppStore';
 import DepositFlowSheet from '@/components/featured/deposit/DepositFlowSheet';
 import WithdrawMethod from '@/components/featured/withdraw/components/WithdrawMethod';
@@ -17,13 +18,12 @@ const ICON_SIZE = 24;
 
 export function HomeFeatures() {
   const { t } = useTranslation();
-  const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
   const { colors } = useTheme();
   const [isDepositSheetOpen, setIsDepositSheetOpen] = useState(false);
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
-  const { showError, showInfo } = useToast();
+  const { showInfo } = useToast();
 
   const handleShowDepositMethod = () => {
     setIsDepositSheetOpen(true);
@@ -51,10 +51,7 @@ export function HomeFeatures() {
 
         return;
       }
-      if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-        router.push('/top-up');
-        return;
-      }
+      if (notifyIfDemoAccount()) return;
       handleShowDepositMethod();
 
       return;
@@ -65,15 +62,11 @@ export function HomeFeatures() {
 
         return;
       }
-      if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-        showError(t('home.withdrawFailedTitle'), t('home.withdrawDemoError'));
-        return;
-      }
+      if (notifyIfDemoAccount()) return;
       handleShowWithdrawMethod();
 
       return;
     }
-
 
     if (featureId === FeatureId.Social) {
       router.push('/discover?discoverTab=for-you');
@@ -112,10 +105,7 @@ export function HomeFeatures() {
         router.push('/login');
         return;
       }
-      if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-        showError(t('home.transferFailedTitle'), t('home.transferDemoError'));
-        return;
-      }
+      if (notifyIfDemoAccount()) return;
       router.push('/transfer');
     }
 
@@ -156,9 +146,7 @@ export function HomeFeatures() {
                 </div>
 
                 <p className="text-body-small-medium text-foreground w-full text-center">
-                  {feature.labelKey
-                    ? t(feature.labelKey)
-                    : feature.label}
+                  {feature.labelKey ? t(feature.labelKey) : feature.label}
                 </p>
               </button>
             </div>

@@ -1,10 +1,11 @@
 'use client';
 
+import { notifyIfDemoAccount } from '@/store/demoNoticeStore';
+
 import { MinusCircle, PlusCircle, RefreshCcw01 } from '@untitledui/icons';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FEATURES_CONFIG, FEATURE_SECTIONS, FeatureId } from '@/constants/featuresConfig';
-import { useAccountStore } from '@/store/useAccountStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useTheme } from '@/theme';
 import Header from '@/components/shared/Header';
@@ -13,7 +14,6 @@ import WithdrawMethod from '@/components/featured/withdraw/components/WithdrawMe
 import { Sheet, SheetContent } from '@/components/shared/atoms/sheet';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hook/useToast';
-import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { useTranslation } from 'react-i18next';
 
 export default function More() {
@@ -22,8 +22,7 @@ export default function More() {
   const { colors } = useTheme();
   // const { showModal, closeModal } = useGlobalModal();
   const user = useAuthStore((state) => state.user);
-  const { showError, showInfo } = useToast();
-  const selectedAccount = useAccountStore((state) => state.selectedAccount);
+  const { showInfo } = useToast();
   const [isEditMode, setIsEditMode] = useState(false);
 
   const storeQuickAccessKeys = useAppStore((state) => state.quickAccessKeys);
@@ -70,27 +69,21 @@ export default function More() {
           router.push('/login');
           return;
         }
-        if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-          router.push('/top-up');
-          return;
-        }
+        if (notifyIfDemoAccount()) return;
         handleShowDepositMethod();
         return;
       }
-      
+
       if (featureId === FeatureId.Withdraw) {
         if (!user) {
           router.push('/login');
           return;
         }
-        if (selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO) {
-          showError(t('home.withdrawFailedTitle'), t('home.withdrawDemoError'));
-          return;
-        }
+        if (notifyIfDemoAccount()) return;
         handleShowWithdrawMethod();
         return;
       }
-      
+
       if (FeatureId.Social === featureId) {
         router.push('/discover?discoverTab=for-you');
         return;
@@ -107,17 +100,16 @@ export default function More() {
 
       if (
         !user &&
-        [FeatureId.History, FeatureId.Transfer, FeatureId.Feedback].includes(
-          featureId,
-        )
+        [FeatureId.History, FeatureId.Transfer, FeatureId.Feedback].includes(featureId)
       ) {
         router.push('/login');
         return;
       }
 
+      if (featureId === FeatureId.Transfer && notifyIfDemoAccount()) return;
       router.push(path);
     },
-    [router, selectedAccount?.accountTypeId, showError, showInfo, t, user],
+    [router, showInfo, t, user],
   );
 
   // Build sections dynamically from shared config

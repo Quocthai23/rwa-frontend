@@ -1,5 +1,6 @@
 'use client';
 
+import { useAccountStore } from '@/store/useAccountStore';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { CACHE_TIMES } from '@/constants/api';
@@ -8,14 +9,16 @@ import {
   getPortfolioItems,
   GetPortfolioParams,
 } from '@/services/portfolioService';
-import type { PortfolioItem, PortfolioOverview, PortfoliosResponse } from '@/types/portfolio';
+import type { PortfoliosResponse } from '@/types/portfolio';
 
 /**
  * Hook to fetch portfolio overview
  * Shows total portfolio value, profit/loss, and asset breakdown
  */
 export const usePortfolioOverview = (params: { accountId: string }) => {
+  const demo = useAccountStore((s) => Boolean(s.selectedAccount?.accountTypeId.includes('demo')));
   return useQuery({
+    refetchInterval: demo ? 5000 : false,
     enabled: !!params.accountId,
     gcTime: 5 * 60 * 1000,
     queryFn: async () => {
@@ -42,7 +45,9 @@ export const useInfinitePortfolioItems = (
   params: Omit<GetPortfolioParams, 'take' | 'skip' | 'cursor'>,
   pageSize?: number,
 ) => {
+  const demo = useAccountStore((s) => Boolean(s.selectedAccount?.accountTypeId.includes('demo')));
   return useInfiniteQuery({
+    refetchInterval: demo ? 5000 : false,
     enabled: !!params.accountId,
     initialPageParam: null as string | null,
     queryKey: [

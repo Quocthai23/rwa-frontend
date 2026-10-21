@@ -32,7 +32,7 @@ export default function AssetManagementSectionPage({
     : 'overview';
 
   return (
-    <WebLayout>
+    <WebLayout liveOnly>
       <AssetDetailWebScreen assetId={id} section={resolvedSection} />
     </WebLayout>
   );

@@ -11,6 +11,8 @@ import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { useGetPaymentHistory } from '@/hook/payment/useGetPaymentHistory';
 import { useAccounts } from '@/hook/useAccount';
 import { useAccountStore } from '@/store/useAccountStore';
+import { isDemoAccount } from '@/lib/trading/environment';
+import { DemoUnavailableState } from '@/components/shared/trading/LiveAccountOnly';
 import type { PaymentHistoryItem, GetPaymentHistoryParams } from '@/types/payment';
 import { toEndOfDayISO, toStartOfDayISO } from '@/utils/dateUtils';
 
@@ -43,10 +45,20 @@ const TransactionHistoryCardSkeleton = () => (
 );
 
 export default function TransactionHistoryWeb() {
+  const account = useAccountStore((s) => s.selectedAccount);
+  if (isDemoAccount(account)) {
+    return (
+      <div className="flex h-full min-h-[620px] flex-col">
+        <DemoUnavailableState className="min-h-60 flex-1" />
+      </div>
+    );
+  }
+  return <TransactionHistoryWebContent key={account?.id ?? 'no-account'} />;
+}
+function TransactionHistoryWebContent() {
   const { t } = useTranslation();
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const { data: accounts = [] } = useAccounts();
-  const isDemoAccount = selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO;
 
   const [selectedTransaction, setSelectedTransaction] = useState<PaymentHistoryItem | undefined>(
     undefined,
@@ -55,7 +67,6 @@ export default function TransactionHistoryWeb() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [pagination, setPagination] = useState({ take: 15, skip: 0 });
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [dateRange, setDateRange] = useState<{ startDate?: string; endDate?: string }>(() => {
     const today = new Date();
     const weekAgo = new Date();
@@ -127,32 +138,14 @@ export default function TransactionHistoryWeb() {
 
   useEffect(() => {
     if (isFetching) return;
-    setIsLoadingMore(false);
-    if (pagination.skip === 0) {
-      setAllTransactions(newTransactions);
-      return;
-    }
-    setAllTransactions((prev) => [...prev, ...newTransactions]);
+    setAllTransactions(newTransactions);
   }, [newTransactions, isFetching, pagination.skip]);
 
   const hasTransactions = allTransactions.length > 0;
-  const hasMore = allTransactions.length < totalTransactions;
+  const page = Math.floor(pagination.skip / pagination.take) + 1;
+  const pageCount = Math.max(1, Math.ceil(totalTransactions / pagination.take));
   const activeFiltersCount = (filters.type?.length || 0) + (filters.status?.length || 0);
   const hasActiveFilters = activeFiltersCount > 0;
-
-  if (isDemoAccount) {
-    return (
-      <div className="bg-background flex min-h-dvh flex-col">
-        <div className="flex flex-1 items-center justify-center px-4 text-center">
-          <p className="text-body-large-medium text-muted-foreground">
-            {t('home.transactionHistoryDemoError', {
-              defaultValue: 'Demo accounts cannot view transaction history.',
-            })}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-full min-h-[620px] flex-col">
@@ -189,7 +182,11 @@ export default function TransactionHistoryWeb() {
       <FilterTransactionWeb
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        accounts={accounts}
+        accounts={accounts.filter(
+          (a) =>
+            a.accountTypeId.includes('demo') ===
+            Boolean(selectedAccount?.accountTypeId.includes('demo')),
+        )}
         selectedAccountId={selectedAccountId}
         onApply={(newFilters) => {
           setFilters({
@@ -202,7 +199,7 @@ export default function TransactionHistoryWeb() {
       />
 
       <div className="scrollbar-neutral-slim flex-1 overflow-y-auto pr-1">
-        {isFetching && !isLoadingMore ? (
+        {isFetching ? (
           <div className="py-2">
             {[...Array(5)].map((_, index) => (
               <TransactionHistoryCardSkeleton key={index} />
@@ -251,26 +248,32 @@ export default function TransactionHistoryWeb() {
               />
             ))}
 
-            {isLoadingMore ? (
-              <div className="mt-2 flex flex-col gap-3">
-                {[...Array(3)].map((_, index) => (
-                  <TransactionHistoryCardSkeleton key={`loading-${index}`} />
-                ))}
-              </div>
-            ) : null}
-
-            {hasMore && !isLoadingMore ? (
+            <nav
+              aria-label={t('common.pagination', { defaultValue: 'Pagination' })}
+              className="my-4 flex items-center justify-between gap-3"
+            >
               <Button
+                className="px-4 py-2"
                 variant="neutral-contained"
-                className="my-4 w-full py-2.5"
-                onClick={() => {
-                  setIsLoadingMore(true);
-                  setPagination((prev) => ({ ...prev, skip: prev.skip + prev.take }));
-                }}
+                disabled={isFetching || page <= 1}
+                onClick={() =>
+                  setPagination((prev) => ({ ...prev, skip: Math.max(0, prev.skip - prev.take) }))
+                }
               >
-                {t('transactionHistory.loadMore')}
+                {t('common.previous', { defaultValue: 'Previous' })}
               </Button>
-            ) : null}
+              <span className="text-sm">
+                {page} / {pageCount} · {totalTransactions}
+              </span>
+              <Button
+                className="px-4 py-2"
+                variant="neutral-contained"
+                disabled={isFetching || page >= pageCount}
+                onClick={() => setPagination((prev) => ({ ...prev, skip: prev.skip + prev.take }))}
+              >
+                {t('common.next', { defaultValue: 'Next' })}
+              </Button>
+            </nav>
           </div>
         )}
       </div>
@@ -283,4 +286,3 @@ export default function TransactionHistoryWeb() {
     </div>
   );
 }
-

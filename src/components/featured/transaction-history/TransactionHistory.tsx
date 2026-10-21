@@ -1,15 +1,16 @@
 ﻿'use client';
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { ChevronLeft, HelpCircle, SearchLg, FilterFunnel01 } from '@untitledui/icons';
+import { ChevronLeft, HelpCircle, FilterFunnel01 } from '@untitledui/icons';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { Button } from '@/components/shared/atoms/button';
 import { Skeleton } from '@/components/shared/atoms/skeleton';
-import { ACCOUNT_TYPES_ID } from '@/constants/account';
 import { useGetPaymentHistory } from '@/hook/payment/useGetPaymentHistory';
 import { useAccounts } from '@/hook/useAccount';
 import { useAccountStore } from '@/store/useAccountStore';
+import { isDemoAccount } from '@/lib/trading/environment';
+import { DemoUnavailableState } from '@/components/shared/trading/LiveAccountOnly';
 import type { PaymentHistoryItem, GetPaymentHistoryParams } from '@/types/payment';
 import { toEndOfDayISO, toStartOfDayISO } from '@/utils/dateUtils';
 import DateRangePicker from './components/DateRangePicker';
@@ -46,6 +47,31 @@ type PaymentHistoryApiResponse =
   | { data: { data: PaymentHistoryItem[]; total: number }; total?: number };
 
 export default function TransactionHistory() {
+  const account = useAccountStore((s) => s.selectedAccount);
+  const { t } = useTranslation();
+  const router = useRouter();
+  if (isDemoAccount(account)) {
+    return (
+      <div className="bg-background flex h-full min-h-screen flex-col md:mx-auto md:max-w-3xl">
+        <div className="flex flex-row items-center justify-between px-4 py-3">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center justify-center p-1 transition-opacity hover:opacity-70"
+          >
+            <ChevronLeft className="text-foreground size-6" />
+          </button>
+          <h1 className="text-h3-semibold text-foreground">{t('transactionHistory.title')}</h1>
+          <button className="flex items-center justify-center p-1 transition-opacity hover:opacity-70">
+            <HelpCircle className="text-muted-foreground size-6" />
+          </button>
+        </div>
+        <DemoUnavailableState className="min-h-60 flex-1" />
+      </div>
+    );
+  }
+  return <TransactionHistoryContent key={account?.id ?? 'no-account'} />;
+}
+function TransactionHistoryContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
@@ -55,7 +81,6 @@ export default function TransactionHistory() {
   const openedTransaction = useRef<string | null>(null);
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const { data: accounts = [] } = useAccounts();
-  const isDemoAccount = selectedAccount?.accountTypeId === ACCOUNT_TYPES_ID.DEMO;
 
   const [selectedTransaction, setSelectedTransaction] = useState<PaymentHistoryItem | undefined>(
     undefined,
@@ -65,7 +90,6 @@ export default function TransactionHistory() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [pagination, setPagination] = useState({ take: 15, skip: 0 });
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const [dateRange, setDateRange] = useState<{
     startDate?: string;
@@ -91,9 +115,14 @@ export default function TransactionHistory() {
     status: searchParams.getAll('status'),
   });
 
-  const [selectedAccountId, setSelectedAccountId] = useState<string>(
-    () => searchParams.get('accountId') || selectedAccount?.id || '',
-  );
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(() => {
+    const requested = accounts.find((a) => a.id === searchParams.get('accountId'));
+    return requested &&
+      requested.accountTypeId.includes('demo') ===
+        Boolean(selectedAccount?.accountTypeId.includes('demo'))
+      ? requested.id
+      : selectedAccount?.id || '';
+  });
 
   useEffect(() => {
     const newParams = new URLSearchParams();
@@ -154,12 +183,7 @@ export default function TransactionHistory() {
 
   useEffect(() => {
     if (isFetching) return;
-    setIsLoadingMore(false);
-    if (pagination.skip === 0) {
-      setAllTransactions(newTransactions);
-    } else {
-      setAllTransactions((prev) => [...prev, ...newTransactions]);
-    }
+    setAllTransactions(newTransactions);
   }, [newTransactions, isFetching, pagination.skip]);
 
   useEffect(() => {
@@ -172,7 +196,8 @@ export default function TransactionHistory() {
     }
   }, [allTransactions, linkedTransactionId]);
   const hasTransactions = allTransactions.length > 0;
-  const hasMore = allTransactions.length < totalTransactions;
+  const page = Math.floor(pagination.skip / pagination.take) + 1;
+  const pageCount = Math.max(1, Math.ceil(totalTransactions / pagination.take));
 
   const activeFiltersCount = (filters.type?.length || 0) + (filters.status?.length || 0);
   const hasActiveFilters = activeFiltersCount > 0;
@@ -199,149 +224,149 @@ export default function TransactionHistory() {
         </button>
       </div>
 
-      {isDemoAccount ? (
-        <div className="flex flex-1 items-center justify-center px-4 text-center">
-          <p className="text-body-large-medium text-muted-foreground">
-            {t('home.transactionHistoryDemoError', {
-              defaultValue: 'Demo accounts cannot view transaction history.',
-            })}
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Filter Buttons */}
-          <div className="mb-4 flex flex-row gap-2 px-4 py-3">
-            <DateRangePicker
-              onSelect={(dates) => {
-                setDateRange({
-                  startDate: dates.startDate,
-                  endDate: dates.endDate,
-                });
-                setPagination({ take: 15, skip: 0 });
-              }}
-            />
-
-            <Button
-              variant={hasActiveFilters ? 'primary-ghost' : 'neutral-contained'}
-              className="h-auto px-3 py-2"
-              onClick={() => setIsFilterOpen(true)}
-            >
-              <FilterFunnel01
-                size={16}
-                className={hasActiveFilters ? 'text-primary-500' : 'text-foreground'}
-              />
-              {!hasActiveFilters && (
-                <span className="text-body-large-medium text-foreground">
-                  {t('transactionHistory.filter')}
-                </span>
-              )}
-              {hasActiveFilters && (
-                <span className="text-primary-500 text-body-large-medium">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </Button>
-          </div>
-
-          {/* Filter Modal Component */}
-          <FilterTransaction
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            accounts={accounts}
-            selectedAccountId={selectedAccountId}
-            onApply={(newFilters) => {
-              setFilters({
-                type: newFilters.type,
-                status: newFilters.status,
+      <>
+        {/* Filter Buttons */}
+        <div className="mb-4 flex flex-row gap-2 px-4 py-3">
+          <DateRangePicker
+            onSelect={(dates) => {
+              setDateRange({
+                startDate: dates.startDate,
+                endDate: dates.endDate,
               });
-              setSelectedAccountId(newFilters.accountId);
               setPagination({ take: 15, skip: 0 });
             }}
           />
 
-          {/* Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            {isFetching && !isLoadingMore ? (
-              <div className="px-4 py-2">
-                {[...Array(5)].map((_, index) => (
-                  <TransactionHistoryCardSkeleton key={index} />
-                ))}
-              </div>
-            ) : !hasTransactions ? (
-              // Empty State
-              <div className="flex h-[60vh] flex-col items-center justify-center px-4">
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <IconTransactionHistory alt={t('transactionHistory.iconAlt')} />
-                  <div className="flex flex-col items-center gap-2">
-                    <h2 className="text-body-large-medium text-foreground">
-                      {t('transactionHistory.empty.noMatch')}
-                    </h2>
-                    <p className="text-body-small-regular text-muted-foreground">
-                      {t('transactionHistory.empty.trySearch')}
-                    </p>
-                  </div>
-                  <Button
-                    variant="primary-contained"
-                    className="px-6 py-2"
-                    onClick={() => {
-                      const today = new Date();
-                      const weekAgo = new Date();
-                      weekAgo.setDate(today.getDate() - 7);
-                      setDateRange({
-                        startDate: toStartOfDayISO(weekAgo),
-                        endDate: toEndOfDayISO(today),
-                      });
-                      setFilters({ type: [], status: [] });
-                      setPagination({ take: 15, skip: 0 });
-                    }}
-                  >
-                    {t('transactionHistory.resetFilters')}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              // Transaction List
-              <div className="flex flex-col px-4 py-2">
-                {allTransactions.map((transaction) => (
-                  <TransactionHistoryCard
-                    key={transaction.id}
-                    transaction={transaction}
-                    onPress={() => {
-                      setSelectedTransaction(transaction);
-                      setIsModalVisible(true);
-                    }}
-                  />
-                ))}
-
-                {/* Loading More Skeleton */}
-                {isLoadingMore && (
-                  <div className="mt-2 flex flex-col gap-3">
-                    {[...Array(3)].map((_, index) => (
-                      <TransactionHistoryCardSkeleton key={`loading-${index}`} />
-                    ))}
-                  </div>
-                )}
-
-                {/* View More Button */}
-                {hasMore && !isLoadingMore && (
-                  <Button
-                    variant="neutral-contained"
-                    className="my-4 w-full py-2.5"
-                    onClick={() => {
-                      setIsLoadingMore(true);
-                      setPagination((prev) => ({ ...prev, skip: prev.skip + prev.take }));
-                    }}
-                  >
-                    {t('transactionHistory.loadMore')}
-                  </Button>
-                )}
-
-                {/* All Loaded Message */}
-              </div>
+          <Button
+            variant={hasActiveFilters ? 'primary-ghost' : 'neutral-contained'}
+            className="h-auto px-3 py-2"
+            onClick={() => setIsFilterOpen(true)}
+          >
+            <FilterFunnel01
+              size={16}
+              className={hasActiveFilters ? 'text-primary-500' : 'text-foreground'}
+            />
+            {!hasActiveFilters && (
+              <span className="text-body-large-medium text-foreground">
+                {t('transactionHistory.filter')}
+              </span>
             )}
-          </div>
-        </>
-      )}
+            {hasActiveFilters && (
+              <span className="text-primary-500 text-body-large-medium">{activeFiltersCount}</span>
+            )}
+          </Button>
+        </div>
+
+        {/* Filter Modal Component */}
+        <FilterTransaction
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          accounts={accounts.filter(
+            (a) =>
+              a.accountTypeId.includes('demo') ===
+              Boolean(selectedAccount?.accountTypeId.includes('demo')),
+          )}
+          selectedAccountId={selectedAccountId}
+          onApply={(newFilters) => {
+            setFilters({
+              type: newFilters.type,
+              status: newFilters.status,
+            });
+            setSelectedAccountId(newFilters.accountId);
+            setPagination({ take: 15, skip: 0 });
+          }}
+        />
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          {isFetching ? (
+            <div className="px-4 py-2">
+              {[...Array(5)].map((_, index) => (
+                <TransactionHistoryCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : !hasTransactions ? (
+            // Empty State
+            <div className="flex h-[60vh] flex-col items-center justify-center px-4">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <IconTransactionHistory alt={t('transactionHistory.iconAlt')} />
+                <div className="flex flex-col items-center gap-2">
+                  <h2 className="text-body-large-medium text-foreground">
+                    {t('transactionHistory.empty.noMatch')}
+                  </h2>
+                  <p className="text-body-small-regular text-muted-foreground">
+                    {t('transactionHistory.empty.trySearch')}
+                  </p>
+                </div>
+                <Button
+                  variant="primary-contained"
+                  className="px-6 py-2"
+                  onClick={() => {
+                    const today = new Date();
+                    const weekAgo = new Date();
+                    weekAgo.setDate(today.getDate() - 7);
+                    setDateRange({
+                      startDate: toStartOfDayISO(weekAgo),
+                      endDate: toEndOfDayISO(today),
+                    });
+                    setFilters({ type: [], status: [] });
+                    setPagination({ take: 15, skip: 0 });
+                  }}
+                >
+                  {t('transactionHistory.resetFilters')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // Transaction List
+            <div className="flex flex-col px-4 py-2">
+              {allTransactions.map((transaction) => (
+                <TransactionHistoryCard
+                  key={transaction.id}
+                  transaction={transaction}
+                  onPress={() => {
+                    setSelectedTransaction(transaction);
+                    setIsModalVisible(true);
+                  }}
+                />
+              ))}
+
+              <nav
+                aria-label={t('common.pagination', { defaultValue: 'Pagination' })}
+                className="my-4 flex items-center justify-between gap-3"
+              >
+                <Button
+                  className="px-4 py-2"
+                  variant="neutral-contained"
+                  disabled={isFetching || page <= 1}
+                  onClick={() =>
+                    setPagination((prev) => ({
+                      ...prev,
+                      skip: Math.max(0, prev.skip - prev.take),
+                    }))
+                  }
+                >
+                  {t('common.previous', { defaultValue: 'Previous' })}
+                </Button>
+                <span className="text-sm">
+                  {page} / {pageCount} · {totalTransactions}
+                </span>
+                <Button
+                  className="px-4 py-2"
+                  variant="neutral-contained"
+                  disabled={isFetching || page >= pageCount}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, skip: prev.skip + prev.take }))
+                  }
+                >
+                  {t('common.next', { defaultValue: 'Next' })}
+                </Button>
+              </nav>
+              {/* All Loaded Message */}
+            </div>
+          )}
+        </div>
+      </>
 
       {/* Transaction Details Modal Component */}
       <TransactionCardDetails

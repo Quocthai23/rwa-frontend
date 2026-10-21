@@ -64,3 +64,9 @@ next-env.d.ts
 *.sql.gz
 /playwright-report/
 /test-results/
+
+# Local implementation notes and one-off verification helpers
+/docs/demo-trading.md
+/docs/desktop-press-news.md
+/docs/notification-implementation.md
+/scripts/verify-*.cjs

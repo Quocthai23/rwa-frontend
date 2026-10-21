@@ -24,6 +24,7 @@ export function useCreateOrder() {
       queryClient.invalidateQueries({ queryKey: ['portfolio-overview'] });
       queryClient.invalidateQueries({ queryKey: ['infinite-portfolio-items'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['portfolio-item'] });
     },
   });
 }

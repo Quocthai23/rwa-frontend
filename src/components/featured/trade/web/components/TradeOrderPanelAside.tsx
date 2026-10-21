@@ -9,6 +9,8 @@ import { toPng } from 'html-to-image';
 import { Button } from '@/components/shared/atoms/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hook/useToast';
+import { useAccountStore } from '@/store/useAccountStore';
+import { demoOrderContext } from '@/lib/trading/demo-order-context';
 import { useAuthStore } from '@/store/authStore';
 import ShareModal from '@/components/featured/SymbolDetail/components/ShareModal';
 import { ToggleFavouriteAsset } from '@/components/shared/components/ToggleFavouriteAsset';
@@ -97,8 +99,19 @@ export function TradeOrderPanelAside({
   const user = useAuthStore((s) => s.user);
   const [showShareModal, setShowShareModal] = useState(false);
   const [capturedImageUri, setCapturedImageUri] = useState<null | string>(null);
-  const askValue = toFiniteNumberFromNumberish(ask);
-  const bidValue = toFiniteNumberFromNumberish(bid);
+  const demo = useAccountStore((s) => Boolean(s.selectedAccount?.accountTypeId.includes('demo')));
+  const context = demoOrderContext({
+    demo,
+    online: true,
+    connected: true,
+    reconnecting: false,
+    limit: isAsideLimitMode,
+    bid: Number(bid ?? 0),
+    ask: Number(ask ?? 0),
+    publicPrice: Number(lastPrice ?? 0),
+  });
+  const askValue = context.ask;
+  const bidValue = context.bid;
   const lastPriceValue = toFiniteNumberFromNumberish(lastPrice);
   const hasAsk = isValidPrice(askValue);
   const hasBid = isValidPrice(bidValue);

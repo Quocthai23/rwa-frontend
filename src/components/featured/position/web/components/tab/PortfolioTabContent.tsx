@@ -7,6 +7,9 @@ import { getOwnershipPerformance } from '@/utils/ownershipPerformance';
 import { useRouter } from 'next/navigation';
 import { useAssetActionCounts } from '@/hook/useAssetActionCounts';
 import { AssetActionBadge } from '@/features/asset-management/web/components/AssetActionBadge';
+import { LiveAccountNotice } from '@/components/shared/trading/LiveAccountOnly';
+import { isDemoAccount } from '@/lib/trading/environment';
+import { useAccountStore } from '@/store/useAccountStore';
 
 import { useTranslation } from 'react-i18next';
 
@@ -96,6 +99,7 @@ export default function PortfolioTabContent({ accountId }: PortfolioTabContentPr
       maximumFractionDigits: decimals,
     });
   const router = useRouter();
+  const demo = useAccountStore((state) => isDemoAccount(state.selectedAccount));
   const { data: actionCounts } = useAssetActionCounts();
   const { assets } = useGetData();
   const [sortState, setSortState] = useState<PortfolioSortState>(
@@ -303,14 +307,20 @@ export default function PortfolioTabContent({ accountId }: PortfolioTabContentPr
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="neutral-outline"
-                            className="h-8 rounded-md px-3"
-                            onClick={() => router.push(`/asset-management/${item.assetId}`)}
-                          >
-                            {t('portfolio.actions.viewProperty', { defaultValue: 'View property' })}
-                            <AssetActionBadge count={actionCounts?.[item.assetId]?.total} />
-                          </Button>
+                          {demo ? (
+                            <LiveAccountNotice />
+                          ) : (
+                            <Button
+                              variant="neutral-outline"
+                              className="h-8 rounded-md px-3"
+                              onClick={() => router.push(`/asset-management/${item.assetId}`)}
+                            >
+                              {t('portfolio.actions.viewProperty', {
+                                defaultValue: 'View property',
+                              })}
+                              <AssetActionBadge count={actionCounts?.[item.assetId]?.total} />
+                            </Button>
+                          )}
                           <Button
                             variant="neutral-outline"
                             className="h-8 rounded-md px-3"

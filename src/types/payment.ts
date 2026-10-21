@@ -93,6 +93,17 @@ export type GetPaymentHistoryParams = {
 };
 
 export type PaymentHistoryItem = {
+  direction?: string | null;
+  currency?: string | null;
+  assetId?: string | null;
+  transferId?: string | null;
+  provider?: string | null;
+  providerReference?: string | null;
+  providerStatus?: string | null;
+  refundStatus?: string;
+  refundTxHash?: string | null;
+  confirmations?: number;
+
   id: string;
   userId: string;
   accountId: string;

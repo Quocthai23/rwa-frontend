@@ -33,16 +33,28 @@ export const useAccountSummaryMetrics = () => {
   }, [selectedAccount?.availableBalance]);
 
   // In Spot trading, equity equals the account balance (no leveraged positions)
-  const equity = balance;
+  const equity = useMemo(
+    () =>
+      selectedAccount?.accountTypeId.includes('demo')
+        ? round2(selectedAccount.equity ?? balance.toString())
+        : balance,
+    [selectedAccount, balance],
+  );
 
   // No open margin positions in Spot
   const marginPositions = useMemo(() => new Decimal(0), []);
 
   // No unrealised PnL from open positions (portfolio P&L is in PortfolioTabContent)
-  const currentUnrealizedPnl = useMemo(() => new Decimal(0), []);
+  const currentUnrealizedPnl = useMemo(
+    () => new Decimal(selectedAccount?.unrealizedPnl ?? 0),
+    [selectedAccount?.unrealizedPnl],
+  );
 
   // No swap/fee outstanding
-  const totalFee = useMemo(() => new Decimal(0), []);
+  const totalFee = useMemo(
+    () => new Decimal(selectedAccount?.totalFee ?? 0),
+    [selectedAccount?.totalFee],
+  );
 
   // Margin level not applicable for Spot
   const marginLevel = useMemo(() => new Decimal(0), []);

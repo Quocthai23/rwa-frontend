@@ -12,6 +12,7 @@ const WEB_EXPERIENCE_ROUTES = new Set([
   '/register',
   '/forgot-password',
   '/settings',
+  '/notifications/settings',
   '/login',
 ]);
 const WEB_EXPERIENCE_PREFIXES = ['/trade/', '/buyout-trading/', '/position', '/discover/'];

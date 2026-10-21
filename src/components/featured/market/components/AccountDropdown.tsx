@@ -37,7 +37,20 @@ function AccountDropdown() {
       <div className="relative">
         <div className="flex h-16 items-center justify-between p-4">
           <div>
-            <h2 className="text-h2-semibold text-foreground">{t('market.title')}</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-h2-semibold text-foreground">{t('market.title')}</h2>
+              <button
+                className="text-primary-500 rounded border border-current px-3 py-1 text-sm"
+                onClick={() => {
+                  const store = useAccountStore.getState();
+                  const demo = store.accounts.find((a) => a.accountTypeId.includes('demo'));
+                  if (demo) store.selectAccount(demo);
+                  else router.push('/login?redirect=/market?tradingMode=demo');
+                }}
+              >
+                Demo
+              </button>
+            </div>
           </div>
 
           {user ? (
@@ -49,7 +62,7 @@ function AccountDropdown() {
               <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center gap-1">
                   <span className="text-body-small-semibold text-foreground">
-                    ${formatBalance(balance.toNumber())}
+                    {formatBalance(balance.toNumber())} VND
                   </span>
                   <ChevronDown
                     size={20}
@@ -159,4 +172,3 @@ function ItemDropdown({
     </div>
   );
 }
-

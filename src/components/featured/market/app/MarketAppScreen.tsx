@@ -11,10 +11,12 @@ import MarketTabs from '@/components/featured/market/components/tabs/MarketTabs'
 import { useAssetDeploymentStore } from '@/store/useAssetDeploymentStore';
 import { useKycStore } from '@/store/useKycStore';
 import { useToast } from '@/hook/useToast';
+import { useAccountStore } from '@/store/useAccountStore';
 import { useAuthStore } from '@/store/authStore';
 
 export default function MarketAppScreen() {
   const { t } = useTranslation();
+  const demo = useAccountStore((s) => Boolean(s.selectedAccount?.accountTypeId.includes('demo')));
   const router = useRouter();
   const { showError } = useToast();
   const openDeployment = useAssetDeploymentStore((s) => s.open);
@@ -53,10 +55,14 @@ export default function MarketAppScreen() {
       </div>
 
       <Button
+        disabled={demo}
         onClick={() => {
           const user = useAuthStore.getState().user;
           if (user?.kycStatus !== 'APPROVED') {
-            showError(t('common.error'), t('kyc.required', 'KYC verification is required to deploy assets.'));
+            showError(
+              t('common.error'),
+              t('kyc.required', 'KYC verification is required to deploy assets.'),
+            );
             openKyc();
             return;
           }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useAccountStore } from '@/store/useAccountStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -12,10 +13,7 @@ import { ONE_CLICK_TRADING_ACCEPTED_KEY } from '../components/constants';
 import { OneClickTrading } from './components/OneClickTrading';
 import { TradeOrderPanelAside } from './components/TradeOrderPanelAside';
 import { TradeFloatingOneClickBar } from './components/TradeFloatingOneClickBar';
-import {
-  TradeWebMarketAside,
-  normalizeDigits,
-} from './components/TradeWebMarketAside';
+import { TradeWebMarketAside, normalizeDigits } from './components/TradeWebMarketAside';
 import { toPositiveAssetNumber } from '@/components/shared/chart/components/web/tradePanel/utils/tradePanelInputHelpers';
 import type { TradeWebAsideOrderFormHandle } from './components/TradeWebAsideOrderForm';
 import { TradeWebMainContent } from './components/TradeWebMainContent';
@@ -71,7 +69,8 @@ function getTradeSymbolFromPathname(pathname: string): string | null {
 
 export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard' | 'buyout' }) {
   const { t } = useTranslation();
-  const isBuyoutMode = mode === 'buyout';
+  const demo = useAccountStore((s) => Boolean(s.selectedAccount?.accountTypeId.includes('demo')));
+  const isBuyoutMode = mode === 'buyout' && !demo;
   const pathname = usePathname() || '/trade';
   const searchParams = useSearchParams();
   const initialPathSymbol = useMemo(
@@ -329,9 +328,11 @@ export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard
   const digit = normalizeDigits(symbolAsset?.digit ?? 2);
   const chg = Number(rtBySymbol?.[currentSymbol]?.changePercent ?? 0);
   const chgClass = chg >= 0 ? 'text-green-500' : 'text-red-500';
-  const buyoutBuyerLocked = Boolean(
-    symbolAsset?.buyoutSummary?.status === 'ACTIVE' && symbolAsset.buyoutSummary.viewerIsBuyer,
-  );
+  const buyoutBuyerLocked =
+    !demo &&
+    Boolean(
+      symbolAsset?.buyoutSummary?.status === 'ACTIVE' && symbolAsset.buyoutSummary.viewerIsBuyer,
+    );
   return (
     <>
       <div className="bg-muted/30 flex h-[calc(100dvh-72px)] min-h-0 flex-col dark:bg-neutral-950">
@@ -420,7 +421,9 @@ export default function TradeWebScreen({ mode = 'standard' }: { mode?: 'standard
             currentSymbol={currentSymbol}
             ask={ask}
             bid={bid}
-            lastPrice={lastPrice}
+            lastPrice={
+              demo ? lastPrice || symbolAsset?.tokenPrice || symbolAsset?.referencePrice : lastPrice
+            }
             digit={digit}
             chg={chg}
             chgClass={chgClass}

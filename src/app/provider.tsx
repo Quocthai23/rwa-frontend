@@ -1,5 +1,9 @@
 'use client';
 
+import DemoUnavailableSheet from '@/components/shared/trading/DemoUnavailableSheet';
+import TradingEnvironment from '@/components/shared/trading/TradingEnvironment';
+import { isDemoAccount } from '@/lib/trading/environment';
+
 import { AppToaster, WebToaster } from '@/components/shared/atoms/sonner';
 import { ThemeProvider } from '@/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -37,6 +41,7 @@ export const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
+  const isDemoSelected = isDemoAccount(selectedAccount);
   const userId = useAuthStore((state) => state.user?.id);
   const isDesktop = useMediaQuery('(min-width: 768px)', false);
 
@@ -55,7 +60,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Initialize order socket when account is selected
   useEffect(() => {
     useOrderSocketStore.getState().disconnect();
-    if (userId && selectedAccount?.id) {
+    if (userId && selectedAccount?.id && !isDemoSelected) {
       useOrderSocketStore.getState().connect();
       useOrderSocketStore.getState().subscribeAccount(selectedAccount.id);
     } else {
@@ -65,7 +70,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => {
       useOrderSocketStore.getState().disconnect();
     };
-  }, [selectedAccount?.id, userId]);
+  }, [selectedAccount?.id, userId, isDemoSelected]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -74,7 +79,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <GetdataProvider>
             <I18nSync />
             <GlobalModals />
-            {children}
+            <DemoUnavailableSheet />
+            <TradingEnvironment>{children}</TradingEnvironment>
             {isDesktop ? (
               <WebToaster richColors position="top-right" />
             ) : (

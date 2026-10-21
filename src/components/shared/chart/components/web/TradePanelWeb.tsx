@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import type { DecimalValue } from '@/types/decimal';
 
-
 export type { TradePanelSheetHandle } from './tradePanel/utils/tradePanelTypes';
 
 import type { TradePanelSheetHandle } from './tradePanel/utils/tradePanelTypes';
@@ -15,6 +14,7 @@ import { useCreateOrder } from '@/hook/orders/useCreateOrder';
 import { useToast } from '@/hook/useToast';
 import { useMarketSocketStore } from '@/store/marketSocketStore';
 import { useAuthStore } from '@/store/authStore';
+import { demoOrderContext } from '@/lib/trading/demo-order-context';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useInfiniteOrders } from '@/hook/useOrder';
 import { TradePanelActionBar } from './tradePanel/components/TradePanelActionBar';
@@ -64,7 +64,6 @@ function TradePanel({
   readonly digit: number;
 }) {
   const { isConnected, isReconnecting } = useMarketSocketStore();
-  const canTrade = navigator.onLine && isConnected && !isReconnecting;
   const rt = useMarketSocketStore((s) => s.rtBySymbol?.[symbol]);
   const { assets: assetsData } = useGetData();
   const symbolAsset = assetsData?.find((a) => a.symbol === symbol);
@@ -90,6 +89,8 @@ function TradePanel({
   const [showMiniChart, setShowMiniChart] = useState(false);
   const [transactionType, setTransactionType] = useState<'buy' | 'sell'>('buy');
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>(TABS[0]);
+  const [quantity, setQuantity] = useState('1.00');
+  const [isQuantityTouched, setIsQuantityTouched] = useState(false);
 
   const formatQuote = useMemo(() => {
     const safeDigit = Number.isFinite(digit) ? Math.min(12, Math.max(0, Math.trunc(digit))) : 2;
@@ -148,12 +149,23 @@ function TradePanel({
     };
 
     tradePanelRef.current = handle;
-  }, [tradePanelRef, isOpen]);
-  const [quantity, setQuantity] = useState('1.00');
-  const [isQuantityTouched, setIsQuantityTouched] = useState(false);
+  }, [tradePanelRef, isOpen, setLimitPrice]);
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const submitLockRef = useRef(false);
   const selectedAccount = useAccountStore((s) => s.selectedAccount);
+  const demo = Boolean(selectedAccount?.accountTypeId.includes('demo'));
+  const demoContext = demoOrderContext({
+    demo,
+    online: navigator.onLine,
+    connected: isConnected,
+    reconnecting: isReconnecting,
+    limit: false,
+    bid: Number(rt?.bid ?? 0),
+    ask: Number(rt?.ask ?? 0),
+    publicPrice: Number(symbolAsset?.tokenPrice ?? symbolAsset?.referencePrice ?? 0),
+  });
+  const canTrade = demoContext.canTrade;
+
   const { data: portfolioItem } = usePortfolioItem({
     accountId: selectedAccount?.id || '',
     assetId: symbolAsset?.id,
@@ -161,8 +173,8 @@ function TradePanel({
   const baseAvailableQuantity = Number(
     portfolioItem?.availableQuantity ?? portfolioItem?.quantity ?? 0,
   );
-  const sellPrice = rt?.bid ?? 0;
-  const buyPrice = rt?.ask ?? 0;
+  const sellPrice = demoContext.bid;
+  const buyPrice = demoContext.ask;
   const { availableBalance } = useAccountSummaryMetrics();
   const limitPriceNumber = Number.parseFloat(normalizeDecimalInput(limitPrice)) || 0;
   const rtAsk = toFiniteNumberFromNumberish(rt?.ask ?? buyPrice) ?? 0;
@@ -189,9 +201,7 @@ function TradePanel({
   const totalCost = useMemo(() => {
     const qty = Number(quantity);
     const priceForTotal =
-      activeTab === 'Market'
-        ? currentPrice || referencePriceNumber
-        : limitPriceNumber;
+      activeTab === 'Market' ? currentPrice || referencePriceNumber : limitPriceNumber;
     if (!Number.isFinite(qty) || qty <= 0 || priceForTotal <= 0) return 0;
     return qty * priceForTotal;
   }, [activeTab, quantity, referencePriceNumber, currentPrice, limitPriceNumber]);
@@ -232,34 +242,38 @@ function TradePanel({
   useEffect(() => {
     if (!Number.isFinite(minTradeSize) || minTradeSize <= 0) return;
 
-    const symbolChanged = lastSymbolRef.current !== symbol;
-    if (symbolChanged) {
-      lastSymbolRef.current = symbol;
-      setIsQuantityTouched(false);
-      setQuantity('1.00');
-      return;
-    }
+    const resetId = window.setTimeout(() => {
+      const symbolChanged = lastSymbolRef.current !== symbol;
+      if (symbolChanged) {
+        lastSymbolRef.current = symbol;
+        setIsQuantityTouched(false);
+        setQuantity('1.00');
+        return;
+      }
 
-    if (!isQuantityTouched && !quantity) {
-      setQuantity('1.00');
-    }
+      if (!isQuantityTouched && !quantity) {
+        setQuantity('1.00');
+      }
+    }, 0);
+    return () => window.clearTimeout(resetId);
   }, [symbol, minTradeSize, isQuantityTouched, quantity]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    const hideId = window.setTimeout(() => setShowMiniChart(false), 0);
     if (mainOpen && variant === 'full') {
-      setShowMiniChart(false);
       const timeoutId = window.setTimeout(() => {
         setShowMiniChart(true);
       }, 300);
 
       return () => {
         window.clearTimeout(timeoutId);
+        window.clearTimeout(hideId);
       };
     }
 
-    setShowMiniChart(false);
+    return () => window.clearTimeout(hideId);
   }, [mainOpen, variant]);
 
   const handleSubmitOrder = useCallback(
@@ -346,8 +360,9 @@ function TradePanel({
           onInteractOutside={(e) => {
             if (!isModal) e.preventDefault();
           }}
-          className={`text-foreground flex flex-col border-none bg-white p-0 dark:bg-neutral-900 ${sheetHeightClass} ${variant === 'full' ? 'rounded-t' : 'rounded-t'
-            }`}
+          className={`text-foreground flex flex-col border-none bg-white p-0 dark:bg-neutral-900 ${sheetHeightClass} ${
+            variant === 'full' ? 'rounded-t' : 'rounded-t'
+          }`}
         >
           <DialogTitle className="sr-only">{t('trade.sheetTitle', { symbol })}</DialogTitle>
           <div className="border-border flex h-full flex-col overflow-hidden border-b shadow-[0_2px_10px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
@@ -400,7 +415,6 @@ function TradePanel({
                 volumeStep={volumeStepNum}
               />
 
-
               <div className="px-4">
                 {activeTab !== 'Market' && (
                   <TradePanelLimitPriceField
@@ -416,10 +430,12 @@ function TradePanel({
                 )}
               </div>
 
-              <div className="mt-3 px-4 flex items-center justify-between">
+              <div className="mt-3 flex items-center justify-between px-4">
                 <p className="text-body-small-regular text-[#0158ff]">
                   {t('trade.totalCost', { defaultValue: 'Total Cost' })}:{' '}
-                  <span className="text-foreground font-semibold">â‰ˆ{formatBalance(totalCost)}</span>
+                  <span className="text-foreground font-semibold">
+                    â‰ˆ{formatBalance(totalCost)}
+                  </span>
                 </p>
                 {activeTab === 'Market' && referencePriceNumber > 0 && (
                   <p className="text-body-small-regular text-muted-foreground">
@@ -443,12 +459,8 @@ function TradePanel({
                 buyLabel={`${t('trade.buy')} ${displaySymbol}`}
                 isCreatingOrder={isCreatingOrder}
                 isSubmitLocked={isSubmitLocked}
-                sellDisabled={
-                  activeTab === 'Limit' && isSellLimitInvalid
-                }
-                buyDisabled={
-                  activeTab === 'Limit' && isBuyLimitInvalid
-                }
+                sellDisabled={activeTab === 'Limit' && isSellLimitInvalid}
+                buyDisabled={activeTab === 'Limit' && isBuyLimitInvalid}
                 availableBalanceLabel={t('trade.availableBalance', {
                   defaultValue: 'Available',
                 })}

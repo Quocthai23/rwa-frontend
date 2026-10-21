@@ -1,3 +1,4 @@
+import { demoTradingEndpoint } from './tradingScope';
 import { ORDERS_ENDPOINTS } from '../constants/api';
 import type {
   CreateOrderPayload,
@@ -19,7 +20,8 @@ export const createOrderAPI = async (
   authHeader?: string,
 ): Promise<CreateOrderResponse> => {
   if (typeof window !== 'undefined' && !authHeader) {
-    return apiClient.post<CreateOrderResponse>('/api/create-order', payload, {
+    const demo = demoTradingEndpoint(payload.accountId, 'orders', undefined, true);
+    return apiClient.post<CreateOrderResponse>(demo ?? '/api/create-order', payload, {
       baseUrl: window.location.origin,
       skipAuth: true,
     });
@@ -38,7 +40,7 @@ export const getOrdersListAPI = async (
 ): Promise<GetOrdersResponse> => {
   if (typeof window !== 'undefined' && !authHeader) {
     return apiClient.get<GetOrdersResponse>(
-      '/api/order',
+      demoTradingEndpoint(params?.accountId, 'orders') ?? '/api/order',
       params,
       {
         baseUrl: CLIENT_BASE_URL,
@@ -86,8 +88,14 @@ export const updateOrderAPI = async (
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;
   if (typeof window !== 'undefined' && !authHeader) {
     return apiClient.patch<unknown>(
-      `/api/order?orderId=${encodeURIComponent(orderId)}`,
-      updatePayload,
+      demoTradingEndpoint(_accountId, 'orders', orderId, true) ??
+        `/api/order?orderId=${encodeURIComponent(orderId)}&accountId=${encodeURIComponent(_accountId ?? '')}`,
+      {
+        ...updatePayload,
+        ...(demoTradingEndpoint(_accountId, 'orders', undefined, true)
+          ? { accountId: _accountId! }
+          : {}),
+      },
       { baseUrl: CLIENT_BASE_URL, skipAuth: true },
     );
   }
@@ -109,10 +117,15 @@ export const cancelAllOrdersAPI = async (
   };
 
   if (typeof window !== 'undefined' && !authHeader) {
-    return apiClient.post<unknown>('/api/order', payload, {
-      baseUrl: CLIENT_BASE_URL,
-      skipAuth: true,
-    });
+    const demo = demoTradingEndpoint(accountId, 'bulk-cancel', undefined, true);
+    return apiClient.post<unknown>(
+      demo ?? '/api/order?accountId=' + encodeURIComponent(accountId),
+      demo ? { ...payload, accountId } : payload,
+      {
+        baseUrl: CLIENT_BASE_URL,
+        skipAuth: true,
+      },
+    );
   }
 
   const headers = authHeader ? { Authorization: `Bearer ${authHeader}` } : undefined;

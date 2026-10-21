@@ -23,6 +23,8 @@ import HistoryDateRangePicker, {
   type HistoryRangeValue,
 } from './components/shared/HistoryDateRangePicker';
 import { toISODateString } from '@/utils/dateUtils';
+import { isDemoAccount } from '@/lib/trading/environment';
+import { DemoUnavailableState } from '@/components/shared/trading/LiveAccountOnly';
 
 const ORDER_HISTORY_RANGE_STORAGE_KEY = 'position:web:history-range:order';
 
@@ -77,6 +79,8 @@ export default function PositionWebScreen({
   const [activeTab, setActiveTab] = useState<PositionWebTab>(activeTabProp ?? 'portfolio');
   const selectedAccount = useAccountStore((state) => state.selectedAccount);
   const accountId = selectedAccount?.id || '';
+  const demo = isDemoAccount(selectedAccount);
+  const [demoRentalsOpen, setDemoRentalsOpen] = useState(false);
   const POSITION_WEB_TABS = [
     {
       id: 'portfolio',
@@ -89,8 +93,9 @@ export default function PositionWebScreen({
     },
   ] as const;
 
-  const currentActiveTab = activeTabProp ?? activeTab;
+  const currentActiveTab = demo && demoRentalsOpen ? 'my-rentals' : (activeTabProp ?? activeTab);
   const handleTabChange = (tab: PositionWebTab) => {
+    setDemoRentalsOpen(false);
     if (!activeTabProp) {
       setActiveTab(tab);
     }
@@ -115,7 +120,7 @@ export default function PositionWebScreen({
   const hasHydratedAuth = useAuthHydrated();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
-  const myRentals = useMyRentalContracts(hasHydratedAuth && isAuthenticated);
+  const myRentals = useMyRentalContracts(hasHydratedAuth && isAuthenticated && !demo);
 
   const allOpenOrders = useMemo(
     () => openOrdersData?.pages.flatMap((page: { data: OrderItem[] }) => page.data) ?? [],
@@ -178,7 +183,7 @@ export default function PositionWebScreen({
     >
       {checkPathname && selectedAccount && <AssetOverview activeAccount={selectedAccount} />}
 
-      <div className="bg-background h-full min-h-0 flex-1 overflow-hidden">
+      <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="border-border bg-background border-b">
           <div className="flex min-h-11 items-center justify-between gap-5">
             <div className="scrollbar-neutral-slim flex min-w-0 flex-1 gap-6 overflow-x-auto">
@@ -228,11 +233,22 @@ export default function PositionWebScreen({
               {hasHydratedAuth && isAuthenticated ? (
                 <Button
                   variant="white-contained"
-                  onClick={() => router.push('/my-rentals')}
-                  className="text-body-small-medium! text-muted-foreground hover:text-foreground relative h-11 shrink-0 rounded-none px-0 whitespace-nowrap"
+                  onClick={() => {
+                    if (demo) {
+                      setDemoRentalsOpen(true);
+                    } else {
+                      router.push('/my-rentals');
+                    }
+                  }}
+                  className={cn(
+                    'relative h-11 shrink-0 rounded-none px-0 whitespace-nowrap transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5',
+                    currentActiveTab === 'my-rentals'
+                      ? 'text-foreground text-body-small-semibold! after:bg-primary-500'
+                      : 'text-body-small-medium! text-muted-foreground hover:text-foreground after:bg-transparent',
+                  )}
                 >
                   {t('position.tabs.myRentals', { defaultValue: 'Properties I rent' })}
-                  {myRentals.data?.length ? ` (${myRentals.data.length})` : ''}
+                  {!demo && myRentals.data?.length ? ` (${myRentals.data.length})` : ''}
                 </Button>
               ) : null}
             </div>
@@ -260,7 +276,10 @@ export default function PositionWebScreen({
           </div>
         </div>
 
-        <div className="scrollbar-neutral-slim h-[calc(100%-35px)] overflow-auto py-1">
+        <div className="scrollbar-neutral-slim min-h-0 flex-1 overflow-auto py-1">
+          {currentActiveTab === 'my-rentals' ? (
+            <DemoUnavailableState className="h-full min-h-60" />
+          ) : null}
           {currentActiveTab === 'portfolio' ? <PortfolioTabContent accountId={accountId} /> : null}
           {currentActiveTab === 'orders' ? (
             <OpenOrdersTabContent key={accountId} accountId={accountId} />

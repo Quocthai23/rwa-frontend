@@ -57,6 +57,7 @@
     "react-day-picker": "^9.12.0",
     "react-dom": "19.2.1",
     "react-i18next": "^16.6.1",
+    "rss-parser": "^3.13.0",
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",

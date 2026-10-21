@@ -27,6 +27,14 @@ const vnd = (value?: string | number | null) =>
   `${Number(value ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} VND`;
 
 export default function MyRentalsPage() {
+  return (
+    <WebLayout liveOnly>
+      <MyRentalsContent />
+    </WebLayout>
+  );
+}
+
+function MyRentalsContent() {
   const { t } = useTranslation();
   const rentals = useMyRentalContracts();
   const contracts = useMemo(() => rentals.data ?? [], [rentals.data]);
@@ -48,89 +56,82 @@ export default function MyRentalsPage() {
   );
 
   return (
-    <WebLayout>
-      <main className="bg-background min-h-full overflow-y-auto">
-        <div className="mx-auto w-full max-w-[1440px] px-5 py-6 lg:px-8">
-          <h1 className="text-foreground text-2xl font-semibold">
-            {t('myRentals.title', { defaultValue: 'Properties I rent' })}
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            {t('myRentals.description', {
-              defaultValue:
-                'Fund each VND contract wallet and review every automatic monthly deduction.',
-            })}
-          </p>
-          {contracts.length > 0 ? (
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
-              <SummaryMetric
-                label={t('myRentals.totalContracts', { defaultValue: 'Rental contracts' })}
-                value={String(contracts.length)}
-              />
-              <SummaryMetric
-                label={t('myRentals.totalWallet', { defaultValue: 'Total contract wallet' })}
-                value={vnd(summary.totalWallet)}
-              />
-              <SummaryMetric
-                label={t('myRentals.monthlyCommitment', {
-                  defaultValue: 'Monthly commitment',
-                })}
-                value={vnd(summary.totalMonthlyRent)}
-                hint={
-                  summary.needsAttention > 0
-                    ? t('myRentals.needsAttention', {
-                        count: summary.needsAttention,
-                        defaultValue: '{{count}} contract needs attention',
-                      })
-                    : undefined
-                }
-              />
-            </div>
-          ) : null}
-          {rentals.isLoading ? (
-            <div className="mt-6 grid gap-4 lg:grid-cols-2">
-              <Skeleton className="h-72 w-full" />
-              <Skeleton className="h-72 w-full" />
-            </div>
-          ) : rentals.isError ? (
-            <div className="border-border mt-6 flex min-h-48 flex-col items-center justify-center gap-3 border px-5 py-12 text-center">
-              <p className="text-foreground text-sm font-semibold">
-                {t('myRentals.loadError', { defaultValue: 'Unable to load rental contracts' })}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {t('myRentals.loadErrorDescription', {
-                  defaultValue:
-                    'The server did not return your rental contracts. Please try again.',
-                })}
-              </p>
-              <Button
-                type="button"
-                variant="neutral-outline"
-                onClick={() => void rentals.refetch()}
-              >
-                {t('common.retry', { defaultValue: 'Retry' })}
-              </Button>
-            </div>
-          ) : contracts.length ? (
-            <div className="mt-6 space-y-5">
-              {contracts.map((contract) => (
-                <RentalContractCard key={contract.id} contract={contract} />
-              ))}
-            </div>
-          ) : (
-            <div className="border-border mt-6 border px-5 py-12 text-center">
-              <p className="text-foreground text-sm font-semibold">
-                {t('myRentals.emptyTitle', { defaultValue: 'No active rental contract' })}
-              </p>
-              <p className="text-muted-foreground mt-2 text-xs">
-                {t('myRentals.emptyDescription', {
-                  defaultValue: 'This section appears after shareholders approve your application.',
-                })}
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
-    </WebLayout>
+    <main className="bg-background min-h-full overflow-y-auto">
+      <div className="mx-auto w-full max-w-[1440px] px-5 py-6 lg:px-8">
+        <h1 className="text-foreground text-2xl font-semibold">
+          {t('myRentals.title', { defaultValue: 'Properties I rent' })}
+        </h1>
+        <p className="text-muted-foreground mt-2 text-sm">
+          {t('myRentals.description', {
+            defaultValue:
+              'Fund each VND contract wallet and review every automatic monthly deduction.',
+          })}
+        </p>
+        {contracts.length > 0 ? (
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <SummaryMetric
+              label={t('myRentals.totalContracts', { defaultValue: 'Rental contracts' })}
+              value={String(contracts.length)}
+            />
+            <SummaryMetric
+              label={t('myRentals.totalWallet', { defaultValue: 'Total contract wallet' })}
+              value={vnd(summary.totalWallet)}
+            />
+            <SummaryMetric
+              label={t('myRentals.monthlyCommitment', {
+                defaultValue: 'Monthly commitment',
+              })}
+              value={vnd(summary.totalMonthlyRent)}
+              hint={
+                summary.needsAttention > 0
+                  ? t('myRentals.needsAttention', {
+                      count: summary.needsAttention,
+                      defaultValue: '{{count}} contract needs attention',
+                    })
+                  : undefined
+              }
+            />
+          </div>
+        ) : null}
+        {rentals.isLoading ? (
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            <Skeleton className="h-72 w-full" />
+            <Skeleton className="h-72 w-full" />
+          </div>
+        ) : rentals.isError ? (
+          <div className="border-border mt-6 flex min-h-48 flex-col items-center justify-center gap-3 border px-5 py-12 text-center">
+            <p className="text-foreground text-sm font-semibold">
+              {t('myRentals.loadError', { defaultValue: 'Unable to load rental contracts' })}
+            </p>
+            <p className="text-muted-foreground text-xs">
+              {t('myRentals.loadErrorDescription', {
+                defaultValue: 'The server did not return your rental contracts. Please try again.',
+              })}
+            </p>
+            <Button type="button" variant="neutral-outline" onClick={() => void rentals.refetch()}>
+              {t('common.retry', { defaultValue: 'Retry' })}
+            </Button>
+          </div>
+        ) : contracts.length ? (
+          <div className="mt-6 space-y-5">
+            {contracts.map((contract) => (
+              <RentalContractCard key={contract.id} contract={contract} />
+            ))}
+          </div>
+        ) : (
+          <div className="border-border mt-6 border px-5 py-12 text-center">
+            <p className="text-foreground text-sm font-semibold">
+              {t('myRentals.emptyTitle', { defaultValue: 'No active rental contract' })}
+            </p>
+            <p className="text-muted-foreground mt-2 text-xs">
+              {t('myRentals.emptyDescription', {
+                defaultValue: 'This section appears after shareholders approve your application.',
+              })}
+            </p>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
 

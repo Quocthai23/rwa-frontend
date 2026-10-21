@@ -60,10 +60,12 @@ export const useAccountStore = create<AccountState>()(
           const isSelectedValid =
             selectedAccount && accounts.some((a) => a.id === selectedAccount.id);
           if (!selectedAccount || !isSelectedValid) {
-            newSelectedAccount = accounts[0];
+            newSelectedAccount = accounts.find((a) => !a.accountTypeId.includes('demo')) ?? null;
           } else {
             // Update the selected account object with latest data from the list
-            newSelectedAccount = accounts.find((a) => a.id === selectedAccount.id) || accounts[0];
+            newSelectedAccount =
+              accounts.find((a) => a.id === selectedAccount.id) ||
+              (accounts.find((a) => !a.accountTypeId.includes('demo')) ?? null);
           }
         } else {
           newSelectedAccount = null;
@@ -89,9 +91,13 @@ export const useAccountStore = create<AccountState>()(
           selectedAccount && accounts.some((a) => a.id === selectedAccount.id);
 
         if (!selectedAccount || !isSelectedValid) {
-          useAccountStore.setState({ selectedAccount: accounts[0] });
+          useAccountStore.setState({
+            selectedAccount: accounts.find((a) => !a.accountTypeId.includes('demo')) ?? null,
+          });
         } else {
-          const updated = accounts.find((a) => a.id === selectedAccount.id) || accounts[0];
+          const updated =
+            accounts.find((a) => a.id === selectedAccount.id) ||
+            (accounts.find((a) => !a.accountTypeId.includes('demo')) ?? null);
           useAccountStore.setState({ selectedAccount: updated });
         }
       },
